@@ -2,73 +2,81 @@ import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Brand palette — "Midnight Violet". Deep indigo ink, a vivid violet accent
-/// with a warm gold highlight for money/rewards, cool lavender-tinted
-/// surfaces and layered soft shadows. Every screen should pull from here
-/// rather than hard-coding hex values.
+/// Brand palette — "1a Polished Violet" (LootHat Redesign). Vivid violet →
+/// magenta gradients, a lavender page, white rounded cards with soft violet
+/// shadows, Plus Jakarta Sans for text and Space Grotesk for numbers.
 class AppColors {
   AppColors._();
 
   // Legacy web tokens (lootapp-ui globals.css) — still referenced in places.
   static const gradientStart = Color(0xFF8B5CF6);
   static const gradientEnd = Color(0xFF3B82F6);
-  static const primaryDeep = Color(0xFF4A2FD0);
+  static const primaryDeep = Color(0xFF6D28D9);
   static const gradientStartDark = Color(0xFFA78BFA);
   static const gradientEndDark = Color(0xFF60A5FA);
 
-  /// Brand accent — selection states, links, primary actions.
-  static const primary = Color(0xFF6C4DF6);
+  /// Brand violet — selection states, links, primary actions.
+  static const primary = Color(0xFF7C3AED);
   static const violet = primary; // alias kept for existing call sites
-  static const primaryMuted = Color(0xFFF0ECFF);
+  static const primaryMuted = Color(0xFFEDE9FE);
 
-  /// Warm highlight reserved for money, rewards and "premium" moments.
-  static const gold = Color(0xFFF5B942);
-  static const goldMuted = Color(0xFFFFF4DC);
+  /// Warm highlight for notification dots and sparkles.
+  static const gold = Color(0xFFFACC15);
+  static const goldMuted = Color(0xFFFEF3C7);
 
-  // Vivid accents for variety — icon chips, avatars, tab colors, glows.
-  static const pinkAccent = Color(0xFFFF4DA6);
+  // Vivid accents used sparingly (conversions chip, earnings chip, …).
+  static const pinkAccent = Color(0xFFEC4899);
   static const cyan = Color(0xFF22D3EE);
   static const emerald = Color(0xFF10B981);
-  static const orange = Color(0xFFFF8A3D);
+  static const orange = Color(0xFFF59E0B);
 
-  // Midnight surfaces used for hero blocks, nav and the login header.
-  static const midnight = Color(0xFF110C2E);
-  static const midnightSoft = Color(0xFF1E1550);
+  // Dark tones (snackbars, overlays).
+  static const midnight = Color(0xFF1C1235);
+  static const midnightSoft = Color(0xFF3D3456);
 
-  // Surfaces — cool lavender-tinted whites.
-  static const canvas = Color(0xFFF7F6FC);
+  // Surfaces — lavender page, white cards.
+  static const canvas = Color(0xFFF6F4FF);
   static const surface = Colors.white;
-  static const surfaceTint = Color(0xFFF3F1FA);
-  static const hairline = Color(0xFFEAE7F4);
-  static const hairlineStrong = Color(0xFFDAD6EA);
+  static const surfaceTint = Color(0xFFF1EDFA);
+  static const hairline = Color(0xFFF1EDFA);
+  static const hairlineStrong = Color(0xFFE6E0F5);
 
-  // Ink — deep indigo-tinted neutrals.
-  static const ink = Color(0xFF14112B);
-  static const inkLabel = Color(0xFF38345A);
-  static const inkMuted = Color(0xFF6A6688);
-  static const inkFaint = Color(0xFF9C99B6);
+  // Ink — violet-tinted neutrals.
+  static const ink = Color(0xFF1C1235);
+  static const inkLabel = Color(0xFF3D3456);
+  static const inkMuted = Color(0xFF6B6285);
+  static const inkFaint = Color(0xFF8B82A8);
+  static const inkHint = Color(0xFF9A92B4);
 
   // Semantic.
-  static const success = Color(0xFF12A150);
-  static const successMuted = Color(0xFFE5F7EC);
-  static const danger = Color(0xFFE0343A);
-  static const dangerMuted = Color(0xFFFDEBEC);
-  static const warning = Color(0xFFC2650A);
-  static const warningMuted = Color(0xFFFFF1DF);
+  static const success = Color(0xFF16A34A);
+  static const successMuted = Color(0xFFECFDF5);
+  static const danger = Color(0xFFE11D48);
+  static const dangerMuted = Color(0xFFFFE4E9);
+  static const warning = Color(0xFFD97706);
+  static const warningMuted = Color(0xFFFEF3C7);
 
-  /// Brand gradient — primary buttons, selected tab, avatar chips.
+  /// Button / chip gradient (violet → lilac).
   static const LinearGradient accentGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF8B5CF6), Color(0xFF5B3DF0)],
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [Color(0xFF7C3AED), Color(0xFFA855F7)],
   );
 
-  /// Deep hero gradient — headers, login banner, balance cards.
+  /// Header / hero gradient (violet → purple → magenta, 120deg).
   static const LinearGradient midnightGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF1E1550), Color(0xFF3A22A8), Color(0xFF6C4DF6)],
-    stops: [0.0, 0.62, 1.0],
+    begin: Alignment(-1, -0.6),
+    end: Alignment(1, 0.6),
+    colors: [Color(0xFF6D28D9), Color(0xFF9333EA), Color(0xFFC026D3)],
+    stops: [0.0, 0.55, 1.0],
+  );
+
+  /// Primary call-to-action gradient.
+  static const LinearGradient ctaGradient = LinearGradient(
+    begin: Alignment(-1, -0.6),
+    end: Alignment(1, 0.6),
+    colors: [Color(0xFF7C3AED), Color(0xFF9333EA), Color(0xFFC026D3)],
+    stops: [0.0, 0.55, 1.0],
   );
 
   /// Flat accent fill — kept for call-site compatibility.
@@ -77,36 +85,30 @@ class AppColors {
   // Gradient tokens (several screens still reference these names).
   static const LinearGradient heroGradient = midnightGradient;
   static const LinearGradient cardGradient = accentGradient;
-  static const LinearGradient buttonGradient = accentGradient;
+  static const LinearGradient buttonGradient = ctaGradient;
   static const LinearGradient brandGradient = accentGradient;
   static const plum = ink;
-  static const magenta = primary;
+  static const magenta = Color(0xFFC026D3);
   static const orchid = primary;
   static const pink = Color(0xFFDB2777);
-  static const amber = Color(0xFFB45309);
+  static const amber = Color(0xFFD97706);
   static const mint = success;
 
-  /// Layered elevation — a tight contact shadow plus a wide, violet-tinted
-  /// ambient one. Reads as "lifted" without looking heavy.
+  /// Card elevation from the design: 0 4px 16px rgba(60,20,120,.08).
   static List<BoxShadow> softShadow([double strength = 1]) => [
         BoxShadow(
-          color: const Color(0xFF1E1550).withValues(alpha: 0.05 * strength),
-          blurRadius: 3,
-          offset: const Offset(0, 1),
-        ),
-        BoxShadow(
-          color: const Color(0xFF3A22A8).withValues(alpha: 0.08 * strength),
-          blurRadius: 24,
-          offset: const Offset(0, 10),
+          color: const Color(0xFF3C1478).withValues(alpha: 0.08 * strength),
+          blurRadius: 16,
+          offset: const Offset(0, 4),
         ),
       ];
 
   /// Soft colored glow under an accent element (buttons, active chips).
   static List<BoxShadow> glow(Color color, [double strength = 1]) => [
         BoxShadow(
-          color: color.withValues(alpha: 0.32 * strength),
-          blurRadius: 18,
-          offset: const Offset(0, 8),
+          color: color.withValues(alpha: 0.38 * strength),
+          blurRadius: 26,
+          offset: const Offset(0, 12),
         ),
       ];
 }
@@ -156,8 +158,8 @@ class AppTheme {
 
   static ThemeData _build(ColorScheme scheme) {
     final isLight = scheme.brightness == Brightness.light;
-    final base = ThemeData(useMaterial3: true, colorScheme: scheme);
-    final radius = BorderRadius.circular(14);
+    final base = ThemeData(useMaterial3: true, colorScheme: scheme, fontFamily: 'PlusJakartaSans');
+    final radius = BorderRadius.circular(15);
 
     return base.copyWith(
       scaffoldBackgroundColor: isLight ? AppColors.canvas : scheme.surface,
@@ -203,13 +205,13 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: isLight ? const Color(0xFFFBFAFE) : scheme.surfaceContainerHighest,
-        hintStyle: const TextStyle(color: AppColors.inkFaint, fontWeight: FontWeight.w400),
+        fillColor: isLight ? const Color(0xFFFAF9FF) : scheme.surfaceContainerHighest,
+        hintStyle: const TextStyle(color: AppColors.inkHint, fontWeight: FontWeight.w500),
         prefixIconColor: WidgetStateColor.resolveWith(
-          (s) => s.contains(WidgetState.focused) ? AppColors.primary : AppColors.inkFaint,
+          (s) => s.contains(WidgetState.focused) ? AppColors.primary : AppColors.inkHint,
         ),
-        border: OutlineInputBorder(borderRadius: radius, borderSide: const BorderSide(color: AppColors.hairlineStrong)),
-        enabledBorder: OutlineInputBorder(borderRadius: radius, borderSide: const BorderSide(color: AppColors.hairlineStrong)),
+        border: OutlineInputBorder(borderRadius: radius, borderSide: const BorderSide(color: AppColors.hairlineStrong, width: 1.5)),
+        enabledBorder: OutlineInputBorder(borderRadius: radius, borderSide: const BorderSide(color: AppColors.hairlineStrong, width: 1.5)),
         focusedBorder: OutlineInputBorder(borderRadius: radius, borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
         errorBorder: OutlineInputBorder(borderRadius: radius, borderSide: const BorderSide(color: AppColors.danger)),
         focusedErrorBorder: OutlineInputBorder(borderRadius: radius, borderSide: const BorderSide(color: AppColors.danger, width: 1.5)),
@@ -292,7 +294,7 @@ class AppTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.midnight,
+        backgroundColor: AppColors.ink,
         contentTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         insetPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),

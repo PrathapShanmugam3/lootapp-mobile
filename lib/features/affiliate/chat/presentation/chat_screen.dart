@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/widgets/chat_message.dart';
 import '../../../../core/widgets/common.dart';
+import '../../notifications/presentation/notifications_screen.dart';
 import '../../presentation/widgets/aff_user_avatar.dart';
 import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/affiliate_design.dart';
@@ -140,202 +142,273 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         title: 'Chat',
         subtitle: 'LootHat Affiliate',
         actions: [
-          AffHeaderIcon(icon: Icons.notifications_outlined, onTap: () {}),
+          AffHeaderIcon(
+            icon: Icons.notifications_none_rounded,
+            showDot: true,
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NotificationsScreen())),
+          ),
           const AffUserAvatar(),
         ],
       ),
-      body: AffAmbient(
-        child: chatAsync.when(
+      body: chatAsync.when(
         loading: () => const LoadingState(),
         error: (e, _) => ErrorState(message: 'Failed to load chat.\n$e', onRetry: () => ref.invalidate(chatProvider)),
         data: (chatState) {
           final closed = chatState.status == 'closed';
-          return Column(
-            children: [
-              if (sample)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-                  child: SampleDataBanner(onRetry: () => ref.invalidate(chatProvider)),
-                ),
-              _SupportBanner(),
-              Expanded(
-                child: chatState.messages.isEmpty
-                    ? const EmptyState(message: 'No messages yet — say hello!', icon: Icons.forum_rounded)
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                        itemCount: chatState.messages.length,
-                        itemBuilder: (context, i) {
-                          final m = chatState.messages[i];
-                          return _Bubble(message: m, mine: m.from == 'user');
-                        },
-                      ),
-              ),
-              if (closed)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  color: AffColors.warning.withValues(alpha: 0.12),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.lock_outline, size: 16, color: AffColors.warning),
-                      const SizedBox(width: 8),
-                      const Expanded(child: Text('This conversation was closed.')),
-                      TextButton(onPressed: () => ref.read(chatProvider.notifier).reopen(), child: const Text('Start new chat')),
-                    ],
-                  ),
-                )
-              else
-                SafeArea(
-                  top: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (_attachmentBytes != null)
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 10, left: 4),
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Image.memory(_attachmentBytes!, width: 84, height: 84, fit: BoxFit.cover),
-                                  ),
-                                  Positioned(
-                                    top: -8,
-                                    right: -8,
-                                    child: GestureDetector(
-                                      onTap: () => setState(() {
-                                        _attachment = null;
-                                        _attachmentBytes = null;
-                                      }),
-                                      child: Container(
-                                        width: 24,
-                                        height: 24,
-                                        decoration: BoxDecoration(color: AffColors.ink, shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),
-                                        child: const Icon(Icons.close_rounded, size: 14, color: Colors.white),
-                                      ),
+          final messages = chatState.messages;
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: Column(
+              children: [
+                if (sample) SampleDataBanner(onRetry: () => ref.invalidate(chatProvider)),
+                Expanded(
+                  child: FadeSlideIn(
+                    child: Container(
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22), boxShadow: AffColors.cardShadow),
+                      clipBehavior: Clip.antiAlias,
+                      child: Column(
+                        children: [
+                          const _SupportHeader(),
+                          Expanded(
+                            child: Container(
+                              color: AffColors.fieldBg,
+                              child: messages.isEmpty
+                                  ? const EmptyState(message: 'No messages yet — say hello!', icon: Icons.forum_rounded)
+                                  : ListView.builder(
+                                      controller: _scrollController,
+                                      padding: const EdgeInsets.all(14),
+                                      itemCount: messages.length,
+                                      itemBuilder: (context, i) {
+                                        final m = messages[i];
+                                        final showDate = m.date != null && m.date!.isNotEmpty && (i == 0 || messages[i - 1].date != m.date);
+                                        return Column(
+                                          children: [
+                                            if (showDate) _DatePill(m.date!),
+                                            _Bubble(message: m, mine: m.from == 'user'),
+                                          ],
+                                        );
+                                      },
                                     ),
-                                  ),
-                                ],
-                              ),
                             ),
                           ),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Expanded(
-                              child: Container(
-                                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(26), border: Border.all(color: AffColors.hairline), boxShadow: AffColors.cardShadow),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    IconButton(
-                                      tooltip: 'Attach a picture',
-                                      icon: const Icon(Icons.attach_file_rounded, color: AffColors.purpleEnd),
-                                      onPressed: _sending ? null : _showAttachSheet,
-                                    ),
-                                    Expanded(
-                                      child: TextField(
-                                        controller: _controller,
-                                        minLines: 1,
-                                        maxLines: 4,
-                                        textInputAction: TextInputAction.send,
-                                        onSubmitted: (_) => _send(sample: sample),
-                                        decoration: const InputDecoration(
-                                          filled: false,
-                                          hintText: 'Type your message...',
-                                          border: InputBorder.none,
-                                          enabledBorder: InputBorder.none,
-                                          focusedBorder: InputBorder.none,
-                                          contentPadding: EdgeInsets.symmetric(vertical: 13),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                gradient: AffColors.gradient,
-                                shape: BoxShape.circle,
-                                boxShadow: [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.4), blurRadius: 14, offset: const Offset(0, 6))],
-                              ),
-                              child: IconButton(
-                                padding: const EdgeInsets.all(14),
-                                icon: _sending
-                                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                    : const Icon(Icons.send_rounded, color: Colors.white, size: 21),
-                                onPressed: _sending ? null : () => _send(sample: sample),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-            ],
+                const SizedBox(height: 12),
+                if (closed)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
+                    decoration: BoxDecoration(color: const Color(0xFFFEF3C7), borderRadius: BorderRadius.circular(16)),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.lock_outline, size: 16, color: AffColors.warning),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text('This conversation was closed.', style: AffText.jakarta(12.5, FontWeight.w600, color: AffColors.warning))),
+                        TextButton(onPressed: () => ref.read(chatProvider.notifier).reopen(), child: const Text('Start new chat')),
+                      ],
+                    ),
+                  )
+                else
+                  _Composer(
+                    controller: _controller,
+                    sending: _sending,
+                    attachmentBytes: _attachmentBytes,
+                    onAttach: _showAttachSheet,
+                    onRemoveAttachment: () => setState(() {
+                      _attachment = null;
+                      _attachmentBytes = null;
+                    }),
+                    onSend: () => _send(sample: sample),
+                  ),
+                // Space for the floating tab bar.
+                const SizedBox(height: 100),
+              ],
+            ),
           );
         },
-      ),
       ),
     );
   }
 }
 
-class _SupportBanner extends StatelessWidget {
-  const _SupportBanner();
+/// Support card header: gradient bar with the agent avatar and presence dot.
+class _SupportHeader extends StatelessWidget {
+  const _SupportHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight, colors: [AffColors.violetDeep, AffColors.purple]),
+      ),
+      child: Row(
+        children: [
+          Stack(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.22)),
+                child: Text('S', style: AffText.number(15, FontWeight.w800, color: Colors.white)),
+              ),
+              Positioned(
+                right: 1,
+                bottom: 1,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(color: const Color(0xFF4ADE80), shape: BoxShape.circle, border: Border.all(color: AffColors.purpleEnd, width: 2)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('LootHat Support', style: AffText.jakarta(14, FontWeight.w800, color: Colors.white)),
+                Text('Ask about offers, payouts or your account', maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(10.5, FontWeight.w500, color: Colors.white.withValues(alpha: 0.8))),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DatePill extends StatelessWidget {
+  const _DatePill(this.text);
+  final String text;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-      child: AffCard(
-        accent: AffColors.cyan,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            Stack(
-              children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(gradient: AffColors.gradient, shape: BoxShape.circle),
-                  child: const Icon(Icons.support_agent_rounded, color: Colors.white, size: 21),
-                ),
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(color: AffColors.success, shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 10),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(color: AffColors.chipLilac, borderRadius: BorderRadius.circular(99)),
+        child: Text(text.toUpperCase(), style: AffText.jakarta(10, FontWeight.w700, color: AffColors.violetDeep)),
+      ),
+    );
+  }
+}
+
+/// Message composer: white pill with attach, text field and the gradient
+/// send button — plus a removable preview of a picked picture.
+class _Composer extends StatelessWidget {
+  const _Composer({
+    required this.controller,
+    required this.sending,
+    required this.attachmentBytes,
+    required this.onAttach,
+    required this.onRemoveAttachment,
+    required this.onSend,
+  });
+
+  final TextEditingController controller;
+  final bool sending;
+  final Uint8List? attachmentBytes;
+  final VoidCallback onAttach;
+  final VoidCallback onRemoveAttachment;
+  final VoidCallback onSend;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (attachmentBytes != null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 10, left: 4),
+              child: Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  Text('LootHat Support', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: AffColors.ink)),
-                  Text('Ask about offers, payouts or your account', style: TextStyle(fontSize: 11, color: AffColors.inkMuted, fontWeight: FontWeight.w500)),
+                  ClipRRect(borderRadius: BorderRadius.circular(16), child: Image.memory(attachmentBytes!, width: 84, height: 84, fit: BoxFit.cover)),
+                  Positioned(
+                    top: -8,
+                    right: -8,
+                    child: GestureDetector(
+                      onTap: onRemoveAttachment,
+                      child: Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(color: AffColors.ink, shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),
+                        child: const Icon(Icons.close_rounded, size: 14, color: Colors.white),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-          ],
+          ),
+        Container(
+          padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(99),
+            boxShadow: [BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.10), blurRadius: 16, offset: const Offset(0, 4))],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: sending ? null : onAttach,
+                behavior: HitTestBehavior.opaque,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  child: Icon(Icons.attach_file_rounded, color: AffColors.purpleEnd, size: 21),
+                ),
+              ),
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  minLines: 1,
+                  maxLines: 4,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (_) => onSend(),
+                  style: AffText.jakarta(13, FontWeight.w500),
+                  decoration: InputDecoration(
+                    filled: false,
+                    isDense: true,
+                    hintText: 'Type your message…',
+                    hintStyle: AffText.jakarta(13, FontWeight.w500, color: AffColors.inkHint),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: sending ? null : onSend,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(begin: Alignment(-1, -0.6), end: Alignment(1, 0.6), colors: [AffColors.purpleEnd, AffColors.magenta]),
+                    boxShadow: [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.35), blurRadius: 14, offset: const Offset(0, 6))],
+                  ),
+                  child: sending
+                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Icon(Icons.send_rounded, color: Colors.white, size: 17),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -350,18 +423,19 @@ class _Bubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final bubble = Container(
       constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.72),
-      padding: const EdgeInsets.fromLTRB(15, 11, 15, 9),
+      padding: const EdgeInsets.fromLTRB(14, 11, 14, 9),
       decoration: BoxDecoration(
         gradient: mine ? AffColors.gradient : null,
         color: mine ? null : Colors.white,
         borderRadius: BorderRadius.only(
-          topLeft: const Radius.circular(20),
-          topRight: const Radius.circular(20),
-          bottomLeft: Radius.circular(mine ? 20 : 5),
-          bottomRight: Radius.circular(mine ? 5 : 20),
+          topLeft: const Radius.circular(18),
+          topRight: const Radius.circular(18),
+          bottomLeft: Radius.circular(mine ? 18 : 6),
+          bottomRight: Radius.circular(mine ? 6 : 18),
         ),
-        border: mine ? null : Border.all(color: AffColors.hairline),
-        boxShadow: mine ? [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.25), blurRadius: 14, offset: const Offset(0, 6))] : AffColors.cardShadow,
+        boxShadow: mine
+            ? [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.28), blurRadius: 16, offset: const Offset(0, 6))]
+            : [BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.07), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,18 +475,18 @@ class _Bubble extends StatelessWidget {
               ),
             ),
           if (message.text.isNotEmpty)
-            Text(message.text, style: TextStyle(color: mine ? Colors.white : AffColors.ink, fontSize: 13.5, height: 1.35)),
-          const SizedBox(height: 3),
+            Text(message.text, style: AffText.jakarta(13, FontWeight.w500, color: mine ? Colors.white : AffColors.ink, height: 1.45)),
+          const SizedBox(height: 4),
           Text(
-            message.time ?? '',
-            style: TextStyle(fontSize: 10, color: mine ? Colors.white.withValues(alpha: 0.75) : AffColors.inkFaint),
+            mine ? '${message.time ?? ''} · Sent' : (message.time ?? ''),
+            style: AffText.number(9.5, FontWeight.w600, color: mine ? Colors.white.withValues(alpha: 0.75) : AffColors.inkHint),
           ),
         ],
       ),
     );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         mainAxisAlignment: mine ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [bubble],

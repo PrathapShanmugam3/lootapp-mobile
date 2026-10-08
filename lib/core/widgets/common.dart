@@ -1,13 +1,14 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../theme/app_theme.dart';
 
-/// Headline surface — wallet balance, greetings, key totals. A deep
-/// midnight-violet gradient with soft radial glows and a hairline highlight
-/// border, so it reads as the premium focal point of the page. Keep this
-/// (not a plain [Card]) as the go-to headline surface across all portals.
+/// Headline surface — wallet balance, greetings, key totals. The design's
+/// violet → magenta gradient with two slowly floating glows. Keep this (not a
+/// plain [Card]) as the go-to headline surface.
 class GradientHeroCard extends StatelessWidget {
   const GradientHeroCard({
     super.key,
@@ -27,11 +28,10 @@ class GradientHeroCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: gradient ?? AppColors.midnightGradient,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
-        boxShadow: AppColors.glow(AppColors.primaryDeep, 0.9),
+        boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.32), blurRadius: 28, offset: const Offset(0, 12))],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(23),
+        borderRadius: BorderRadius.circular(24),
         child: Stack(
           children: [
             const Positioned.fill(child: DecorativeOrbs()),
@@ -49,10 +49,9 @@ class GradientHeroCard extends StatelessWidget {
   }
 }
 
-/// Soft radial glows layered on a dark gradient surface — gives hero
-/// blocks depth without any image assets. They drift slowly so the surface
-/// feels alive (static when the OS asks to reduce motion). Fills its parent
-/// [Stack].
+/// The design's two soft glows — white (top-right, 10 s drift) and yellow
+/// (bottom-left, 12 s drift) — floating on a gradient surface. Static when
+/// the OS asks to reduce motion. Fills its parent [Stack].
 class DecorativeOrbs extends StatefulWidget {
   const DecorativeOrbs({super.key, this.scale = 1});
 
@@ -63,7 +62,7 @@ class DecorativeOrbs extends StatefulWidget {
 }
 
 class _DecorativeOrbsState extends State<DecorativeOrbs> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(seconds: 9));
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(seconds: 60));
 
   @override
   void didChangeDependencies() {
@@ -71,7 +70,7 @@ class _DecorativeOrbsState extends State<DecorativeOrbs> with SingleTickerProvid
     if (MediaQuery.maybeOf(context)?.disableAnimations ?? false) {
       _c.stop();
     } else if (!_c.isAnimating) {
-      _c.repeat(reverse: true);
+      _c.repeat();
     }
   }
 
@@ -81,32 +80,45 @@ class _DecorativeOrbsState extends State<DecorativeOrbs> with SingleTickerProvid
     super.dispose();
   }
 
+  // 0 → 1 → 0 over one drift cycle, eased like the design's ease-in-out.
+  double _phase(double t, int cycles) => Curves.easeInOut.transform(0.5 - 0.5 * math.cos(2 * math.pi * cycles * t));
+
   @override
   Widget build(BuildContext context) {
-    final scale = widget.scale;
-    Widget orb(double size, Color color, double alpha) => Container(
-          width: size * scale,
-          height: size * scale,
+    final k = widget.scale;
+    Widget glow(double size, Color color) => Container(
+          width: size * k,
+          height: size * k,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: RadialGradient(
-              colors: [color.withValues(alpha: alpha), color.withValues(alpha: 0)],
-            ),
+            gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)], stops: const [0, 0.7]),
           ),
         );
     return IgnorePointer(
       child: AnimatedBuilder(
-        animation: CurvedAnimation(parent: _c, curve: Curves.easeInOut),
+        animation: _c,
         builder: (context, _) {
-          final t = Curves.easeInOut.transform(_c.value) - 0.5; // -0.5..0.5
+          final p1 = _phase(_c.value, 6); // 10 s
+          final p2 = _phase(_c.value, 5); // 12 s
           return Stack(
             clipBehavior: Clip.hardEdge,
             children: [
-              Positioned(right: (-70 + t * 40) * scale, top: (-80 + t * 24) * scale, child: orb(240, const Color(0xFFC4A8FF), 0.38)),
-              Positioned(left: (-60 - t * 36) * scale, bottom: (-90 + t * 30) * scale, child: orb(220, AppColors.gold, 0.16)),
-              Positioned(right: (30 - t * 50) * scale, bottom: (-60 - t * 20) * scale, child: orb(150, const Color(0xFF6C4DF6), 0.45)),
-              Positioned(left: (90 + t * 60) * scale, top: (-70 - t * 20) * scale, child: orb(170, AppColors.pinkAccent, 0.30)),
-              Positioned(right: (110 + t * 40) * scale, bottom: (-80 + t * 24) * scale, child: orb(150, AppColors.cyan, 0.22)),
+              Positioned(
+                top: -80 * k,
+                right: -60 * k,
+                child: Transform.translate(
+                  offset: Offset(26 * p1 * k, -22 * p1 * k),
+                  child: Transform.scale(scale: 1 + 0.14 * p1, child: glow(220, Colors.white.withValues(alpha: 0.28))),
+                ),
+              ),
+              Positioned(
+                bottom: -70 * k,
+                left: -40 * k,
+                child: Transform.translate(
+                  offset: Offset(-30 * p2 * k, 18 * p2 * k),
+                  child: Transform.scale(scale: 1 + 0.09 * p2, child: glow(180, const Color(0xFFFACC15).withValues(alpha: 0.25))),
+                ),
+              ),
             ],
           );
         },
@@ -983,17 +995,20 @@ Color statusColor(String? status) {
   }
 }
 
-/// A soft highlight that sweeps across its parent every few seconds —
-/// the "shine" on primary buttons. Static under reduce-motion.
+/// The design's shimmer: a soft diagonal highlight that glides across its
+/// parent forever (3.2 s per pass). Static under reduce-motion.
 class ShineSweep extends StatefulWidget {
-  const ShineSweep({super.key});
+  const ShineSweep({super.key, this.duration = const Duration(milliseconds: 3200), this.strength = 0.30});
+
+  final Duration duration;
+  final double strength;
 
   @override
   State<ShineSweep> createState() => _ShineSweepState();
 }
 
 class _ShineSweepState extends State<ShineSweep> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 3600));
+  late final AnimationController _c = AnimationController(vsync: this, duration: widget.duration);
 
   @override
   void didChangeDependencies() {
@@ -1017,26 +1032,23 @@ class _ShineSweepState extends State<ShineSweep> with SingleTickerProviderStateM
       child: LayoutBuilder(
         builder: (context, constraints) {
           final w = constraints.maxWidth;
+          final band = w * 0.45;
           return AnimatedBuilder(
             animation: _c,
             builder: (context, _) {
-              final p = (_c.value / 0.4).clamp(0.0, 1.0); // sweep in the first 40%, then rest
-              final x = -90 + (w + 180) * Curves.easeInOut.transform(p);
+              final x = -band + (w + band) * _c.value;
               return Stack(
                 clipBehavior: Clip.hardEdge,
                 children: [
                   Positioned(
                     left: x,
-                    top: -10,
-                    bottom: -10,
-                    width: 70,
-                    child: Transform(
-                      transform: Matrix4.skewX(-0.45),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.white.withValues(alpha: 0), Colors.white.withValues(alpha: 0.30), Colors.white.withValues(alpha: 0)],
-                          ),
+                    top: 0,
+                    bottom: 0,
+                    width: band,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.white.withValues(alpha: 0), Colors.white.withValues(alpha: widget.strength), Colors.white.withValues(alpha: 0)],
                         ),
                       ),
                     ),
@@ -1073,7 +1085,7 @@ class GradientButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null && !loading;
-    final radius = BorderRadius.circular(16);
+    final radius = BorderRadius.circular(99);
     return PressableScale(
       onTap: enabled ? onPressed : null,
       scale: 0.985,
@@ -1083,14 +1095,15 @@ class GradientButton extends StatelessWidget {
         child: Container(
           height: height,
           decoration: BoxDecoration(
-            gradient: AppColors.accentGradient,
+            gradient: AppColors.ctaGradient,
             borderRadius: radius,
-            border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-            boxShadow: enabled ? AppColors.glow(AppColors.primary, 0.9) : null,
+            boxShadow: enabled
+                ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.38), blurRadius: 26, offset: const Offset(0, 12))]
+                : null,
           ),
           child: Stack(
             children: [
-              if (enabled) Positioned.fill(child: ClipRRect(borderRadius: BorderRadius.circular(15), child: const ShineSweep())),
+              if (enabled) Positioned.fill(child: ClipRRect(borderRadius: BorderRadius.circular(99), child: const ShineSweep())),
               Material(
             color: Colors.transparent,
             child: InkWell(
@@ -1128,9 +1141,8 @@ class GradientButton extends StatelessWidget {
                                     maxLines: 1,
                                     style: const TextStyle(
                                       color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 15.5,
-                                      letterSpacing: 0.1,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 14.5,
                                     ),
                                   ),
                                 ),

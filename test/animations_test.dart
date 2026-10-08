@@ -25,12 +25,17 @@ void main() {
     expect(tester.widget<Text>(find.byType(Text)).data, '1000');
   });
 
-  testWidgets('Hero orbs drift (position changes between frames)', (tester) async {
+  testWidgets('Hero glows drift (transform changes between frames)', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: SizedBox(width: 300, height: 300, child: Stack(children: [Positioned.fill(child: DecorativeOrbs())]))));
-    double firstRight() => tester.widgetList<Positioned>(find.byType(Positioned)).where((p) => p.right != null && p.right != 0).first.right!;
-    final a = firstRight();
+    double dx() {
+      final t = tester.widgetList<Transform>(find.descendant(of: find.byType(DecorativeOrbs), matching: find.byType(Transform))).first;
+      return t.transform.getTranslation().x;
+    }
+
+    await tester.pump(const Duration(milliseconds: 100));
+    final a = dx();
     await tester.pump(const Duration(seconds: 3));
-    final b = firstRight();
+    final b = dx();
     expect(a, isNot(b));
   });
 }

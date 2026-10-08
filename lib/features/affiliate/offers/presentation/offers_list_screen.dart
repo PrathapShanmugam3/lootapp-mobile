@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/widgets/common.dart';
 import '../../notifications/presentation/notifications_screen.dart';
-import '../../presentation/widgets/aff_user_avatar.dart';
 import '../../presentation/sample_data.dart';
+import '../../presentation/widgets/aff_user_avatar.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'offer_detail_screen.dart';
 import 'offers_providers.dart';
@@ -28,6 +28,8 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
     super.dispose();
   }
 
+  num _numOf(dynamic v) => v is num ? v : num.tryParse(v?.toString() ?? '') ?? 0;
+
   @override
   Widget build(BuildContext context) {
     final rawAsync = ref.watch(offersListProvider);
@@ -41,73 +43,95 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
         subtitle: 'LootHat Affiliate',
         actions: [
           AffHeaderIcon(
-            icon: Icons.notifications_outlined,
+            icon: Icons.notifications_none_rounded,
+            showDot: true,
             onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NotificationsScreen())),
           ),
           const AffUserAvatar(),
         ],
       ),
-      body: AffAmbient(
-        child: RefreshIndicator(
+      body: RefreshIndicator(
         onRefresh: () async => ref.refresh(offersListProvider.future),
         child: offersAsync.when(
           loading: () => const LoadingState(),
           error: (e, _) => ErrorState(message: 'Failed to load offers.\n$e', onRetry: () => ref.invalidate(offersListProvider)),
           data: (offers) {
             final categories = <String>{for (final o in offers) (o['category'] ?? '').toString()}..removeWhere((c) => c.isEmpty);
-            var filtered = offers.where((o) {
+            final filtered = offers.where((o) {
               final name = (o['offer_name'] ?? o['offerName'] ?? '').toString().toLowerCase();
               final matchesQuery = _query.isEmpty || name.contains(_query.toLowerCase());
               final matchesCat = _category == null || (o['category'] ?? '').toString() == _category;
               return matchesQuery && matchesCat;
             }).toList();
-
-            final poolTotal = offers.fold<num>(0, (sum, o) => sum + (_numOf(o['payout'] ?? o['maxPayout'] ?? o['payoutAmount'])));
+            final poolTotal = offers.fold<num>(0, (sum, o) => sum + _numOf(o['payout'] ?? o['maxPayout'] ?? o['payoutAmount']));
 
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 18, 16, 110),
               children: [
                 if (sample) SampleDataBanner(onRetry: () => ref.invalidate(offersListProvider)),
                 FadeSlideIn(
-                  child: AffCard(
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 6),
-                    child: IntrinsicHeight(
-                      child: Row(
-                        children: [
-                          Expanded(child: _StatChip(label: 'OFFERS', value: '${offers.length}', icon: Icons.local_offer_rounded)),
-                          const VerticalDivider(width: 1, color: AffColors.hairline),
-                          Expanded(child: _StatChip(label: 'PAYOUT POOL', value: '₹${poolTotal.toStringAsFixed(0)}', icon: Icons.payments_rounded, gold: true)),
-                          const VerticalDivider(width: 1, color: AffColors.hairline),
-                          Expanded(child: _StatChip(label: 'CATEGORIES', value: '${categories.length}', icon: Icons.category_rounded)),
-                        ],
-                      ),
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Campaigns Directory', style: AffText.jakarta(21, FontWeight.w800, letterSpacing: -0.4, height: 1.2)),
+                      const SizedBox(height: 4),
+                      Text('Promote verified advertiser offers and earn instant commissions',
+                          style: AffText.jakarta(12.5, FontWeight.w500, color: AffColors.inkMuted, height: 1.45)),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 FadeSlideIn(
-                  index: 3,
+                  index: 1,
+                  child: Row(
+                    children: [
+                      Expanded(child: _StatBox(label: 'OFFERS', value: '${offers.length}')),
+                      const SizedBox(width: 10),
+                      Expanded(child: _StatBox(label: 'POOL', value: '₹${poolTotal.toStringAsFixed(0)}')),
+                      const SizedBox(width: 10),
+                      Expanded(child: _StatBox(label: 'CATS', value: '${categories.length}')),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                FadeSlideIn(
+                  index: 2,
                   child: Row(
                     children: [
                       Expanded(
                         child: Container(
-                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: AffColors.hairline), boxShadow: AffColors.cardShadow),
-                          child: TextField(
-                            controller: _searchCtrl,
-                            onChanged: (v) => setState(() => _query = v),
-                            decoration: const InputDecoration(
-                              filled: false,
-                              hintText: 'Search campaigns',
-                              prefixIcon: Icon(Icons.search_rounded, size: 21, color: AffColors.inkFaint),
-                              border: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(vertical: 14),
-                            ),
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(99),
+                            boxShadow: [BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.07), blurRadius: 12, offset: const Offset(0, 3))],
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.search_rounded, size: 18, color: AffColors.inkHint),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TextField(
+                                  controller: _searchCtrl,
+                                  onChanged: (v) => setState(() => _query = v),
+                                  style: AffText.jakarta(12.5, FontWeight.w500),
+                                  decoration: InputDecoration(
+                                    filled: false,
+                                    isDense: true,
+                                    hintText: 'Search campaigns',
+                                    hintStyle: AffText.jakarta(12.5, FontWeight.w500, color: AffColors.inkHint),
+                                    border: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                    contentPadding: const EdgeInsets.symmetric(vertical: 13),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       _FilterPill(label: 'All', selected: _category == null, onTap: () => setState(() => _category = null)),
                       if (categories.contains('Demat')) ...[
                         const SizedBox(width: 8),
@@ -116,15 +140,15 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 if (filtered.isEmpty)
                   const EmptyState(message: 'No live offers right now', icon: Icons.local_offer_outlined)
                 else
                   for (var i = 0; i < filtered.length; i++)
                     FadeSlideIn(
-                      index: 4 + i,
+                      index: 3 + i,
                       child: Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.only(bottom: 14),
                         child: _OfferCard(offer: filtered[i], sample: sample),
                       ),
                     ),
@@ -133,35 +157,26 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
           },
         ),
       ),
-      ),
     );
   }
-
-  num _numOf(dynamic v) => v is num ? v : num.tryParse(v?.toString() ?? '') ?? 0;
 }
 
-class _StatChip extends StatelessWidget {
-  const _StatChip({required this.label, required this.value, required this.icon, this.gold = false});
+class _StatBox extends StatelessWidget {
+  const _StatBox({required this.label, required this.value});
   final String label;
   final String value;
-  final IconData icon;
-  final bool gold;
 
   @override
   Widget build(BuildContext context) {
-    final color = gold ? const Color(0xFFE08A1E) : AffColors.purpleEnd;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+    return AffCard(
+      radius: 18,
+      padding: const EdgeInsets.all(12),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: color),
-          const SizedBox(height: 6),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(value, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w900, color: AffColors.ink, letterSpacing: -0.5)),
-          ),
-          const SizedBox(height: 2),
-          Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: AffColors.inkFaint, letterSpacing: 0.9)),
+          Text(label, style: AffText.jakarta(9, FontWeight.w700, color: AffColors.inkFaint, letterSpacing: 0.72)),
+          const SizedBox(height: 4),
+          FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(value, style: AffText.number(22, FontWeight.w700))),
         ],
       ),
     );
@@ -176,24 +191,17 @@ class _FilterPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: selected ? null : Colors.white,
-      shape: const StadiumBorder(),
-      child: InkWell(
-        customBorder: const StadiumBorder(),
-        onTap: onTap,
-        child: Container(
-          height: 48,
-          padding: const EdgeInsets.symmetric(horizontal: 18),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            gradient: selected ? AffColors.gradient : null,
-            borderRadius: BorderRadius.circular(999),
-            border: selected ? null : Border.all(color: AffColors.hairline),
-            boxShadow: selected ? [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.35), blurRadius: 14, offset: const Offset(0, 6))] : null,
-          ),
-          child: Text(label, style: TextStyle(color: selected ? Colors.white : AffColors.inkMuted, fontWeight: FontWeight.w700, fontSize: 13)),
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? AffColors.purpleEnd : Colors.white,
+          borderRadius: BorderRadius.circular(99),
+          boxShadow: selected ? null : [BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.07), blurRadius: 12, offset: const Offset(0, 3))],
         ),
+        child: Text(label, style: AffText.jakarta(12, selected ? FontWeight.w700 : FontWeight.w600, color: selected ? Colors.white : AffColors.inkMuted)),
       ),
     );
   }
@@ -212,11 +220,12 @@ class _OfferCard extends StatelessWidget {
     final category = (offer['category'] ?? '').toString();
     final logo = offer['logo']?.toString();
     final payout = offer['payout'] ?? offer['maxPayout'] ?? offer['payoutAmount'];
-    final initials = name.isNotEmpty ? name.trim().substring(0, name.trim().length >= 2 ? 2 : 1).toUpperCase() : '?';
+    final trimmed = name.trim();
+    final abbr = trimmed.isEmpty ? '?' : trimmed.substring(0, trimmed.length >= 2 ? 2 : 1).toUpperCase();
 
-    final accent = AffColors.colorFor(name);
     return AffCard(
-      accent: accent,
+      radius: 22,
+      padding: const EdgeInsets.all(15),
       onTap: () {
         if (sample) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sample offer — reconnect to open real campaigns')));
@@ -224,104 +233,75 @@ class _OfferCard extends StatelessWidget {
         }
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => OfferDetailScreen(offId: offId)));
       },
-      padding: const EdgeInsets.all(16),
       child: Column(
         children: [
           Row(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(gradient: AffColors.gradientFor(name)),
-                  alignment: Alignment.center,
-                  child: logo != null && logo.isNotEmpty
-                      ? Image.network(
-                          logo.startsWith('http') ? logo : '${ApiConfig.baseUrl}$logo',
-                          fit: BoxFit.cover,
-                          width: 52,
-                          height: 52,
-                          errorBuilder: (_, __, ___) => Text(initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                        )
-                      : Text(initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+              Container(
+                width: 42,
+                height: 42,
+                clipBehavior: Clip.antiAlias,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AffColors.chipLilac, Color(0xFFFAE8FF)]),
+                  borderRadius: BorderRadius.circular(14),
                 ),
+                child: logo != null && logo.isNotEmpty
+                    ? Image.network(
+                        logo.startsWith('http') ? logo : '${ApiConfig.baseUrl}$logo',
+                        fit: BoxFit.cover,
+                        width: 42,
+                        height: 42,
+                        errorBuilder: (_, __, ___) => Text(abbr, style: AffText.number(13, FontWeight.w700, color: AffColors.purpleEnd)),
+                      )
+                    : Text(abbr, style: AffText.number(13, FontWeight.w700, color: AffColors.purpleEnd)),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 11),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15.5, color: AffColors.ink, letterSpacing: -0.2), maxLines: 1, overflow: TextOverflow.ellipsis),
-                    if (title.isNotEmpty || category.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 3),
-                        child: Text(
-                          [if (category.isNotEmpty) category, if (title.isNotEmpty) title].join(' · '),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: AffColors.inkMuted, fontSize: 12),
-                        ),
+                    Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(14, FontWeight.w700)),
+                    if (category.isNotEmpty || title.isNotEmpty)
+                      Text(
+                        [if (category.isNotEmpty) category, if (title.isNotEmpty) title].join(' · '),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AffText.jakarta(11, FontWeight.w500, color: AffColors.inkFaint),
                       ),
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                decoration: BoxDecoration(color: const Color(0xFFE3F6EA), borderRadius: BorderRadius.circular(999)),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(width: 6, height: 6, decoration: const BoxDecoration(color: AffColors.success, shape: BoxShape.circle)),
-                    const SizedBox(width: 5),
-                    const Text('LIVE', style: TextStyle(color: AffColors.success, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.4)),
-                  ],
-                ),
+                decoration: BoxDecoration(color: AffColors.liveBg, borderRadius: BorderRadius.circular(99)),
+                child: Text('LIVE', style: AffText.jakarta(10, FontWeight.w700, color: AffColors.live)),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 11),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               if (payout != null)
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(color: accent.withValues(alpha: 0.10), borderRadius: BorderRadius.circular(16)),
-                    child: Row(
-                      children: [
-                        Icon(Icons.payments_rounded, size: 18, color: accent),
-                        const SizedBox(width: 8),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('PAYOUT', style: TextStyle(color: AffColors.inkFaint, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.9)),
-                            Text('₹$payout', style: const TextStyle(color: AffColors.ink, fontWeight: FontWeight.w900, fontSize: 17, letterSpacing: -0.4)),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('PAYOUT', style: AffText.jakarta(9.5, FontWeight.w700, color: AffColors.inkFaint, letterSpacing: 0.76)),
+                    Text('₹$payout', style: AffText.number(19, FontWeight.w700)),
+                  ],
                 )
               else
-                const Spacer(),
-              const SizedBox(width: 10),
+                const SizedBox.shrink(),
               Container(
-                height: 48,
-                padding: const EdgeInsets.symmetric(horizontal: 18),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
                 decoration: BoxDecoration(
-                  gradient: AffColors.gradientFor(name),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: accent.withValues(alpha: 0.45), blurRadius: 16, offset: const Offset(0, 6))],
+                  gradient: const LinearGradient(begin: Alignment(-1, -0.6), end: Alignment(1, 0.6), colors: [AffColors.purpleEnd, AffColors.magenta]),
+                  borderRadius: BorderRadius.circular(99),
+                  boxShadow: [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.35), blurRadius: 16, offset: const Offset(0, 6))],
                 ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Promote', style: TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w800)),
-                    SizedBox(width: 4),
-                    Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 16),
-                  ],
-                ),
+                child: Text('View Offer ↗', style: AffText.jakarta(12.5, FontWeight.w700, color: Colors.white)),
               ),
             ],
           ),
