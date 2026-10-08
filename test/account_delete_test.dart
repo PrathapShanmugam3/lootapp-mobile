@@ -31,4 +31,16 @@ void main() {
     await tester.pump();
     expect(find.text('Reason is required'), findsOneWidget);
   });
+
+  testWidgets('asks for confirmation before deleting; Keep account cancels', (tester) async {
+    await pump(tester);
+    await tester.enterText(find.widgetWithText(TextField, 'Tell us why you want to delete your account (required)'), 'Not using it');
+    await tester.ensureVisible(find.text('Submit deletion request'));
+    await tester.tap(find.text('Submit deletion request'));
+    await tester.pump(); await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Delete your account?'), findsOneWidget);
+    await tester.tap(find.text('Keep account'));
+    await tester.pump(); await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Delete your account?'), findsNothing);
+  });
 }

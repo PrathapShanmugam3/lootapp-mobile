@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/utils/input_formatters.dart';
 import '../../../../core/widgets/common.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'wallet_providers.dart';
@@ -48,6 +49,7 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
               }
               return Form(
                 key: _formKey,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,7 +76,8 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _amountCtrl,
-                        keyboardType: TextInputType.number,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [InputRules.amount(max: 50000)],
                         decoration: const InputDecoration(labelText: 'Amount (₹10 - ₹50,000)'),
                         validator: (v) {
                           final n = double.tryParse(v ?? '');
@@ -86,6 +89,7 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
                       if (_type == 'upi')
                         TextFormField(
                           controller: _upiCtrl,
+                          inputFormatters: InputRules.noSpaces(50),
                           decoration: const InputDecoration(labelText: 'UPI ID'),
                           validator: (v) => (v == null || !RegExp(r'^[a-zA-Z0-9.\-_]+@[a-zA-Z0-9]+$').hasMatch(v)) ? 'Enter a valid UPI ID' : null,
                         )
@@ -93,6 +97,7 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
                         TextFormField(
                           controller: _accountCtrl,
                           keyboardType: TextInputType.number,
+                          inputFormatters: InputRules.digits(18),
                           decoration: const InputDecoration(labelText: 'Account number'),
                           validator: (v) => (v == null || !RegExp(r'^[0-9]{9,18}$').hasMatch(v)) ? 'Enter a valid account number' : null,
                         ),
@@ -100,6 +105,7 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
                         TextFormField(
                           controller: _ifscCtrl,
                           textCapitalization: TextCapitalization.characters,
+                          inputFormatters: InputRules.alphanumericUpper(11),
                           decoration: const InputDecoration(labelText: 'IFSC code'),
                           validator: (v) => (v == null || !RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$').hasMatch(v.toUpperCase())) ? 'Enter a valid IFSC code' : null,
                         ),

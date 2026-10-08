@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/widgets/common.dart';
+import '../../../../core/widgets/confirm_dialog.dart';
 import '../../../auth/presentation/auth_providers.dart';
 import '../../../legal/presentation/account_delete_screen.dart';
 import '../../../legal/presentation/privacy_policy_screen.dart';
@@ -232,7 +233,11 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
               ),
               icon: const Icon(Icons.logout_rounded, size: 19),
               label: const Text('Log out'),
-              onPressed: () => ref.read(authControllerProvider.notifier).logout(),
+              onPressed: () async {
+                if (!await confirmLogout(context)) return;
+                if (!mounted) return;
+                ref.read(authControllerProvider.notifier).logout();
+              },
             ),
           ),
         ),

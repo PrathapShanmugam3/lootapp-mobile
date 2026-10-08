@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/utils/input_formatters.dart';
 import '../../../../core/widgets/common.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'profile_providers.dart';
@@ -104,12 +105,14 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
               padding: const EdgeInsets.all(18),
               child: Form(
                 key: _formKey,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _label('UPI ID'),
                     TextFormField(
                       controller: _upiCtrl,
+                      inputFormatters: InputRules.noSpaces(50),
                       decoration: const InputDecoration(hintText: 'name@bank', prefixIcon: Icon(Icons.qr_code_rounded)),
                       validator: (v) => (v == null || v.trim().isEmpty || RegExp(r'^[a-zA-Z0-9.\-_]+@[a-zA-Z0-9]+$').hasMatch(v.trim())) ? null : 'Enter a valid UPI ID',
                     ),
@@ -118,6 +121,7 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
                     TextFormField(
                       controller: _accNoCtrl,
                       keyboardType: TextInputType.number,
+                      inputFormatters: InputRules.digits(18),
                       decoration: const InputDecoration(hintText: 'Account number', prefixIcon: Icon(Icons.account_balance_rounded)),
                       validator: (v) => (v == null || v.trim().isEmpty || RegExp(r'^[0-9]{9,18}$').hasMatch(v.trim())) ? null : 'Enter a valid account number',
                     ),
@@ -126,6 +130,7 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
                     TextFormField(
                       controller: _ifscCtrl,
                       textCapitalization: TextCapitalization.characters,
+                      inputFormatters: InputRules.alphanumericUpper(11),
                       decoration: const InputDecoration(hintText: 'e.g. HDFC0001234', prefixIcon: Icon(Icons.pin_rounded)),
                       validator: (v) => (v == null || v.trim().isEmpty || RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$').hasMatch(v.trim().toUpperCase())) ? null : 'Enter a valid IFSC code',
                     ),

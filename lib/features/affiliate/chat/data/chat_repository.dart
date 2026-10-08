@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/widgets/chat_message.dart';
@@ -22,8 +23,14 @@ class ChatRepository {
     };
   }
 
-  Future<void> sendMessage(String text) async {
-    final formData = FormData.fromMap({'text': text});
+  /// Multipart field name the chat endpoint reads an attached picture from.
+  static const imageField = 'image';
+
+  Future<void> sendMessage(String text, {XFile? image}) async {
+    final formData = FormData.fromMap({
+      'text': text,
+      if (image != null) imageField: MultipartFile.fromBytes(await image.readAsBytes(), filename: image.name),
+    });
     final res = await _client.dio.post('/api/chat', data: formData);
     if (!res.isSuccess) throw ApiException(res.message, statusCode: res.statusCode);
   }
