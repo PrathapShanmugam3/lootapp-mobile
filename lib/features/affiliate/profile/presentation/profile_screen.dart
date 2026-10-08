@@ -11,6 +11,7 @@ import '../../custom_domains/presentation/custom_domains_screen.dart';
 import '../../notifications/presentation/notifications_screen.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import '../../reports/presentation/reports_screen.dart';
+import 'edit_account_screen.dart';
 import 'profile_providers.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -54,27 +55,6 @@ class _ProfileBody extends ConsumerStatefulWidget {
 }
 
 class _ProfileBodyState extends ConsumerState<_ProfileBody> {
-  late final TextEditingController _upiCtrl;
-  late final TextEditingController _accNoCtrl;
-  late final TextEditingController _ifscCtrl;
-  bool _savingPayout = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _upiCtrl = TextEditingController(text: widget.profile['upi']?.toString() ?? '');
-    _accNoCtrl = TextEditingController(text: widget.profile['accNo']?.toString() ?? '');
-    _ifscCtrl = TextEditingController(text: widget.profile['ifsc']?.toString() ?? '');
-  }
-
-  @override
-  void dispose() {
-    _upiCtrl.dispose();
-    _accNoCtrl.dispose();
-    _ifscCtrl.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final p = widget.profile;
@@ -146,7 +126,14 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
           ),
         ),
         const SizedBox(height: 22),
-        const FadeSlideIn(index: 1, child: AffSectionHeader(title: 'Account details')),
+        FadeSlideIn(
+          index: 1,
+          child: AffSectionHeader(
+            title: 'Account details',
+            action: 'Edit',
+            onActionTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditAccountScreen(profile: p))),
+          ),
+        ),
         FadeSlideIn(
           index: 2,
           child: AffCard(
@@ -170,9 +157,12 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
-                _MenuRow(icon: Icons.account_balance_wallet_outlined, label: 'Payout details', subtitle: 'UPI or bank account', onTap: () => _showPayoutSheet(context)),
-                const _MenuDivider(),
-                _MenuRow(icon: Icons.lock_outline_rounded, label: 'Change password', subtitle: 'Keep your account secure', onTap: () => _showChangePasswordSheet(context)),
+                _MenuRow(
+                  icon: Icons.manage_accounts_rounded,
+                  label: 'Edit account',
+                  subtitle: 'Payout details and password',
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditAccountScreen(profile: p))),
+                ),
                 const _MenuDivider(),
                 _MenuRow(
                   icon: Icons.insights_rounded,
@@ -268,59 +258,6 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not open $url')));
       }
     }
-  }
-
-  void _showPayoutSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
-      builder: (_) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Payout details', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
-                const SizedBox(height: 16),
-                TextField(controller: _upiCtrl, decoration: const InputDecoration(labelText: 'UPI ID')),
-                const SizedBox(height: 12),
-                TextField(controller: _accNoCtrl, decoration: const InputDecoration(labelText: 'Account number')),
-                const SizedBox(height: 12),
-                TextField(controller: _ifscCtrl, textCapitalization: TextCapitalization.characters, decoration: const InputDecoration(labelText: 'IFSC code')),
-                const SizedBox(height: 16),
-                GradientButton(label: 'Save payout details', loading: _savingPayout, onPressed: _savePayout),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _savePayout() async {
-    setState(() => _savingPayout = true);
-    try {
-      final result = await ref.read(profileRepositoryProvider).updatePayoutDetails(upi: _upiCtrl.text, accNo: _accNoCtrl.text, ifsc: _ifscCtrl.text);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message']?.toString() ?? 'Payout details updated')));
-    } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
-    } finally {
-      if (mounted) setState(() => _savingPayout = false);
-    }
-  }
-
-  void _showChangePasswordSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (_) => const _ChangePasswordSheet(),
-    );
   }
 }
 
@@ -493,92 +430,4 @@ class _FooterDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const Text('·', style: TextStyle(color: AffColors.inkFaint, fontWeight: FontWeight.w800));
-}
-
-class _ChangePasswordSheet extends ConsumerStatefulWidget {
-  const _ChangePasswordSheet();
-
-  @override
-  ConsumerState<_ChangePasswordSheet> createState() => _ChangePasswordSheetState();
-}
-
-class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
-  final _formKey = GlobalKey<FormState>();
-  final _currentCtrl = TextEditingController();
-  final _newCtrl = TextEditingController();
-  bool _submitting = false;
-
-  @override
-  void dispose() {
-    _currentCtrl.dispose();
-    _newCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Change password', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _currentCtrl,
-                  obscureText: true,
-                  decoration: const InputDecoration(labelText: 'Current password'),
-                  validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _newCtrl,
-                  obscureText: true,
-                  decoration: const InputDecoration(labelText: 'New password'),
-                  validator: (v) => (v == null || v.length < 6) ? 'At least 6 characters' : null,
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: _submitting ? null : _submit,
-                    child: _submitting
-                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Text('Update password'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-    setState(() => _submitting = true);
-    try {
-      final result = await ref.read(profileRepositoryProvider).changePassword(currentPassword: _currentCtrl.text, newPassword: _newCtrl.text);
-      if (!mounted) return;
-      final success = result['success'] == true;
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message']?.toString() ?? (success ? 'Password changed' : 'Failed to change password')),
-          backgroundColor: success ? AffColors.success : AffColors.danger,
-        ),
-      );
-    } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
-    } finally {
-      if (mounted) setState(() => _submitting = false);
-    }
-  }
 }
