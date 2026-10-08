@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_client.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/common.dart';
+import '../../affiliate/presentation/widgets/affiliate_design.dart';
 import '../../../core/widgets/recaptcha_dialog.dart';
 import '../../auth/presentation/auth_providers.dart';
 import '../data/account_delete_repository.dart';
@@ -64,11 +63,11 @@ class _AccountDeleteScreenState extends ConsumerState<AccountDeleteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EEFB),
-      appBar: const PortalHeader(title: 'Delete Account'),
+      backgroundColor: AffColors.pageBg,
+      appBar: const AffHeader(title: 'Delete account', subtitle: 'Permanently remove your data'),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
           child: _submitted ? const _SubmittedState() : _buildForm(context),
         ),
       ),
@@ -76,7 +75,9 @@ class _AccountDeleteScreenState extends ConsumerState<AccountDeleteScreen> {
   }
 
   Widget _buildForm(BuildContext context) {
-    return Form(
+    return AffCard(
+      padding: const EdgeInsets.all(18),
+      child: Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -84,13 +85,13 @@ class _AccountDeleteScreenState extends ConsumerState<AccountDeleteScreen> {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.danger.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(14),
+              color: AffColors.danger.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.warning_amber_rounded, color: AppColors.danger, size: 20),
+                const Icon(Icons.warning_amber_rounded, color: AffColors.danger, size: 20),
                 const SizedBox(width: 10),
                 const Expanded(
                   child: Text(
@@ -131,7 +132,7 @@ class _AccountDeleteScreenState extends ConsumerState<AccountDeleteScreen> {
           ],
           const SizedBox(height: 8),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            style: FilledButton.styleFrom(backgroundColor: AffColors.danger, minimumSize: const Size(64, 52), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
             onPressed: _loading ? null : _submit,
             child: _loading
                 ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
@@ -141,10 +142,11 @@ class _AccountDeleteScreenState extends ConsumerState<AccountDeleteScreen> {
           Center(
             child: Text(
               'Need help? support@loothat.com',
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 12.5),
+              style: const TextStyle(color: AffColors.inkMuted, fontSize: 12.5),
             ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -163,8 +165,8 @@ class _SubmittedState extends StatelessWidget {
           Container(
             width: 64,
             height: 64,
-            decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.12), shape: BoxShape.circle),
-            child: const Icon(Icons.check_circle_outline, color: AppColors.success, size: 32),
+            decoration: BoxDecoration(color: AffColors.success.withValues(alpha: 0.12), shape: BoxShape.circle),
+            child: const Icon(Icons.check_circle_outline, color: AffColors.success, size: 32),
           ),
           const SizedBox(height: 20),
           const Text('Request submitted', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20)),
@@ -172,7 +174,7 @@ class _SubmittedState extends StatelessWidget {
           Text(
             "We've received your account deletion request and will process it shortly.",
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+            style: const TextStyle(color: AffColors.inkMuted, fontSize: 13),
           ),
         ],
       ),

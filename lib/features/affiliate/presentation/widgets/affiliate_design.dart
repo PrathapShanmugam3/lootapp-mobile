@@ -62,13 +62,13 @@ class AffHeader extends StatelessWidget implements PreferredSizeWidget {
   const AffHeader({
     super.key,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     this.actions,
     this.automaticallyImplyLeading = true,
   });
 
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final List<Widget>? actions;
   final bool automaticallyImplyLeading;
 
@@ -120,13 +120,15 @@ class AffHeader extends StatelessWidget implements PreferredSizeWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.5),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                subtitle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(color: Colors.white.withValues(alpha: 0.72), fontSize: 12.5, fontWeight: FontWeight.w500, letterSpacing: 0.1),
-                              ),
+                              if (subtitle != null) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  subtitle!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: Colors.white.withValues(alpha: 0.72), fontSize: 12.5, fontWeight: FontWeight.w500, letterSpacing: 0.1),
+                                ),
+                              ],
                             ],
                           ),
                         ),

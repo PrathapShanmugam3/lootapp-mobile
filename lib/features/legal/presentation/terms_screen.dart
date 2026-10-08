@@ -1,23 +1,28 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/widgets/common.dart';
+import '../../affiliate/presentation/widgets/affiliate_design.dart';
 
 class TermsScreen extends StatelessWidget {
   const TermsScreen({super.key});
 
-  static const _headingStyle = TextStyle(fontWeight: FontWeight.w700, fontSize: 16);
+  static const _headingStyle = TextStyle(fontWeight: FontWeight.w800, fontSize: 16.5, color: AffColors.ink, letterSpacing: -0.2);
   static const _bodyStyle = TextStyle(fontSize: 13.5, height: 1.5, color: Colors.black87);
 
   @override
   Widget build(BuildContext context) {
-    final bodyStyle = _bodyStyle.copyWith(color: Colors.grey.shade800);
+    final bodyStyle = _bodyStyle.copyWith(color: AffColors.inkMuted);
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EEFB),
-      appBar: const PortalHeader(title: 'Terms & Conditions'),
+      backgroundColor: AffColors.pageBg,
+      appBar: const AffHeader(title: 'Terms & Conditions', subtitle: 'Please read carefully'),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
           children: [
+            AffCard(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
             Text(
               'These Terms and Conditions govern your use of Loot Hat, accessible from loothat.com. By creating '
               'an account or using our website, you agree to be bound by these Terms in full. If you disagree '
@@ -196,6 +201,9 @@ class TermsScreen extends StatelessWidget {
             Text(
               'Address: Nadia, West Bengal, India, 741152',
               style: bodyStyle,
+            ),
+          ],
+        ),
             ),
           ],
         ),

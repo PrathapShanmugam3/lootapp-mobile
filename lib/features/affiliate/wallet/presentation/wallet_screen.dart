@@ -6,7 +6,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/widgets/common.dart';
 import '../../../auth/presentation/auth_providers.dart';
 import '../../notifications/presentation/notifications_screen.dart';
-import '../../presentation/profile_menu_sheet.dart';
+import '../../presentation/widgets/aff_user_avatar.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'wallet_providers.dart';
 import 'withdraw_sheet.dart';
@@ -31,7 +31,7 @@ class WalletScreen extends ConsumerWidget {
             icon: Icons.notifications_outlined,
             onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NotificationsScreen())),
           ),
-          AffHeaderAvatar(initials: 'TA', onTap: () => showProfileMenuSheet(context, ref, initials: 'TA', name: '')),
+          const AffUserAvatar(),
         ],
       ),
       body: RefreshIndicator(

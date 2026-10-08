@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/common.dart';
+import '../../presentation/widgets/affiliate_design.dart';
 import 'detailed_report_screen.dart';
 import 'reports_providers.dart';
 
@@ -59,21 +59,18 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     final reportsAsync = ref.watch(reportsProvider(_filter));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EEFB),
-      appBar: PortalHeader(
+      backgroundColor: AffColors.pageBg,
+      appBar: AffHeader(
         title: 'Reports',
+        subtitle: 'Clicks, conversions and earnings',
         actions: [
-          PortalHeaderAction(
-            icon: Icons.refresh,
-            tooltip: 'Refresh',
-            onPressed: () => ref.invalidate(reportsProvider),
-          ),
+          AffHeaderIcon(icon: Icons.refresh_rounded, onTap: () => ref.invalidate(reportsProvider)),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(reportsProvider),
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
           children: [
             _FilterBar(
               dateOption: _dateOption,
@@ -168,6 +165,7 @@ class _ReportsBody extends StatelessWidget {
             Expanded(
               child: _TrendStat(
                 label: 'Total Clicks',
+                icon: Icons.ads_click_rounded,
                 value: (current['totalClicks'] ?? 0).toString(),
                 current: current['totalClicks'],
                 previous: previous['totalClicks'],
@@ -177,6 +175,7 @@ class _ReportsBody extends StatelessWidget {
             Expanded(
               child: _TrendStat(
                 label: 'Total Conversions',
+                icon: Icons.check_circle_outline_rounded,
                 value: (current['totalConversions'] ?? 0).toString(),
                 current: current['totalConversions'],
                 previous: previous['totalConversions'],
@@ -187,13 +186,14 @@ class _ReportsBody extends StatelessWidget {
         const SizedBox(height: 10),
         _TrendStat(
           label: 'Total Revenue',
+          icon: Icons.payments_rounded,
           value: _currency.format((current['totalEarnings'] as num?) ?? 0),
           current: current['totalEarnings'],
           previous: previous['totalEarnings'],
           fullWidth: true,
         ),
         const SizedBox(height: 24),
-        const SectionHeader(title: 'Campaign breakdown'),
+        const AffSectionHeader(title: 'Campaign breakdown'),
         if (campaigns.isEmpty)
           const EmptyState(message: 'No campaign activity for this period', icon: Icons.bar_chart_outlined)
         else
@@ -205,10 +205,10 @@ class _ReportsBody extends StatelessWidget {
             final leads = (m['totalLeads'] as num?) ?? 0;
             final earnings = (m['totalEarnings'] as num?) ?? 0;
             final cvr = clicks > 0 ? (leads / clicks * 100) : 0;
-            return Card(
-              margin: const EdgeInsets.only(bottom: 10),
-              clipBehavior: Clip.antiAlias,
-              child: InkWell(
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: AffCard(
+                padding: const EdgeInsets.all(16),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => DetailedReportScreen(
@@ -219,52 +219,49 @@ class _ReportsBody extends StatelessWidget {
                     ),
                   ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: AppColors.primary.withValues(alpha: 0.12),
-                            child: Text(
-                              name.isNotEmpty ? name[0].toUpperCase() : '?',
-                              style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(name, style: const TextStyle(fontWeight: FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          ),
-                          Icon(
-                            leads > 0 ? Icons.trending_up : Icons.remove_circle_outline,
-                            size: 16,
-                            color: leads > 0 ? AppColors.success : Colors.grey,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(child: _MiniStat(label: 'Clicks', value: clicks.toString())),
-                          Expanded(child: _MiniStat(label: 'Leads', value: leads.toString())),
-                          Expanded(child: _MiniStat(label: 'CVR', value: '${cvr.toStringAsFixed(1)}%')),
-                          Expanded(child: _MiniStat(label: 'Earned', value: _currency.format(earnings))),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: LinearProgressIndicator(
-                          value: clicks > 0 ? (leads / clicks).clamp(0, 1).toDouble() : 0,
-                          minHeight: 6,
-                          backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                          valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(gradient: AffColors.gradient, borderRadius: BorderRadius.circular(13)),
+                          child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
                         ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5, color: AffColors.ink), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        ),
+                        Icon(
+                          leads > 0 ? Icons.trending_up_rounded : Icons.remove_rounded,
+                          size: 20,
+                          color: leads > 0 ? AffColors.success : AffColors.inkFaint,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(child: _MiniStat(label: 'Clicks', value: clicks.toString())),
+                        Expanded(child: _MiniStat(label: 'Leads', value: leads.toString())),
+                        Expanded(child: _MiniStat(label: 'CVR', value: '${cvr.toStringAsFixed(1)}%')),
+                        Expanded(child: _MiniStat(label: 'Earned', value: _currency.format(earnings), highlight: true)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: clicks > 0 ? (leads / clicks).clamp(0, 1).toDouble() : 0,
+                        minHeight: 6,
+                        backgroundColor: AffColors.purpleEnd.withValues(alpha: 0.10),
+                        valueColor: const AlwaysStoppedAnimation(AffColors.purpleEnd),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             );
@@ -275,18 +272,23 @@ class _ReportsBody extends StatelessWidget {
 }
 
 class _MiniStat extends StatelessWidget {
-  const _MiniStat({required this.label, required this.value});
+  const _MiniStat({required this.label, required this.value, this.highlight = false});
 
   final String label;
   final String value;
+  final bool highlight;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-        Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 10.5)),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(value, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: highlight ? AffColors.success : AffColors.ink)),
+        ),
+        const SizedBox(height: 1),
+        Text(label, style: const TextStyle(color: AffColors.inkFaint, fontSize: 10.5, fontWeight: FontWeight.w600)),
       ],
     );
   }
@@ -298,6 +300,7 @@ class _TrendStat extends StatelessWidget {
     required this.value,
     required this.current,
     required this.previous,
+    required this.icon,
     this.fullWidth = false,
   });
 
@@ -305,6 +308,7 @@ class _TrendStat extends StatelessWidget {
   final String value;
   final dynamic current;
   final dynamic previous;
+  final IconData icon;
   final bool fullWidth;
 
   @override
@@ -322,6 +326,6 @@ class _TrendStat extends StatelessWidget {
         trendText = '${pct.abs().toStringAsFixed(1)}%';
       }
     }
-    return StatTile(label: label, value: value, trendText: trendText, trendUp: trendUp);
+    return StatTile(label: label, value: value, icon: icon, trendText: trendText, trendUp: trendUp);
   }
 }

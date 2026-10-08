@@ -291,6 +291,19 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         insetPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+          side: const WidgetStatePropertyAll(BorderSide(color: AppColors.hairlineStrong)),
+          backgroundColor: WidgetStateProperty.resolveWith(
+            (s) => s.contains(WidgetState.selected) ? AppColors.primaryMuted : Colors.white,
+          ),
+          foregroundColor: WidgetStateProperty.resolveWith(
+            (s) => s.contains(WidgetState.selected) ? AppColors.primary : AppColors.inkMuted,
+          ),
+          textStyle: const WidgetStatePropertyAll(TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
+        ),
+      ),
       dividerTheme: const DividerThemeData(color: AppColors.hairline, thickness: 1, space: 1),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: AppColors.primary,

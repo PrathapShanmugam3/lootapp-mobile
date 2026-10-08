@@ -1,23 +1,28 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/widgets/common.dart';
+import '../../affiliate/presentation/widgets/affiliate_design.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
 
-  static const _headingStyle = TextStyle(fontWeight: FontWeight.w700, fontSize: 16);
+  static const _headingStyle = TextStyle(fontWeight: FontWeight.w800, fontSize: 16.5, color: AffColors.ink, letterSpacing: -0.2);
   static const _bodyStyle = TextStyle(fontSize: 13.5, height: 1.5, color: Colors.black87);
 
   @override
   Widget build(BuildContext context) {
-    final bodyStyle = _bodyStyle.copyWith(color: Colors.grey.shade800);
+    final bodyStyle = _bodyStyle.copyWith(color: AffColors.inkMuted);
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EEFB),
-      appBar: const PortalHeader(title: 'Privacy Policy'),
+      backgroundColor: AffColors.pageBg,
+      appBar: const AffHeader(title: 'Privacy Policy', subtitle: 'How we handle your data'),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
           children: [
+            AffCard(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
             Text(
               'At Loot Hat, we prioritize your privacy and are committed to protecting your personal information. '
               'This Privacy Policy outlines the types of information we may collect from you, how we use it, your '
@@ -270,6 +275,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
             Text(
               'Address: Nadia, West Bengal, India, 741152',
               style: bodyStyle,
+            ),
+          ],
+        ),
             ),
           ],
         ),

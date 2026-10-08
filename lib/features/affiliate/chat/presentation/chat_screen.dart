@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/widgets/chat_message.dart';
 import '../../../../core/widgets/common.dart';
+import '../../presentation/widgets/aff_user_avatar.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'chat_providers.dart';
 
@@ -63,7 +64,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         subtitle: 'LootHat Affiliate',
         actions: [
           AffHeaderIcon(icon: Icons.notifications_outlined, onTap: () {}),
-          const AffHeaderAvatar(initials: 'TA'),
+          const AffUserAvatar(),
         ],
       ),
       body: chatAsync.when(
@@ -199,14 +200,9 @@ class _SupportBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('LootHat Support', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: AffColors.ink)),
-                  Text('Active · replies in minutes', style: TextStyle(fontSize: 11, color: AffColors.inkMuted, fontWeight: FontWeight.w500)),
+                  Text('Ask about offers, payouts or your account', style: TextStyle(fontSize: 11, color: AffColors.inkMuted, fontWeight: FontWeight.w500)),
                 ],
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(color: AffColors.purpleEnd.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
-              child: const Text('Direct help', style: TextStyle(color: AffColors.purpleEnd, fontSize: 11, fontWeight: FontWeight.w700)),
             ),
           ],
         ),

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/widgets/common.dart';
 import '../../notifications/presentation/notifications_screen.dart';
-import '../../presentation/profile_menu_sheet.dart';
+import '../../presentation/widgets/aff_user_avatar.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'offer_detail_screen.dart';
 import 'offers_providers.dart';
@@ -41,10 +41,7 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
             icon: Icons.notifications_outlined,
             onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NotificationsScreen())),
           ),
-          AffHeaderAvatar(
-            initials: 'TA',
-            onTap: () => showProfileMenuSheet(context, ref, initials: 'TA', name: ''),
-          ),
+          const AffUserAvatar(),
         ],
       ),
       body: RefreshIndicator(
@@ -94,6 +91,7 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
                             controller: _searchCtrl,
                             onChanged: (v) => setState(() => _query = v),
                             decoration: const InputDecoration(
+                              filled: false,
                               hintText: 'Search campaigns',
                               prefixIcon: Icon(Icons.search_rounded, size: 21, color: AffColors.inkFaint),
                               border: InputBorder.none,

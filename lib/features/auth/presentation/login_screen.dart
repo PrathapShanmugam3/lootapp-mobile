@@ -164,14 +164,7 @@ class _Header extends StatelessWidget {
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 31, height: 1.1, letterSpacing: -1),
                 ),
                 const SizedBox(height: 18),
-                const Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _EarnBadge(icon: Icons.bolt_rounded, text: 'Instant payouts'),
-                    _EarnBadge(icon: Icons.verified_rounded, text: 'Verified signups'),
-                  ],
-                ),
+                const _EarnBadge(icon: Icons.verified_user_rounded, text: 'Secure partner sign in'),
               ],
             ),
           ),

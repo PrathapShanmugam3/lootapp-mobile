@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/common.dart';
+import '../../presentation/widgets/affiliate_design.dart';
 import 'notifications_providers.dart';
 
 class NotificationsScreen extends ConsumerWidget {
@@ -13,12 +13,13 @@ class NotificationsScreen extends ConsumerWidget {
     final notesAsync = ref.watch(notificationsProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EEFB),
-      appBar: PortalHeader(
+      backgroundColor: AffColors.pageBg,
+      appBar: AffHeader(
         title: 'Notifications',
+        subtitle: 'Updates on your account',
         actions: [
           TextButton(
-            style: TextButton.styleFrom(foregroundColor: Colors.white),
+            style: TextButton.styleFrom(foregroundColor: Colors.white, textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
             onPressed: () async {
               await ref.read(notificationsRepositoryProvider).markRead();
               ref.invalidate(notificationsProvider);
@@ -34,28 +35,62 @@ class NotificationsScreen extends ConsumerWidget {
           error: (e, _) => ErrorState(message: 'Failed to load notifications.\n$e', onRetry: () => ref.invalidate(notificationsProvider)),
           data: (notes) {
             if (notes.isEmpty) {
-              return const EmptyState(message: 'No notifications yet', icon: Icons.notifications_none);
+              return ListView(
+                children: const [SizedBox(height: 120), EmptyState(message: 'No notifications yet', icon: Icons.notifications_none_rounded)],
+              );
             }
             return ListView.separated(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
               itemCount: notes.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (context, i) {
                 final n = notes[i];
-                return Card(
-                  color: n.isRead ? null : AppColors.primary.withValues(alpha: 0.06),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: n.isRead ? Colors.grey.withValues(alpha: 0.15) : AppColors.primary.withValues(alpha: 0.15),
-                      child: Icon(Icons.notifications, size: 18, color: n.isRead ? Colors.grey : AppColors.primary),
-                    ),
-                    title: Text(n.title, style: TextStyle(fontWeight: n.isRead ? FontWeight.normal : FontWeight.w700)),
-                    subtitle: Text(n.message),
-                    trailing: n.isRead ? null : Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)),
+                return FadeSlideIn(
+                  index: i,
+                  child: AffCard(
+                    padding: const EdgeInsets.all(14),
                     onTap: () async {
                       await ref.read(notificationsRepositoryProvider).markRead(id: n.id);
                       ref.invalidate(notificationsProvider);
                     },
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AffIconChip(
+                          icon: n.isRead ? Icons.notifications_none_rounded : Icons.notifications_active_rounded,
+                          color: n.isRead ? AffColors.inkFaint : AffColors.purpleEnd,
+                          size: 42,
+                          solid: !n.isRead,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                n.title,
+                                style: TextStyle(fontWeight: n.isRead ? FontWeight.w600 : FontWeight.w800, fontSize: 14, color: AffColors.ink),
+                              ),
+                              if (n.message.isNotEmpty) ...[
+                                const SizedBox(height: 3),
+                                Text(n.message, style: const TextStyle(fontSize: 12.5, color: AffColors.inkMuted, height: 1.35)),
+                              ],
+                              if (n.createdAt != null && n.createdAt!.isNotEmpty) ...[
+                                const SizedBox(height: 6),
+                                Text(n.createdAt!, style: const TextStyle(fontSize: 11, color: AffColors.inkFaint)),
+                              ],
+                            ],
+                          ),
+                        ),
+                        if (!n.isRead)
+                          Container(
+                            margin: const EdgeInsets.only(top: 4, left: 8),
+                            width: 9,
+                            height: 9,
+                            decoration: const BoxDecoration(color: AffColors.gold, shape: BoxShape.circle),
+                          ),
+                      ],
+                    ),
                   ),
                 );
               },

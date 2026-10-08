@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/widgets/common.dart';
 import '../../notifications/presentation/notifications_screen.dart';
-import '../../presentation/profile_menu_sheet.dart';
+import '../../presentation/widgets/aff_user_avatar.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import '../../reports/presentation/reports_screen.dart';
 import 'dashboard_providers.dart';
@@ -25,11 +25,6 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardAsync = ref.watch(dashboardProvider);
-    final name = dashboardAsync.valueOrNull != null
-        ? ((dashboardAsync.value!['user'] as Map?)?['name']?.toString() ?? '')
-        : '';
-    final initials = name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : 'TA';
-
     return Scaffold(
       backgroundColor: AffColors.pageBg,
       appBar: AffHeader(
@@ -40,10 +35,7 @@ class DashboardScreen extends ConsumerWidget {
             icon: Icons.notifications_outlined,
             onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NotificationsScreen())),
           ),
-          AffHeaderAvatar(
-            initials: initials,
-            onTap: () => showProfileMenuSheet(context, ref, initials: initials, name: name),
-          ),
+          const AffUserAvatar(),
         ],
       ),
       body: RefreshIndicator(

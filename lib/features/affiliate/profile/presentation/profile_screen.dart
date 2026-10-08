@@ -84,7 +84,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
     final maskedMobile = mobile.length > 4 ? '+91 ${mobile.substring(0, 2)}${'•' * (mobile.length - 4).clamp(0, 6)}${mobile.substring(mobile.length - 2)}' : mobile;
     final wallet = p['balance'] ?? p['wallet'] ?? 0;
     final refLinks = p['refLinks'] ?? p['referralLinks'] ?? 0;
-    final tier = p['tier']?.toString() ?? 'Bronze';
+    final tier = p['tier']?.toString() ?? '';
     final userId = p['userId'] ?? p['id'] ?? p['user_id'];
     final payoutMethod = (p['upi']?.toString().isNotEmpty ?? false) ? 'UPI' : (p['accNo']?.toString().isNotEmpty ?? false ? 'Bank' : '—');
 
@@ -114,6 +114,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                 Text(name.isNotEmpty ? name : 'Affiliate', style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.4)),
                 const SizedBox(height: 3),
                 Text(p['email']?.toString() ?? '', style: TextStyle(color: Colors.white.withValues(alpha: 0.72), fontSize: 12.5)),
+                if (tier.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
@@ -131,6 +132,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                     ],
                   ),
                 ),
+                ],
                 const SizedBox(height: 20),
                 Row(
                   children: [

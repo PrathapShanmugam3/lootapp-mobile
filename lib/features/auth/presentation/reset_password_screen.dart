@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/auth_backdrop.dart';
 import '../../../core/widgets/common.dart';
 import 'auth_providers.dart';
 
@@ -67,13 +68,14 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EEFB),
-      body: SafeArea(
+      backgroundColor: AppColors.canvas,
+      body: AuthBackdrop(
+        child: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             final cardWidth = constraints.maxWidth < 480 ? constraints.maxWidth : 440.0;
             return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 24),
+              padding: const EdgeInsets.symmetric(vertical: 40),
               child: Center(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: cardWidth),
@@ -83,12 +85,12 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                       padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 24,
-                            offset: const Offset(0, 8),
+                            color: const Color(0xFF1E1550).withValues(alpha: 0.16),
+                            blurRadius: 40,
+                            offset: const Offset(0, 16),
                           ),
                         ],
                       ),
@@ -99,6 +101,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               ),
             );
           },
+        ),
         ),
       ),
     );
@@ -200,7 +203,7 @@ class _SuccessState extends StatelessWidget {
         Text(
           'You can now sign in with your new password',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+          style: const TextStyle(color: AppColors.inkMuted, fontSize: 13),
         ),
         const SizedBox(height: 24),
         GradientButton(
