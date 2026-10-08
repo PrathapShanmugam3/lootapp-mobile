@@ -32,20 +32,19 @@ class ProfileScreen extends ConsumerWidget {
         subtitle: 'LootHat Affiliate',
         actions: [
           AffHeaderIcon(
-            icon: Icons.notifications_outlined,
+            icon: Icons.notifications_none_rounded,
+            showDot: true,
             onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NotificationsScreen())),
           ),
         ],
       ),
-      body: AffAmbient(
-        child: RefreshIndicator(
+      body: RefreshIndicator(
         onRefresh: () async => ref.refresh(profileProvider.future),
         child: profileAsync.when(
           loading: () => const LoadingState(),
           error: (e, _) => ErrorState(message: 'Failed to load profile.\n$e', onRetry: () => ref.invalidate(profileProvider)),
           data: (profile) => _ProfileBody(profile: profile, sample: sample, onRetry: () => ref.invalidate(profileProvider)),
         ),
-      ),
       ),
     );
   }
@@ -63,92 +62,92 @@ class _ProfileBody extends ConsumerStatefulWidget {
 }
 
 class _ProfileBodyState extends ConsumerState<_ProfileBody> {
+  void _openEdit() {
+    if (widget.sample) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reconnect to the server to edit your account')));
+      return;
+    }
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditAccountScreen(profile: widget.profile)));
+  }
+
+  void _push(Widget screen) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
+
   @override
   Widget build(BuildContext context) {
     final p = widget.profile;
     final name = p['name']?.toString() ?? '';
-    final initials = name.trim().isNotEmpty ? name.trim().substring(0, name.trim().length >= 2 ? 2 : 1).toUpperCase() : '?';
+    final trimmed = name.trim();
+    final initials = trimmed.isNotEmpty ? trimmed.substring(0, trimmed.length >= 2 ? 2 : 1).toUpperCase() : '?';
     final mobile = p['mobile']?.toString() ?? '';
     final maskedMobile = mobile.length > 4 ? '+91 ${mobile.substring(0, 2)}${'•' * (mobile.length - 4).clamp(0, 6)}${mobile.substring(mobile.length - 2)}' : mobile;
     final wallet = p['balance'] ?? p['wallet'] ?? 0;
     final refLinks = p['refLinks'] ?? p['referralLinks'] ?? 0;
     final tier = p['tier']?.toString() ?? '';
     final userId = p['userId'] ?? p['id'] ?? p['user_id'];
-    final payoutMethod = (p['upi']?.toString().isNotEmpty ?? false) ? 'UPI' : (p['accNo']?.toString().isNotEmpty ?? false ? 'Bank' : '—');
+    final hasUpi = p['upi']?.toString().isNotEmpty ?? false;
+    final hasBank = p['accNo']?.toString().isNotEmpty ?? false;
+    final payoutMethod = hasUpi ? 'UPI' : (hasBank ? 'Bank' : '—');
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 110),
       children: [
         if (widget.sample) SampleDataBanner(onRetry: widget.onRetry),
+        // --- Hero ---
         FadeSlideIn(
           child: AffHeroCard(
-            padding: const EdgeInsets.fromLTRB(20, 26, 20, 20),
+            radius: 24,
+            padding: const EdgeInsets.all(20),
             child: Column(
               children: [
                 Container(
-                  width: 82,
-                  height: 82,
-                  padding: const EdgeInsets.all(3),
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(colors: [AffColors.goldSoft, AffColors.gold, Color(0xFFE08A1E)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                  ),
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: const BoxDecoration(shape: BoxShape.circle, color: AffColors.midnight),
-                    child: Text(initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 26, letterSpacing: 0.5)),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text(name.isNotEmpty ? name : 'Affiliate', style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.4)),
-                const SizedBox(height: 3),
-                Text(p['email']?.toString() ?? '', style: TextStyle(color: Colors.white.withValues(alpha: 0.72), fontSize: 12.5)),
-                if (tier.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  width: 74,
+                  height: 74,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: AffColors.gold.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: AffColors.gold.withValues(alpha: 0.55)),
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.22),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 3),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.workspace_premium_rounded, size: 14, color: AffColors.gold),
-                      const SizedBox(width: 5),
-                      Text('$tier member', style: const TextStyle(color: AffColors.goldSoft, fontSize: 11.5, fontWeight: FontWeight.w800, letterSpacing: 0.3)),
-                    ],
-                  ),
+                  child: Text(initials, style: AffText.number(24, FontWeight.w800, color: Colors.white)),
                 ),
-                ],
-                const SizedBox(height: 20),
+                const SizedBox(height: 8),
+                Text(name.isNotEmpty ? name : 'Affiliate', style: AffText.jakarta(20, FontWeight.w800, color: Colors.white)),
+                const SizedBox(height: 8),
+                Text(p['email']?.toString() ?? '', style: AffText.jakarta(12, FontWeight.w500, color: Colors.white.withValues(alpha: 0.85))),
+                const SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(child: _HeroStat(label: 'WALLET', value: '₹${wallet.toString()}', highlight: true, countTo: num.tryParse(wallet.toString()), prefix: '₹')),
+                    Expanded(child: _HeroStat(label: 'WALLET', value: _rupees(wallet), countTo: num.tryParse(wallet.toString()), prefix: '₹')),
                     const SizedBox(width: 10),
                     Expanded(child: _HeroStat(label: 'REF LINKS', value: refLinks.toString(), countTo: num.tryParse(refLinks.toString()))),
+                    if (tier.isNotEmpty) ...[
+                      const SizedBox(width: 10),
+                      Expanded(child: _HeroStat(label: 'TIER', value: tier)),
+                    ],
                   ],
                 ),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 22),
+        const SizedBox(height: 14),
+        // --- Account details ---
         FadeSlideIn(
           index: 1,
-          child: AffSectionHeader(
-            title: 'Account details',
-            action: 'Edit',
-            onActionTap: () => _openEdit(context, p),
-          ),
-        ),
-        FadeSlideIn(
-          index: 2,
           child: AffCard(
-            padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+            radius: 22,
+            padding: const EdgeInsets.all(16),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Account details', style: AffText.jakarta(14.5, FontWeight.w800)),
+                    GestureDetector(onTap: _openEdit, child: Text('Edit →', style: AffText.jakarta(11, FontWeight.w600, color: AffColors.purpleEnd))),
+                  ],
+                ),
+                const SizedBox(height: 11),
                 _DetailRow(label: 'Full name', value: name.isNotEmpty ? name : '—'),
                 _DetailRow(label: 'Email', value: p['email']?.toString() ?? '—'),
                 _DetailRow(label: 'Mobile', value: maskedMobile.isNotEmpty ? maskedMobile : '—'),
@@ -158,107 +157,48 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
             ),
           ),
         ),
-        const SizedBox(height: 22),
-        const FadeSlideIn(index: 3, child: AffSectionHeader(title: 'Manage')),
+        const SizedBox(height: 14),
+        // --- Rows ---
         FadeSlideIn(
-          index: 4,
-          child: AffCard(
-            padding: EdgeInsets.zero,
-            child: Column(
-              children: [
-                _MenuRow(
-                  icon: Icons.manage_accounts_rounded,
-                  label: 'Edit account',
-                  subtitle: 'Payout details and password',
-                  onTap: () => _openEdit(context, p),
-                ),
-                const _MenuDivider(),
-                _MenuRow(
-                  icon: Icons.insights_rounded,
-                  color: AffColors.cyan,
-                  label: 'Reports',
-                  subtitle: 'Clicks, conversions and earnings',
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ReportsScreen())),
-                ),
-                const _MenuDivider(),
-                _MenuRow(
-                  icon: Icons.public_rounded,
-                  color: AffColors.pink,
-                  label: 'Custom domains',
-                  subtitle: 'Use your own link domain',
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CustomDomainsScreen())),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 22),
-        const FadeSlideIn(index: 5, child: AffSectionHeader(title: 'Community')),
-        FadeSlideIn(
-          index: 6,
-          child: Row(
+          index: 2,
+          child: Column(
             children: [
-              Expanded(
-                child: _CommunityTile(
-                  icon: Icons.send_rounded,
-                  label: 'Telegram',
-                  color: const Color(0xFF229ED9),
-                  onTap: () => _openExternal(context, 'https://t.me/+p03Tb_KqMwMwNWM1'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _CommunityTile(
-                  icon: Icons.chat_rounded,
-                  label: 'WhatsApp',
-                  color: const Color(0xFF25A244),
-                  onTap: () => _openExternal(context, 'https://www.whatsapp.com/channel/0029VaDmXVGLY6dGWlmmJC2k'),
-                ),
+              _RowTile(label: 'Edit account', value: 'Payout & password', onTap: _openEdit),
+              const SizedBox(height: 9),
+              _RowTile(label: 'Reports', onTap: () => _push(const ReportsScreen())),
+              const SizedBox(height: 9),
+              _RowTile(label: 'Custom domains', onTap: () => _push(const CustomDomainsScreen())),
+              const SizedBox(height: 9),
+              _RowTile(
+                label: 'Log out',
+                color: AffColors.danger,
+                onTap: () async {
+                  if (!await confirmLogout(context)) return;
+                  if (!mounted) return;
+                  ref.read(authControllerProvider.notifier).logout();
+                },
               ),
             ],
           ),
         ),
-        const SizedBox(height: 26),
+        const SizedBox(height: 18),
         FadeSlideIn(
-          index: 7,
-          child: SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: FilledButton.tonalIcon(
-              style: FilledButton.styleFrom(
-                backgroundColor: AffColors.danger.withValues(alpha: 0.10),
-                foregroundColor: AffColors.danger,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
-              ),
-              icon: const Icon(Icons.logout_rounded, size: 19),
-              label: const Text('Log out'),
-              onPressed: () async {
-                if (!await confirmLogout(context)) return;
-                if (!mounted) return;
-                ref.read(authControllerProvider.notifier).logout();
-              },
-            ),
-          ),
-        ),
-        const SizedBox(height: 14),
-        FadeSlideIn(
-          index: 8,
+          index: 3,
           child: Wrap(
             alignment: WrapAlignment.center,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              _FooterLink(label: 'Rate us', onTap: () => _openExternal(context, 'https://play.google.com/store/apps/details?id=com.camp.loothat')),
+              _FooterLink(label: 'Telegram', onTap: () => _openExternal('https://t.me/+p03Tb_KqMwMwNWM1')),
               const _FooterDot(),
-              _FooterLink(label: 'Privacy', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()))),
+              _FooterLink(label: 'WhatsApp', onTap: () => _openExternal('https://www.whatsapp.com/channel/0029VaDmXVGLY6dGWlmmJC2k')),
               const _FooterDot(),
-              _FooterLink(label: 'Terms', onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TermsScreen()))),
+              _FooterLink(label: 'Rate us', onTap: () => _openExternal('https://play.google.com/store/apps/details?id=com.camp.loothat')),
               const _FooterDot(),
-              _FooterLink(
-                label: 'Delete account',
-                danger: true,
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AccountDeleteScreen())),
-              ),
+              _FooterLink(label: 'Privacy', onTap: () => _push(const PrivacyPolicyScreen())),
+              const _FooterDot(),
+              _FooterLink(label: 'Terms', onTap: () => _push(const TermsScreen())),
+              const _FooterDot(),
+              _FooterLink(label: 'Delete account', danger: true, onTap: () => _push(const AccountDeleteScreen())),
             ],
           ),
         ),
@@ -266,53 +206,38 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
     );
   }
 
-  void _openEdit(BuildContext context, Map<String, dynamic> p) {
-    if (widget.sample) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reconnect to the server to edit your account')));
-      return;
-    }
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditAccountScreen(profile: p)));
-  }
+  String _rupees(dynamic v) => '₹$v';
 
-  Future<void> _openExternal(BuildContext context, String url) async {
+  Future<void> _openExternal(String url) async {
     final uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not open $url')));
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not open $url')));
     }
   }
 }
 
 class _HeroStat extends StatelessWidget {
-  const _HeroStat({required this.label, required this.value, this.highlight = false, this.countTo, this.prefix = ''});
+  const _HeroStat({required this.label, required this.value, this.countTo, this.prefix = ''});
   final String label;
   final String value;
   final num? countTo;
   final String prefix;
-  final bool highlight;
 
   @override
   Widget build(BuildContext context) {
+    final style = AffText.number(18, FontWeight.w700, color: Colors.white);
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 13),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
-      ),
+      padding: const EdgeInsets.all(11),
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(16)),
       child: Column(
         children: [
-          Text(label, style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: Colors.white.withValues(alpha: 0.7), letterSpacing: 1)),
-          const SizedBox(height: 5),
+          Text(label, style: AffText.jakarta(9.5, FontWeight.w700, color: Colors.white.withValues(alpha: 0.85), letterSpacing: 0.76)),
+          const SizedBox(height: 3),
           FittedBox(
             fit: BoxFit.scaleDown,
-            child: () {
-              final style = TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.4, color: highlight ? AffColors.gold : Colors.white);
-              return countTo != null
-                  ? AnimatedCount(value: countTo!, format: (n) => '$prefix${countTo == countTo!.roundToDouble() ? n.round() : n.toStringAsFixed(2)}', style: style)
-                  : Text(value, style: style);
-            }(),
+            child: countTo != null
+                ? AnimatedCount(value: countTo!, format: (n) => '$prefix${countTo == countTo!.roundToDouble() ? n.round() : n.toStringAsFixed(2)}', style: style)
+                : Text(value, style: style),
           ),
         ],
       ),
@@ -328,103 +253,39 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(bottom: last ? 0 : 12, top: 0),
-      margin: EdgeInsets.only(bottom: last ? 0 : 12),
-      decoration: BoxDecoration(border: last ? null : const Border(bottom: BorderSide(color: AffColors.hairline))),
+    return Padding(
+      padding: EdgeInsets.only(bottom: last ? 0 : 11),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 13, color: AffColors.inkMuted, fontWeight: FontWeight.w500)),
+          Text(label, style: AffText.jakarta(12.5, FontWeight.w500, color: AffColors.inkFaint)),
           const SizedBox(width: 16),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 13.5, color: AffColors.ink, fontWeight: FontWeight.w700),
-            ),
-          ),
+          Flexible(child: Text(value, textAlign: TextAlign.right, maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(12.5, FontWeight.w700))),
         ],
       ),
     );
   }
 }
 
-class _MenuDivider extends StatelessWidget {
-  const _MenuDivider();
-
-  @override
-  Widget build(BuildContext context) => const Divider(height: 1, indent: 70, endIndent: 16, color: AffColors.hairline);
-}
-
-class _MenuRow extends StatelessWidget {
-  const _MenuRow({required this.icon, required this.label, required this.onTap, this.subtitle, this.color = AffColors.purpleEnd});
-  final Color color;
-  final IconData icon;
+/// White rounded-16 row from the design: bold label, muted value + chevron.
+class _RowTile extends StatelessWidget {
+  const _RowTile({required this.label, required this.onTap, this.value, this.color = AffColors.ink});
   final String label;
-  final String? subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              AffIconChip(icon: icon, color: color, size: 40),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5, color: AffColors.ink)),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 2),
-                      Text(subtitle!, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11.5, color: AffColors.inkFaint)),
-                    ],
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right_rounded, color: AffColors.inkFaint),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CommunityTile extends StatelessWidget {
-  const _CommunityTile({required this.icon, required this.label, required this.color, required this.onTap});
-  final IconData icon;
-  final String label;
+  final String? value;
   final Color color;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return AffCard(
+      radius: 16,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       onTap: onTap,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       child: Row(
         children: [
-          AffIconChip(icon: icon, color: color, size: 38, solid: true),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: AffColors.ink)),
-                const Text('Join channel', style: TextStyle(fontSize: 11, color: AffColors.inkFaint)),
-              ],
-            ),
-          ),
+          Expanded(child: Text(label, style: AffText.jakarta(13, FontWeight.w700, color: color))),
+          if (value != null) Text('$value ›', style: AffText.jakarta(13, FontWeight.w700, color: AffColors.inkFaint))
+          else if (color == AffColors.ink) Text('›', style: AffText.jakarta(13, FontWeight.w700, color: AffColors.inkFaint)),
         ],
       ),
     );
@@ -444,10 +305,7 @@ class _FooterLink extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-        child: Text(
-          label,
-          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: danger ? AffColors.danger.withValues(alpha: 0.85) : AffColors.inkMuted),
-        ),
+        child: Text(label, style: AffText.jakarta(12, FontWeight.w600, color: danger ? AffColors.danger : AffColors.inkMuted)),
       ),
     );
   }
@@ -457,5 +315,5 @@ class _FooterDot extends StatelessWidget {
   const _FooterDot();
 
   @override
-  Widget build(BuildContext context) => const Text('·', style: TextStyle(color: AffColors.inkFaint, fontWeight: FontWeight.w800));
+  Widget build(BuildContext context) => Text('·', style: AffText.jakarta(12, FontWeight.w800, color: AffColors.inkHint));
 }

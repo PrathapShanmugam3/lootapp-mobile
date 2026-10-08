@@ -41,7 +41,7 @@ void main() {
 
   testWidgets('has attach button and sends typed text', (tester) async {
     await pump(tester);
-    expect(find.byTooltip('Attach a picture'), findsOneWidget);
+    expect(find.byIcon(Icons.attach_file_rounded), findsOneWidget);
     await tester.enterText(find.byType(TextField), 'my payout is late');
     await tester.tap(find.byIcon(Icons.send_rounded));
     await tester.pump();
@@ -52,7 +52,7 @@ void main() {
 
   testWidgets('attach button opens gallery option', (tester) async {
     await pump(tester);
-    await tester.tap(find.byTooltip('Attach a picture'));
+    await tester.tap(find.byIcon(Icons.attach_file_rounded));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('Choose from gallery'), findsOneWidget);

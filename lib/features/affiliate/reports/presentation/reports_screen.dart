@@ -212,7 +212,6 @@ class _ReportsBody extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: AffCard(
-                accent: AffColors.colorFor(name),
                 padding: const EdgeInsets.all(16),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
