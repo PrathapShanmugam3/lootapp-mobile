@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/common.dart';
+import '../../presentation/widgets/affiliate_design.dart';
 import 'offers_providers.dart';
 
 class OfferDetailScreen extends ConsumerWidget {
@@ -17,7 +17,7 @@ class OfferDetailScreen extends ConsumerWidget {
     final detailAsync = ref.watch(offerDetailProvider(offId));
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
+      backgroundColor: AffColors.pageBg,
       body: detailAsync.when(
         loading: () => const LoadingState(),
         error: (e, _) => ErrorState(message: 'Failed to load offer.\n$e', onRetry: () => ref.invalidate(offerDetailProvider(offId))),
@@ -82,23 +82,133 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
 
     final hasBanner = bannerImage != null && bannerImage.isNotEmpty;
 
+    final category = offer['category']?.toString() ?? '';
+    final offerTitle = offer['offerTitle']?.toString() ?? '';
+    final logoUrl = (logo != null && logo.isNotEmpty) ? (logo.startsWith('http') ? logo : '${ApiConfig.baseUrl}$logo') : null;
+
     return CustomScrollView(
       slivers: [
-        SliverAppBar(
-          pinned: true,
-          backgroundColor: AppColors.ink,
-          foregroundColor: Colors.white,
-          iconTheme: const IconThemeData(color: Colors.white),
+        SliverToBoxAdapter(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
+              boxShadow: [BoxShadow(color: AffColors.midnightSoft.withValues(alpha: 0.3), blurRadius: 24, offset: const Offset(0, 10))],
+            ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
+              child: DecoratedBox(
+                decoration: const BoxDecoration(gradient: AffColors.heroGradient),
+                child: Stack(
+                  children: [
+                    const Positioned.fill(child: DecorativeOrbs()),
+                    SafeArea(
+                      bottom: false,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 8, 20, 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Material(
+                              color: Colors.white.withValues(alpha: 0.14),
+                              shape: CircleBorder(side: BorderSide(color: Colors.white.withValues(alpha: 0.22))),
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                onTap: () => Navigator.of(context).maybePop(),
+                                child: const SizedBox(width: 40, height: 40, child: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 17)),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 60,
+                                    height: 60,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 16, offset: const Offset(0, 8))],
+                                    ),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: logoUrl != null
+                                        ? Image.network(logoUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.local_offer_rounded, color: AffColors.purpleEnd))
+                                        : const Icon(Icons.local_offer_rounded, color: AffColors.purpleEnd),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          offer['offerName']?.toString() ?? '',
+                                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5),
+                                        ),
+                                        if (category.isNotEmpty)
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 6),
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(999)),
+                                              child: Text(category, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (offerTitle.isNotEmpty) ...[
+                              const SizedBox(height: 14),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: Text(offerTitle, style: TextStyle(color: Colors.white.withValues(alpha: 0.78), fontSize: 13.5, height: 1.4)),
+                              ),
+                            ],
+                            const SizedBox(height: 18),
+                            Container(
+                              margin: const EdgeInsets.only(left: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.10),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('TOTAL PAYOUT', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+                                      const SizedBox(height: 2),
+                                      Text('₹$totalPayout', style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: AffColors.gold, letterSpacing: -1)),
+                                    ],
+                                  ),
+                                  const Icon(Icons.workspace_premium_rounded, color: AffColors.gold, size: 34),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (hasBanner && !_bannerFailed) ...[
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(24),
                     child: AspectRatio(
                       aspectRatio: 16 / 7,
                       child: Image.network(
@@ -113,67 +223,19 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                ],
-                Row(
-                  children: [
-                    if (logo != null && logo.isNotEmpty)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: Image.network(
-                          logo.startsWith('http') ? logo : '${ApiConfig.baseUrl}$logo',
-                          width: 48,
-                          height: 48,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const SizedBox(width: 48, height: 48),
-                        ),
-                      ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            offer['offerName']?.toString() ?? '',
-                            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: AppColors.ink),
-                          ),
-                          if ((offer['category']?.toString() ?? '').isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: StatusChip(text: offer['category'].toString()),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                if ((offer['offerTitle']?.toString() ?? '').isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  Text(offer['offerTitle'].toString(), style: const TextStyle(color: AppColors.inkMuted, fontSize: 13.5)),
-                ],
-                const SizedBox(height: 16),
-                GradientHeroCard(
-                  padding: const EdgeInsets.all(20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Total payout', style: TextStyle(color: Colors.white70)),
-                      Text('₹$totalPayout', style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white)),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _referralLinkCard(context),
-                const SizedBox(height: 20),
-                if (availableThemes.isNotEmpty) ...[
-                  const SectionHeader(title: 'Landing page theme'),
-                  _themePicker(context),
                   const SizedBox(height: 20),
+                ],
+                _referralLinkCard(context),
+                const SizedBox(height: 22),
+                if (availableThemes.isNotEmpty) ...[
+                  const AffSectionHeader(title: 'Landing page theme'),
+                  _themePicker(context),
+                  const SizedBox(height: 22),
                 ],
                 if (events.isNotEmpty) ...[
-                  const SectionHeader(title: 'Payout events'),
+                  const AffSectionHeader(title: 'Payout events'),
                   _eventsCard(context, events),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 22),
                 ],
                 if ((offer['steps']?.toString() ?? '').isNotEmpty) _textSection(context, 'How it works', offer['steps']),
                 if ((offer['offerBenefits']?.toString() ?? '').isNotEmpty) _textSection(context, 'Benefits', offer['offerBenefits']),
@@ -191,21 +253,15 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
   Widget _referralLinkCard(BuildContext context) {
     final offerLink = referralLink['offerLink']?.toString() ?? '';
     final referLink = referralLink['referLink']?.toString() ?? '';
-    return BentoCard(
+    return AffCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                width: 32,
-                height: 32,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(color: AppColors.ink, borderRadius: BorderRadius.circular(10)),
-                child: const Icon(Icons.link, color: Colors.white, size: 16),
-              ),
-              const SizedBox(width: 10),
-              const Text('Your referral links', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5, color: AppColors.ink)),
+              const AffIconChip(icon: Icons.link_rounded, size: 38, solid: true),
+              const SizedBox(width: 12),
+              const Text('Your referral links', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.5, color: AffColors.ink)),
             ],
           ),
           const SizedBox(height: 14),
@@ -221,9 +277,9 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceTint,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.hairline),
+        color: AffColors.pageBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AffColors.hairline),
       ),
       child: Row(
         children: [
@@ -231,16 +287,16 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: AppColors.inkFaint, letterSpacing: 0.6)),
+                Text(label, style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: AffColors.inkFaint, letterSpacing: 0.6)),
                 const SizedBox(height: 2),
-                Text(link, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12.5, color: AppColors.ink)),
+                Text(link, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12.5, color: AffColors.ink)),
               ],
             ),
           ),
           Container(
-            decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(999)),
+            decoration: BoxDecoration(color: AffColors.purpleEnd.withValues(alpha: 0.10), borderRadius: BorderRadius.circular(999)),
             child: IconButton(
-              icon: const Icon(Icons.copy, size: 16, color: AppColors.primary),
+              icon: const Icon(Icons.copy_rounded, size: 16, color: AffColors.purpleEnd),
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: link));
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$label copied')));
@@ -253,7 +309,7 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
   }
 
   Widget _themePicker(BuildContext context) {
-    return BentoCard(
+    return AffCard(
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
@@ -281,16 +337,17 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                color: selected ? AppColors.ink : AppColors.surfaceTint,
+                gradient: selected ? AffColors.gradient : null,
+                color: selected ? null : AffColors.pageBg,
                 borderRadius: BorderRadius.circular(999),
-                border: selected ? null : Border.all(color: AppColors.hairline),
+                border: selected ? null : Border.all(color: AffColors.hairline),
               ),
               child: Text(
                 label,
                 style: TextStyle(
                   fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                  color: selected ? Colors.white : AppColors.inkMuted,
+                  fontWeight: FontWeight.w700,
+                  color: selected ? Colors.white : AffColors.inkMuted,
                 ),
               ),
             ),
@@ -301,7 +358,7 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
   }
 
   Widget _eventsCard(BuildContext context, List events) {
-    return BentoCard(
+    return AffCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -338,8 +395,8 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceTint,
-        borderRadius: BorderRadius.circular(10),
+        color: AffColors.pageBg,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,24 +404,24 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5, color: AppColors.ink)),
-              Text('Total ₹${total.toStringAsFixed(0)}', style: const TextStyle(color: AppColors.inkFaint, fontSize: 12, fontWeight: FontWeight.w600)),
+              Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5, color: AffColors.ink)),
+              Text('Total ₹${total.toStringAsFixed(0)}', style: const TextStyle(color: AffColors.inkFaint, fontSize: 12, fontWeight: FontWeight.w600)),
             ],
           ),
           if (locked)
             const Padding(
               padding: EdgeInsets.only(top: 4),
-              child: Text('Fixed payout — not customizable', style: TextStyle(fontSize: 11, color: AppColors.inkFaint)),
+              child: Text('Fixed payout — not customizable', style: TextStyle(fontSize: 11, color: AffColors.inkFaint)),
             )
           else ...[
             const SizedBox(height: 4),
-            Text('User payout: ₹${uPo.toStringAsFixed(0)}', style: const TextStyle(fontSize: 12, color: AppColors.inkMuted)),
+            Text('User payout: ₹${uPo.toStringAsFixed(0)}', style: const TextStyle(fontSize: 12, color: AffColors.inkMuted)),
             SliderTheme(
               data: SliderTheme.of(context).copyWith(
-                activeTrackColor: AppColors.primary,
-                inactiveTrackColor: AppColors.hairlineStrong,
-                thumbColor: AppColors.primary,
-                overlayColor: AppColors.primary.withValues(alpha: 0.1),
+                activeTrackColor: AffColors.purpleEnd,
+                inactiveTrackColor: AffColors.hairline,
+                thumbColor: AffColors.purpleEnd,
+                overlayColor: AffColors.purpleEnd.withValues(alpha: 0.12),
               ),
               child: Slider(
                 value: uPo.clamp(0, total == 0 ? fixedTotal : total),
@@ -380,7 +437,7 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
                 },
               ),
             ),
-            Text('Refer payout: ₹${(referPo[index] ?? rPo).toStringAsFixed(0)}', style: const TextStyle(fontSize: 12, color: AppColors.inkMuted)),
+            Text('Refer payout: ₹${(referPo[index] ?? rPo).toStringAsFixed(0)}', style: const TextStyle(fontSize: 12, color: AffColors.inkMuted)),
           ],
         ],
       ),
@@ -414,9 +471,9 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SectionHeader(title: title),
+          AffSectionHeader(title: title),
           BentoCard(
-            child: Text(content.toString(), style: const TextStyle(color: AppColors.inkLabel, fontSize: 13.5, height: 1.5)),
+            child: Text(content.toString(), style: const TextStyle(color: AffColors.ink, fontSize: 13.5, height: 1.5)),
           ),
         ],
       ),
