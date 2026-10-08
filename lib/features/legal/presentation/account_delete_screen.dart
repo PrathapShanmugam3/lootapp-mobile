@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../affiliate/presentation/widgets/affiliate_design.dart';
+import '../../../core/widgets/confirm_dialog.dart';
 import '../../../core/widgets/recaptcha_dialog.dart';
 import '../../affiliate/profile/presentation/profile_providers.dart';
 import '../../auth/presentation/auth_providers.dart';
@@ -36,6 +37,17 @@ class _AccountDeleteScreenState extends ConsumerState<AccountDeleteScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'Delete your account?',
+      message: 'This is permanent. Your account and all associated data will be deleted and cannot be recovered.',
+      confirmLabel: 'Yes, delete',
+      cancelLabel: 'Keep account',
+      icon: Icons.delete_forever_rounded,
+      destructive: true,
+    );
+    if (!confirmed || !mounted) return;
 
     final recaptchaToken = await showRecaptchaDialog(context);
     if (recaptchaToken == null || recaptchaToken.isEmpty) return;

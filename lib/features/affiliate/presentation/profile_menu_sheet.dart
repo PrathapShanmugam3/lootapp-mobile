@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/common.dart';
+import '../../../core/widgets/confirm_dialog.dart';
 import '../../auth/presentation/auth_providers.dart';
 import '../profile/presentation/profile_screen.dart';
 
@@ -78,7 +79,9 @@ class _ProfileMenuSheet extends StatelessWidget {
               chipColor: AppColors.danger,
               label: 'Log out',
               labelColor: AppColors.danger,
-              onTap: () {
+              onTap: () async {
+                if (!await confirmLogout(context)) return;
+                if (!context.mounted) return;
                 Navigator.of(context).pop();
                 ref.read(authControllerProvider.notifier).logout();
               },
