@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/widgets/chat_message.dart';
 import '../../../auth/presentation/auth_providers.dart';
@@ -41,9 +42,9 @@ class ChatNotifier extends AutoDisposeAsyncNotifier<ChatState> {
     }
   }
 
-  Future<void> send(String text) async {
+  Future<void> send(String text, {XFile? image}) async {
     final repo = ref.read(chatRepositoryProvider);
-    await repo.sendMessage(text);
+    await repo.sendMessage(text, image: image);
     await refresh();
   }
 
