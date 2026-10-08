@@ -248,11 +248,12 @@ class _RedeemCardState extends ConsumerState<_RedeemCard> {
           backgroundColor: success ? AffColors.success : AffColors.danger,
         ),
       );
+      _codeCtrl.clear();
       if (success) {
-        _codeCtrl.clear();
         ref.invalidate(walletSummaryProvider);
       }
     } catch (e) {
+      _codeCtrl.clear();
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -273,10 +274,12 @@ class _RedeemCardState extends ConsumerState<_RedeemCard> {
             child: TextField(
               controller: _codeCtrl,
               textCapitalization: TextCapitalization.characters,
+              maxLength: 50,
               decoration: const InputDecoration(
                 hintText: 'ENTER GIFT CODE',
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                counterText: '',
               ),
             ),
           ),

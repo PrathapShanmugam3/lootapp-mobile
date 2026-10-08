@@ -62,7 +62,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         _attachment = file;
         _attachmentBytes = bytes;
       });
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('Image pick failed: $e\n$st');
       if (mounted) _toast('Could not open that picture');
     }
   }
