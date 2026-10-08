@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../../affiliate/presentation/widgets/affiliate_design.dart';
 import '../../../core/widgets/recaptcha_dialog.dart';
+import '../../affiliate/profile/presentation/profile_providers.dart';
 import '../../auth/presentation/auth_providers.dart';
 import '../data/account_delete_repository.dart';
 
@@ -21,7 +22,7 @@ class AccountDeleteScreen extends ConsumerStatefulWidget {
 
 class _AccountDeleteScreenState extends ConsumerState<AccountDeleteScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailCtrl = TextEditingController();
+  String _accountEmail = '';
   final _reasonCtrl = TextEditingController();
   bool _loading = false;
   String? _error;
@@ -29,7 +30,6 @@ class _AccountDeleteScreenState extends ConsumerState<AccountDeleteScreen> {
 
   @override
   void dispose() {
-    _emailCtrl.dispose();
     _reasonCtrl.dispose();
     super.dispose();
   }
@@ -46,7 +46,7 @@ class _AccountDeleteScreenState extends ConsumerState<AccountDeleteScreen> {
     });
     try {
       await ref.read(accountDeleteRepositoryProvider).requestAccountDeletion(
-            email: _emailCtrl.text.trim(),
+            email: _accountEmail,
             reason: _reasonCtrl.text.trim(),
             recaptchaToken: recaptchaToken,
           );
@@ -62,6 +62,13 @@ class _AccountDeleteScreenState extends ConsumerState<AccountDeleteScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // The deletion request is always for the signed-in account: take its
+    // email from the session, falling back to the profile API.
+    final sessionEmail = ref.watch(authControllerProvider).user?.email;
+    final profileEmail = ref.watch(profileProvider).valueOrNull?['email']?.toString();
+    final accountEmail = (sessionEmail != null && sessionEmail.isNotEmpty) ? sessionEmail : (profileEmail ?? '');
+    _accountEmail = accountEmail;
+
     return Scaffold(
       backgroundColor: AffColors.pageBg,
       appBar: const AffHeader(title: 'Delete account', subtitle: 'Permanently remove your data'),
@@ -103,28 +110,31 @@ class _AccountDeleteScreenState extends ConsumerState<AccountDeleteScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          const Text('Email Address', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+          const Text('Account email', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
           const SizedBox(height: 6),
           TextFormField(
-            controller: _emailCtrl,
-            keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(hintText: 'Enter your account email', prefixIcon: Icon(Icons.mail_outline)),
-            validator: (v) {
-              final value = v?.trim() ?? '';
-              if (value.isEmpty) return 'Email is required';
-              if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value)) return 'Enter a valid email address';
-              return null;
-            },
+            key: ValueKey(_accountEmail),
+            initialValue: _accountEmail,
+            readOnly: true,
+            enableInteractiveSelection: false,
+            style: const TextStyle(color: AffColors.inkMuted, fontWeight: FontWeight.w600),
+            decoration: const InputDecoration(
+              hintText: 'Loading your account email…',
+              prefixIcon: Icon(Icons.mail_outline),
+              suffixIcon: Icon(Icons.lock_outline_rounded, size: 18),
+              helperText: 'Deletion applies to the account you are signed in with',
+            ),
+            validator: (_) => _accountEmail.isEmpty ? 'Could not load your account email — go back and try again' : null,
           ),
           const SizedBox(height: 16),
-          const Text('Reason for leaving', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+          const Text('Reason for leaving *', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
           const SizedBox(height: 6),
           TextFormField(
             controller: _reasonCtrl,
             maxLines: 4,
             maxLength: 500,
-            decoration: const InputDecoration(hintText: 'Tell us why you want to delete your account'),
-            validator: (v) => (v == null || v.trim().isEmpty) ? 'Please tell us why' : null,
+            decoration: const InputDecoration(hintText: 'Tell us why you want to delete your account (required)'),
+            validator: (v) => (v == null || v.trim().isEmpty) ? 'Reason is required' : null,
           ),
           if (_error != null) ...[
             const SizedBox(height: 4),
