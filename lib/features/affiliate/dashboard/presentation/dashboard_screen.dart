@@ -5,24 +5,29 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/widgets/common.dart';
 import '../../notifications/presentation/notifications_screen.dart';
-import '../../presentation/profile_menu_sheet.dart';
+import '../../presentation/widgets/aff_user_avatar.dart';
+import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import '../../reports/presentation/reports_screen.dart';
 import 'dashboard_providers.dart';
 
 final _currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
 
+String _greeting() {
+  final h = DateTime.now().hour;
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dashboardAsync = ref.watch(dashboardProvider);
-    final name = dashboardAsync.valueOrNull != null
-        ? ((dashboardAsync.value!['user'] as Map?)?['name']?.toString() ?? '')
-        : '';
-    final initials = name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : 'TA';
-
+    final rawAsync = ref.watch(dashboardProvider);
+    final sample = isSample(rawAsync);
+    final dashboardAsync = withSample(rawAsync, SampleData.dashboard);
     return Scaffold(
       backgroundColor: AffColors.pageBg,
       appBar: AffHeader(
@@ -33,13 +38,11 @@ class DashboardScreen extends ConsumerWidget {
             icon: Icons.notifications_outlined,
             onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NotificationsScreen())),
           ),
-          AffHeaderAvatar(
-            initials: initials,
-            onTap: () => showProfileMenuSheet(context, ref, initials: initials, name: name),
-          ),
+          const AffUserAvatar(),
         ],
       ),
-      body: RefreshIndicator(
+      body: AffAmbient(
+        child: RefreshIndicator(
         onRefresh: () async => ref.refresh(dashboardProvider.future),
         child: dashboardAsync.when(
           loading: () => const LoadingState(),
@@ -47,17 +50,20 @@ class DashboardScreen extends ConsumerWidget {
             message: 'Could not load dashboard.\n$err',
             onRetry: () => ref.invalidate(dashboardProvider),
           ),
-          data: (data) => _DashboardBody(data: data),
+          data: (data) => _DashboardBody(data: data, sample: sample, onRetry: () => ref.invalidate(dashboardProvider)),
         ),
+      ),
       ),
     );
   }
 }
 
 class _DashboardBody extends ConsumerWidget {
-  const _DashboardBody({required this.data});
+  const _DashboardBody({required this.data, this.sample = false, this.onRetry});
 
   final Map<String, dynamic> data;
+  final bool sample;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -77,23 +83,31 @@ class _DashboardBody extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 110),
       children: [
+        if (sample) SampleDataBanner(onRetry: onRetry),
         FadeSlideIn(
           child: AffHeroCard(
-            padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+            padding: const EdgeInsets.fromLTRB(22, 22, 22, 22),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome back, ${firstName.isNotEmpty ? firstName : 'Affiliate'}',
-                  style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: Colors.white),
+                  _greeting().toUpperCase(),
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.6, color: Colors.white.withValues(alpha: 0.65)),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
+                Text(
+                  firstName.isNotEmpty ? firstName : 'Affiliate',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.8, height: 1.1),
+                ),
+                const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                    color: Colors.white.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -124,7 +138,9 @@ class _DashboardBody extends ConsumerWidget {
                   child: _StatTile(
                     label: 'CLICKS',
                     value: clicks['value']?.toString() ?? '0',
+                    countTo: num.tryParse(clicks['value']?.toString() ?? '0'),
                     icon: Icons.near_me_rounded,
+                    color: AffColors.purpleEnd,
                     trend: clicks['trend'] != null ? '${clicks['trend']}% vs yesterday' : null,
                     trendUp: clicks['direction']?.toString() != 'down',
                   ),
@@ -134,7 +150,9 @@ class _DashboardBody extends ConsumerWidget {
                   child: _StatTile(
                     label: 'CONVERSIONS',
                     value: conversions['value']?.toString() ?? '0',
+                    countTo: num.tryParse(conversions['value']?.toString() ?? '0'),
                     icon: Icons.autorenew_rounded,
+                    color: const Color(0xFFE0359B),
                     trend: conversions['mtd'] != null ? 'MTD: ${conversions['mtd']}' : null,
                   ),
                 ),
@@ -150,7 +168,10 @@ class _DashboardBody extends ConsumerWidget {
             value: _currency.format(
               (earnings['value'] is num) ? earnings['value'] as num : num.tryParse(earnings['value']?.toString() ?? '') ?? 0,
             ),
+            countTo: (earnings['value'] is num) ? earnings['value'] as num : num.tryParse(earnings['value']?.toString() ?? '') ?? 0,
+            format: _currency.format,
             icon: Icons.currency_rupee_rounded,
+            color: const Color(0xFFE08A1E),
             big: true,
           ),
         ),
@@ -287,6 +308,9 @@ class _StatTile extends StatelessWidget {
     required this.label,
     required this.value,
     required this.icon,
+    required this.color,
+    this.countTo,
+    this.format,
     this.trend,
     this.trendUp = true,
     this.big = false,
@@ -295,35 +319,27 @@ class _StatTile extends StatelessWidget {
   final String label;
   final String value;
   final IconData icon;
+  final Color color;
+  final num? countTo;
+  final String Function(num)? format;
   final String? trend;
   final bool trendUp;
   final bool big;
 
   @override
   Widget build(BuildContext context) {
-    final chip = Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        gradient: AffColors.gradient,
-        borderRadius: BorderRadius.circular(13),
-        boxShadow: [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.35), blurRadius: 12, offset: const Offset(0, 5))],
-      ),
-      child: Icon(icon, color: Colors.white, size: 20),
-    );
+    final chip = AffIconChip(icon: icon, color: color, size: 42, solid: big);
 
     final labelText = Text(
       label,
-      style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: AffColors.inkMuted, letterSpacing: 0.9),
+      style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AffColors.inkMuted, letterSpacing: 1.1),
     );
-    final valueText = Text(
-      value,
-      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AffColors.ink, height: 1.1, letterSpacing: -0.8),
-    );
+    const valueStyle = TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AffColors.ink, height: 1.1, letterSpacing: -1);
+    final valueText = countTo != null
+        ? AnimatedCount(value: countTo!, format: format ?? (n) => n.round().toString(), style: valueStyle)
+        : Text(value, style: valueStyle);
 
-    return AffCard(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
-      child: big
+    final content = big
           ? Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -347,21 +363,23 @@ class _StatTile extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      if (trendUp) const Icon(Icons.arrow_upward, size: 11, color: AffColors.success),
+                      if (trendUp) const Icon(Icons.trending_up_rounded, size: 14, color: AffColors.success),
+                      if (trendUp) const SizedBox(width: 3),
                       Flexible(
                         child: Text(
                           trend!,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: trendUp ? AffColors.success : AffColors.inkMuted),
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: trendUp ? AffColors.success : AffColors.inkMuted),
                         ),
                       ),
                     ],
                   ),
                 ],
               ],
-            ),
-    );
+            );
+
+    return AffCard(accent: color, padding: const EdgeInsets.fromLTRB(18, 18, 18, 18), child: content);
   }
 }
 
@@ -393,7 +411,7 @@ class _CampaignRow extends StatelessWidget {
                 width: 42,
                 height: 42,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(gradient: AffColors.gradient, borderRadius: BorderRadius.circular(13)),
+                decoration: BoxDecoration(gradient: AffColors.gradientFor(name), borderRadius: BorderRadius.circular(14)),
                 child: Text(initials, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Colors.white)),
               ),
               if (rank <= 3)
@@ -434,7 +452,12 @@ class _CampaignRow extends StatelessWidget {
                     child: Stack(
                       children: [
                         Container(color: AffColors.hairline),
-                        FractionallySizedBox(widthFactor: progress, child: Container(decoration: const BoxDecoration(gradient: AffColors.gradient))),
+                        TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 0, end: progress),
+                          duration: const Duration(milliseconds: 900),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, w, _) => FractionallySizedBox(widthFactor: w, child: Container(decoration: BoxDecoration(gradient: AffColors.gradientFor(name)))),
+                        ),
                       ],
                     ),
                   ),
@@ -466,9 +489,21 @@ class _Chart extends StatelessWidget {
       final y = (v is num) ? v.toDouble() : double.tryParse(v.toString()) ?? 0;
       spots.add(FlSpot(i.toDouble(), y));
     }
+    final maxY = spots.fold<double>(0, (m, s) => s.y > m ? s.y : m);
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 1100),
+      curve: Curves.easeOutCubic,
+      builder: (context, t, _) => _chartBody([for (final s in spots) FlSpot(s.x, s.y * t)], maxY <= 0 ? 1 : maxY * 1.15),
+    );
+  }
+
+  Widget _chartBody(List<FlSpot> spots, double maxY) {
     return LineChart(
+      duration: Duration.zero,
       LineChartData(
         minY: 0,
+        maxY: maxY,
         gridData: FlGridData(
           show: true,
           drawVerticalLine: false,
@@ -476,8 +511,8 @@ class _Chart extends StatelessWidget {
         ),
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (_) => AffColors.ink,
-            tooltipRoundedRadius: 10,
+            getTooltipColor: (_) => AffColors.midnight,
+            tooltipRoundedRadius: 12,
             getTooltipItems: (spots) =>
                 spots.map((s) => LineTooltipItem(_currency.format(s.y), const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12))).toList(),
           ),
@@ -489,8 +524,8 @@ class _Chart extends StatelessWidget {
             spots: spots,
             isCurved: true,
             preventCurveOverShooting: true,
-            color: AffColors.purpleEnd,
-            barWidth: 3.5,
+            gradient: const LinearGradient(colors: [AffColors.purpleStart, AffColors.purpleEnd]),
+            barWidth: 4,
             isStrokeCapRound: true,
             dotData: FlDotData(
               show: true,
@@ -500,7 +535,7 @@ class _Chart extends StatelessWidget {
             belowBarData: BarAreaData(
               show: true,
               gradient: LinearGradient(
-                colors: [AffColors.purpleEnd.withValues(alpha: 0.16), AffColors.purpleEnd.withValues(alpha: 0.0)],
+                colors: [AffColors.purpleEnd.withValues(alpha: 0.22), AffColors.purpleEnd.withValues(alpha: 0.0)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),

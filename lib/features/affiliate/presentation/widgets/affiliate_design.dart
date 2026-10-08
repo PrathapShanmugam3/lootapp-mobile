@@ -1,103 +1,171 @@
 import 'package:flutter/material.dart';
 
-/// Purple/violet design system for the Affiliate (User) portal only —
-/// scoped to this feature so it never touches the shared flat theme used
-/// by Manager/Admin. Matches the client-supplied screenshots exactly:
-/// vivid purple gradient header/hero, lavender page background, white
-/// rounded-20 cards, pill-shaped floating bottom nav with a circular
-/// gradient Profile button.
+import '../../../../core/widgets/common.dart' show DecorativeOrbs, PressableScale;
+
+/// "Midnight Violet" design system for the Affiliate (User) portal — scoped
+/// to this feature so it never touches the shared theme used by
+/// Manager/Admin. Deep indigo header + hero surfaces with soft glows, a gold
+/// accent for money, lavender page background, white rounded-22 cards with
+/// layered shadows, and a floating midnight pill nav with a glowing Profile
+/// button.
 class AffColors {
   AffColors._();
 
-  static const purpleStart = Color(0xFFB224EF);
-  static const purpleEnd = Color(0xFF7B2FF7);
+  // Brand violet (names kept for existing call sites).
+  static const purpleStart = Color(0xFF8B5CF6);
+  static const purpleEnd = Color(0xFF5B3DF0);
+
+  // Midnight tones for the header, hero and nav.
+  static const midnight = Color(0xFF110C2E);
+  static const midnightSoft = Color(0xFF1E1550);
+
+  /// Warm highlight for money / rewards.
+  static const gold = Color(0xFFF5B942);
+  static const goldSoft = Color(0xFFFFE3A3);
+
+  /// Accent gradient — avatars, icon chips, progress fills.
   static const gradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [purpleStart, purpleEnd],
   );
 
-  static const pageBg = Color(0xFFF3EEFB);
-  static const ink = Color(0xFF1E1333);
-  static const inkMuted = Color(0xFF6B6480);
-  static const inkFaint = Color(0xFF9D96B5);
-  static const hairline = Color(0xFFEDE7F8);
+  /// Deep gradient — header, hero card.
+  static const heroGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF1E1550), Color(0xFF3A22A8), Color(0xFF6C4DF6)],
+    stops: [0.0, 0.62, 1.0],
+  );
 
-  static const success = Color(0xFF16A34A);
-  static const danger = Color(0xFFDC2626);
+  static const pageBg = Color(0xFFF5F3FC);
+  static const ink = Color(0xFF14112B);
+  static const inkMuted = Color(0xFF6A6688);
+  static const inkFaint = Color(0xFF9C99B6);
+  static const hairline = Color(0xFFEBE8F6);
+
+  // Vivid accents — used to give icon chips, avatars and tabs variety.
+  static const pink = Color(0xFFFF4DA6);
+  static const cyan = Color(0xFF22D3EE);
+  static const emerald = Color(0xFF10B981);
+  static const orange = Color(0xFFFF8A3D);
+  static const _accents = [purpleEnd, pink, cyan, emerald, orange, Color(0xFF8B5CF6)];
+
+  /// Stable accent color for [seed] (offer name, etc.) so the same item
+  /// always gets the same color.
+  static Color colorFor(String seed) {
+    var h = 0;
+    for (final c in seed.codeUnits) {
+      h = (h * 31 + c) & 0x7fffffff;
+    }
+    return _accents[h % _accents.length];
+  }
+
+  /// Two-tone gradient built from [colorFor].
+  static LinearGradient gradientFor(String seed) {
+    final c = colorFor(seed);
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [Color.lerp(c, Colors.white, 0.25)!, c],
+    );
+  }
+
+  static const success = Color(0xFF12A150);
+  static const danger = Color(0xFFE0343A);
   static const warning = Color(0xFFD97706);
 
+  /// Layered card shadow: tight contact shadow + wide violet ambient glow.
   static List<BoxShadow> cardShadow = [
-    BoxShadow(color: purpleEnd.withValues(alpha: 0.10), blurRadius: 24, offset: const Offset(0, 10)),
+    BoxShadow(color: midnightSoft.withValues(alpha: 0.05), blurRadius: 3, offset: const Offset(0, 1)),
+    BoxShadow(color: purpleEnd.withValues(alpha: 0.09), blurRadius: 26, offset: const Offset(0, 12)),
   ];
 }
 
-/// Purple gradient app header shared by every affiliate screen — title,
-/// subtitle, bell + avatar actions baked in.
+/// Deep-violet app header shared by every affiliate screen — title,
+/// subtitle, bell + avatar actions baked in. Rounded bottom edge with soft
+/// glow orbs for depth.
 class AffHeader extends StatelessWidget implements PreferredSizeWidget {
   const AffHeader({
     super.key,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     this.actions,
     this.automaticallyImplyLeading = true,
   });
 
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final List<Widget>? actions;
   final bool automaticallyImplyLeading;
 
   @override
-  Size get preferredSize => const Size.fromHeight(76);
+  Size get preferredSize => const Size.fromHeight(80);
 
   @override
   Widget build(BuildContext context) {
     final canPop = ModalRoute.of(context)?.canPop ?? false;
-    return Container(
-      decoration: const BoxDecoration(gradient: AffColors.gradient),
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: 76,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 14, 0),
-            child: Row(
-              children: [
-                if (automaticallyImplyLeading && canPop)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 4),
-                    child: IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
-                      onPressed: () => Navigator.of(context).pop(),
+    const radius = BorderRadius.vertical(bottom: Radius.circular(30));
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        boxShadow: [BoxShadow(color: AffColors.midnightSoft.withValues(alpha: 0.28), blurRadius: 22, offset: const Offset(0, 8))],
+      ),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: DecoratedBox(
+          decoration: const BoxDecoration(gradient: AffColors.heroGradient),
+          child: Stack(
+            children: [
+              const Positioned.fill(child: DecorativeOrbs(scale: 0.8)),
+              SafeArea(
+                bottom: false,
+                child: SizedBox(
+                  height: 80,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 14, 4),
+                    child: Row(
+                      children: [
+                        if (automaticallyImplyLeading && canPop)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 4),
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                          ),
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+                              ),
+                              if (subtitle != null) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  subtitle!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: Colors.white.withValues(alpha: 0.72), fontSize: 12.5, fontWeight: FontWeight.w500, letterSpacing: 0.1),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        if (actions != null) ...actions!,
+                      ],
                     ),
                   ),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: Colors.white, fontSize: 21, fontWeight: FontWeight.w800, letterSpacing: -0.3),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.82), fontSize: 12.5, fontWeight: FontWeight.w500),
-                      ),
-                    ],
-                  ),
                 ),
-                if (actions != null) ...actions!,
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -121,8 +189,8 @@ class AffHeaderIcon extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Material(
-            color: Colors.white.withValues(alpha: 0.18),
-            shape: const CircleBorder(),
+            color: Colors.white.withValues(alpha: 0.14),
+            shape: CircleBorder(side: BorderSide(color: Colors.white.withValues(alpha: 0.22))),
             child: InkWell(
               customBorder: const CircleBorder(),
               onTap: onTap,
@@ -141,9 +209,9 @@ class AffHeaderIcon extends StatelessWidget {
                 width: 8,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFACC15),
+                  color: AffColors.gold,
                   shape: BoxShape.circle,
-                  border: Border.all(color: AffColors.purpleEnd, width: 1.5),
+                  border: Border.all(color: AffColors.midnightSoft, width: 1.5),
                 ),
               ),
             ),
@@ -172,81 +240,189 @@ class AffHeaderAvatar extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white.withValues(alpha: 0.22),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 1.5),
+            gradient: const LinearGradient(colors: [AffColors.goldSoft, AffColors.gold], begin: Alignment.topLeft, end: Alignment.bottomRight),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.55), width: 1.5),
           ),
-          child: Text(initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14)),
+          child: Text(initials, style: const TextStyle(color: AffColors.midnight, fontWeight: FontWeight.w900, fontSize: 14)),
         ),
       ),
     );
   }
 }
 
-/// Full-bleed purple gradient hero card used at the top of Dashboard /
-/// Wallet / Profile bodies (wallet balance, greeting, avatar block).
-class AffHeroCard extends StatelessWidget {
+/// Deep midnight-violet hero card used at the top of Dashboard / Wallet /
+/// Profile bodies (wallet balance, greeting, avatar block). Soft glow orbs,
+/// a hairline highlight border and a slowly pulsing outer glow give it depth.
+class AffHeroCard extends StatefulWidget {
   const AffHeroCard({super.key, required this.child, this.padding = const EdgeInsets.all(22)});
 
   final Widget child;
   final EdgeInsetsGeometry padding;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: padding,
-      decoration: BoxDecoration(
-        gradient: AffColors.gradient,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.28), blurRadius: 24, offset: const Offset(0, 12))],
-      ),
-      child: DefaultTextStyle.merge(style: const TextStyle(color: Colors.white), child: child),
-    );
-  }
+  State<AffHeroCard> createState() => _AffHeroCardState();
 }
 
-/// White rounded-20 card with a soft purple-tinted shadow — the base
-/// surface for stat tiles, lists, forms across the affiliate portal.
-class AffCard extends StatelessWidget {
-  const AffCard({super.key, required this.child, this.padding = const EdgeInsets.all(16), this.onTap});
+class _AffHeroCardState extends State<AffHeroCard> with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse = AnimationController(vsync: this, duration: const Duration(milliseconds: 2800));
 
-  final Widget child;
-  final EdgeInsetsGeometry padding;
-  final VoidCallback? onTap;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.maybeOf(context)?.disableAnimations ?? false) {
+      _pulse.stop();
+    } else if (!_pulse.isAnimating) {
+      _pulse.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: AffColors.cardShadow,
-      ),
+    return AnimatedBuilder(
+      animation: _pulse,
+      builder: (context, child) {
+        final t = Curves.easeInOut.transform(_pulse.value);
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: AffColors.heroGradient,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: Color.lerp(Colors.white.withValues(alpha: 0.12), AffColors.pink.withValues(alpha: 0.55), t)!),
+            boxShadow: [
+              BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.30 + 0.18 * t), blurRadius: 30 + 14 * t, offset: const Offset(0, 16)),
+              BoxShadow(color: AffColors.pink.withValues(alpha: 0.10 + 0.14 * t), blurRadius: 36, offset: const Offset(-8, 20)),
+            ],
+          ),
+          child: child,
+        );
+      },
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Material(
-          color: Colors.transparent,
-          child: onTap == null
-              ? Padding(padding: padding, child: child)
-              : InkWell(onTap: onTap, child: Padding(padding: padding, child: child)),
+        borderRadius: BorderRadius.circular(27),
+        child: Stack(
+          children: [
+            const Positioned.fill(child: DecorativeOrbs()),
+            Padding(
+              padding: widget.padding,
+              child: DefaultTextStyle.merge(style: const TextStyle(color: Colors.white), child: widget.child),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
+/// White rounded-22 card with a layered violet-tinted shadow — the base
+/// surface for stat tiles, lists, forms across the affiliate portal.
+class AffCard extends StatelessWidget {
+  const AffCard({super.key, required this.child, this.padding = const EdgeInsets.all(16), this.onTap, this.accent});
+
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final VoidCallback? onTap;
+
+  /// Optional glow color: tints the card's corner, borders it and casts a
+  /// matching colored shadow.
+  final Color? accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final card = Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: accent == null ? AffColors.hairline : accent!.withValues(alpha: 0.28)),
+        boxShadow: accent == null
+            ? AffColors.cardShadow
+            : [
+                ...AffColors.cardShadow,
+                BoxShadow(color: accent!.withValues(alpha: 0.22), blurRadius: 28, offset: const Offset(0, 12)),
+              ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(21),
+        child: Stack(
+          children: [
+            if (accent != null)
+              Positioned(
+                top: -46,
+                right: -46,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 150,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(colors: [accent!.withValues(alpha: 0.20), accent!.withValues(alpha: 0)]),
+                    ),
+                  ),
+                ),
+              ),
+            Material(
+              color: Colors.transparent,
+              child: onTap == null
+                  ? Padding(padding: padding, child: child)
+                  : InkWell(onTap: onTap, child: Padding(padding: padding, child: child)),
+            ),
+          ],
+        ),
+      ),
+    );
+    // Tappable cards sink slightly under the finger.
+    return onTap == null ? card : PressableScale(onTap: onTap, scale: 0.975, child: card);
+  }
+}
+
+/// Rounded-square icon chip tinted with [color] — use for stat tiles and
+/// list leading icons instead of repeating the brand gradient everywhere.
+class AffIconChip extends StatelessWidget {
+  const AffIconChip({super.key, required this.icon, this.color = AffColors.purpleEnd, this.size = 42, this.solid = false});
+
+  final IconData icon;
+  final Color color;
+  final double size;
+
+  /// Solid gradient fill with a white icon, instead of a soft tint.
+  final bool solid;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        gradient: solid ? LinearGradient(colors: [color.withValues(alpha: 0.85), color], begin: Alignment.topLeft, end: Alignment.bottomRight) : null,
+        color: solid ? null : color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(size * 0.34),
+        boxShadow: solid ? [BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 12, offset: const Offset(0, 5))] : null,
+      ),
+      child: Icon(icon, color: solid ? Colors.white : color, size: size * 0.48),
+    );
+  }
+}
+
 /// One destination in [AffNavBar].
 class AffNavItem {
-  const AffNavItem({required this.icon, required this.selectedIcon, required this.label});
+  const AffNavItem({required this.icon, required this.selectedIcon, required this.label, this.color = AffColors.purpleEnd});
   final IconData icon;
   final IconData selectedIcon;
   final String label;
+
+  /// Accent used for this tab's selected capsule and glow.
+  final Color color;
 }
 
-/// Pill-shaped floating bottom nav — white rounded bar holding the first
-/// N-1 tabs, plus a circular gradient Profile button that floats above and
-/// overlaps its right edge, exactly matching the screenshots.
+/// Floating bottom nav — a midnight glass pill holding the first N-1 tabs
+/// (the selected one lit by a glowing violet capsule), plus a circular
+/// gradient Profile button that overlaps its right edge with a gold ring
+/// when active.
 class AffNavBar extends StatelessWidget {
   const AffNavBar({
     super.key,
@@ -267,51 +443,92 @@ class AffNavBar extends StatelessWidget {
     final profileSelected = selectedIndex == profileIndex;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 0, 16, 10 + MediaQuery.of(context).padding.bottom),
+      padding: EdgeInsets.fromLTRB(14, 0, 14, 10 + MediaQuery.of(context).padding.bottom),
       child: SizedBox(
-        height: 64,
+        height: 68,
         child: Stack(
           clipBehavior: Clip.none,
           alignment: Alignment.centerRight,
           children: [
             Container(
-              height: 64,
-              margin: const EdgeInsets.only(right: 28),
+              height: 68,
+              margin: const EdgeInsets.only(right: 30),
               padding: const EdgeInsets.symmetric(horizontal: 6),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(32),
-                boxShadow: [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.18), blurRadius: 22, offset: const Offset(0, 10))],
+                gradient: const LinearGradient(
+                  colors: [AffColors.midnightSoft, AffColors.midnight],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.circular(34),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                boxShadow: [BoxShadow(color: AffColors.midnight.withValues(alpha: 0.40), blurRadius: 26, offset: const Offset(0, 12))],
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   for (var i = 0; i < barItems.length; i++)
                     _AffNavButton(item: barItems[i], selected: i == selectedIndex, onTap: () => onSelected(i)),
-                  const SizedBox(width: 36),
+                  const SizedBox(width: 38),
                 ],
               ),
             ),
             Positioned(
               right: 0,
-              child: GestureDetector(
+              child: PressableScaleLite(
                 onTap: () => onSelected(profileIndex),
-                child: Container(
-                  width: 60,
-                  height: 60,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  width: 62,
+                  height: 62,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     gradient: AffColors.gradient,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3),
-                    boxShadow: [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.45), blurRadius: 18, offset: const Offset(0, 8))],
+                    border: Border.all(
+                      color: profileSelected ? AffColors.gold : Colors.white.withValues(alpha: 0.85),
+                      width: profileSelected ? 2.5 : 3,
+                    ),
+                    boxShadow: [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.5), blurRadius: 20, offset: const Offset(0, 8))],
                   ),
-                  child: Icon(profileSelected ? profileItem.selectedIcon : profileItem.icon, color: Colors.white, size: 24),
+                  child: Icon(profileSelected ? profileItem.selectedIcon : profileItem.icon, color: Colors.white, size: 25),
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Tap target with a quick scale-down on press (for the nav Profile button).
+class PressableScaleLite extends StatefulWidget {
+  const PressableScaleLite({super.key, required this.child, required this.onTap});
+
+  final Widget child;
+  final VoidCallback onTap;
+
+  @override
+  State<PressableScaleLite> createState() => _PressableScaleLiteState();
+}
+
+class _PressableScaleLiteState extends State<PressableScaleLite> {
+  bool _down = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) => setState(() => _down = true),
+      onTapCancel: () => setState(() => _down = false),
+      onTapUp: (_) => setState(() => _down = false),
+      onTap: widget.onTap,
+      child: AnimatedScale(
+        scale: _down ? 0.92 : 1,
+        duration: const Duration(milliseconds: 110),
+        curve: Curves.easeOut,
+        child: widget.child,
       ),
     );
   }
@@ -326,7 +543,7 @@ class _AffNavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AffColors.purpleEnd : AffColors.inkFaint;
+    final color = selected ? Colors.white : Colors.white.withValues(alpha: 0.5);
     return Semantics(
       button: true,
       selected: selected,
@@ -337,19 +554,36 @@ class _AffNavButton extends StatelessWidget {
         splashFactory: NoSplash.splashFactory,
         radius: 28,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 2),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(selected ? item.selectedIcon : item.icon, size: 22, color: color),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                width: selected ? 46 : 30,
+                height: 30,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  gradient: selected ? LinearGradient(colors: [Color.lerp(item.color, Colors.white, 0.28)!, item.color]) : null,
+                  borderRadius: BorderRadius.circular(999),
+                  boxShadow: selected ? [BoxShadow(color: item.color.withValues(alpha: 0.65), blurRadius: 18, offset: const Offset(0, 4))] : null,
+                ),
+                child: AnimatedScale(
+                  scale: selected ? 1.12 : 1,
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeOutBack,
+                  child: Icon(selected ? item.selectedIcon : item.icon, size: 21, color: color),
+                ),
+              ),
               const SizedBox(height: 3),
               Text(
                 item.label,
                 maxLines: 1,
                 overflow: TextOverflow.fade,
                 softWrap: false,
-                style: TextStyle(fontSize: 9.5, fontWeight: selected ? FontWeight.w700 : FontWeight.w500, color: color),
+                style: TextStyle(fontSize: 9.5, fontWeight: selected ? FontWeight.w700 : FontWeight.w500, color: color, letterSpacing: 0.1),
               ),
             ],
           ),
@@ -359,7 +593,7 @@ class _AffNavButton extends StatelessWidget {
   }
 }
 
-/// Section header: bold title + optional "View all →" action link.
+/// Section header: bold title + optional "View all" pill action.
 class AffSectionHeader extends StatelessWidget {
   const AffSectionHeader({super.key, required this.title, this.action, this.onActionTap});
 
@@ -370,18 +604,69 @@ class AffSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AffColors.ink)),
+          Flexible(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: AffColors.ink, letterSpacing: -0.3),
+            ),
+          ),
           if (action != null)
             GestureDetector(
               onTap: onActionTap,
-              child: Text(action!, style: const TextStyle(color: AffColors.purpleEnd, fontWeight: FontWeight.w700, fontSize: 12.5)),
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+                decoration: BoxDecoration(color: AffColors.purpleEnd.withValues(alpha: 0.09), borderRadius: BorderRadius.circular(999)),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(action!, style: const TextStyle(color: AffColors.purpleEnd, fontWeight: FontWeight.w700, fontSize: 12)),
+                    const SizedBox(width: 2),
+                    const Icon(Icons.arrow_forward_rounded, size: 13, color: AffColors.purpleEnd),
+                  ],
+                ),
+              ),
             ),
         ],
       ),
+    );
+  }
+}
+
+/// Soft colored light behind a screen's content — fixed blobs of pink, cyan
+/// and violet on the lavender page, so scrolling content floats over a
+/// gently colored backdrop. Wrap a tab screen's body with it.
+class AffAmbient extends StatelessWidget {
+  const AffAmbient({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget blob(double size, Color color, double alpha) => IgnorePointer(
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(colors: [color.withValues(alpha: alpha), color.withValues(alpha: 0)]),
+            ),
+          ),
+        );
+    return Stack(
+      children: [
+        Positioned(top: 40, right: -120, child: blob(340, AffColors.pink, 0.16)),
+        Positioned(top: 360, left: -150, child: blob(380, AffColors.cyan, 0.13)),
+        Positioned(bottom: 40, right: -130, child: blob(360, AffColors.purpleStart, 0.16)),
+        child,
+      ],
     );
   }
 }

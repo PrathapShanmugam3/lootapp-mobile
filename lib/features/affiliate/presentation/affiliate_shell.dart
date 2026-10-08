@@ -17,8 +17,21 @@ class AffiliateShell extends StatefulWidget {
   State<AffiliateShell> createState() => _AffiliateShellState();
 }
 
-class _AffiliateShellState extends State<AffiliateShell> {
+class _AffiliateShellState extends State<AffiliateShell> with SingleTickerProviderStateMixin {
   int _index = 0;
+  late final AnimationController _tabAnim = AnimationController(vsync: this, duration: const Duration(milliseconds: 320), value: 1);
+
+  @override
+  void dispose() {
+    _tabAnim.dispose();
+    super.dispose();
+  }
+
+  void _select(int i) {
+    if (i == _index) return;
+    setState(() => _index = i);
+    _tabAnim.forward(from: 0);
+  }
 
   final _tabs = const [
     DashboardScreen(),
@@ -46,15 +59,22 @@ class _AffiliateShellState extends State<AffiliateShell> {
     return Scaffold(
       backgroundColor: AffColors.pageBg,
       extendBody: true,
-      body: IndexedStack(index: _index, children: _tabs),
+      body: AnimatedBuilder(
+        animation: _tabAnim,
+        builder: (context, child) {
+          final t = Curves.easeOutCubic.transform(_tabAnim.value);
+          return Opacity(opacity: 0.35 + 0.65 * t, child: Transform.translate(offset: Offset(0, (1 - t) * 14), child: child));
+        },
+        child: IndexedStack(index: _index, children: _tabs),
+      ),
       bottomNavigationBar: AffNavBar(
         selectedIndex: _index,
-        onSelected: (i) => setState(() => _index = i),
+        onSelected: _select,
         items: const [
-          AffNavItem(icon: Icons.grid_view_rounded, selectedIcon: Icons.grid_view_rounded, label: 'Dash'),
-          AffNavItem(icon: Icons.diamond_outlined, selectedIcon: Icons.diamond, label: 'Campaigns'),
-          AffNavItem(icon: Icons.currency_rupee_rounded, selectedIcon: Icons.currency_rupee_rounded, label: 'Payouts'),
-          AffNavItem(icon: Icons.mail_outline_rounded, selectedIcon: Icons.mail_rounded, label: 'Chat'),
+          AffNavItem(icon: Icons.grid_view_rounded, selectedIcon: Icons.grid_view_rounded, label: 'Dash', color: AffColors.purpleEnd),
+          AffNavItem(icon: Icons.diamond_outlined, selectedIcon: Icons.diamond, label: 'Campaigns', color: AffColors.pink),
+          AffNavItem(icon: Icons.currency_rupee_rounded, selectedIcon: Icons.currency_rupee_rounded, label: 'Payouts', color: AffColors.orange),
+          AffNavItem(icon: Icons.mail_outline_rounded, selectedIcon: Icons.mail_rounded, label: 'Chat', color: AffColors.cyan),
           AffNavItem(icon: Icons.sentiment_satisfied_alt_rounded, selectedIcon: Icons.sentiment_satisfied_alt_rounded, label: 'Profile'),
         ],
       ),

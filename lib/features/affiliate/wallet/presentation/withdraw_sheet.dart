@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/common.dart';
+import '../../presentation/widgets/affiliate_design.dart';
 import 'wallet_providers.dart';
 
 class WithdrawSheet extends ConsumerStatefulWidget {
@@ -58,7 +58,7 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(4)),
                     ),
-                    Text('Withdraw funds', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+                    const Text('Withdraw funds', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.4, color: AffColors.ink)),
                     const SizedBox(height: 16),
                     if (activeTypes.isEmpty)
                       const EmptyState(message: 'Withdrawals are currently unavailable', icon: Icons.block)
@@ -105,15 +105,7 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
                         ),
                       ],
                       const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton(
-                          onPressed: _submitting ? null : () => _submit(context),
-                          child: _submitting
-                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                              : const Text('Submit request'),
-                        ),
-                      ),
+                      GradientButton(label: 'Submit request', loading: _submitting, onPressed: () => _submit(context)),
                     ],
                     const SizedBox(height: 12),
                   ],
@@ -143,7 +135,7 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result['message']?.toString() ?? (success ? 'Withdrawal requested' : 'Withdrawal failed')),
-          backgroundColor: success ? AppColors.success : AppColors.danger,
+          backgroundColor: success ? AffColors.success : AffColors.danger,
         ),
       );
     } catch (e) {

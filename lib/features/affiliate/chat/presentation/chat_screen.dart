@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/widgets/chat_message.dart';
 import '../../../../core/widgets/common.dart';
+import '../../presentation/widgets/aff_user_avatar.dart';
+import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'chat_providers.dart';
 
@@ -54,7 +56,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final chatAsync = ref.watch(chatProvider);
+    final rawAsync = ref.watch(chatProvider);
+    final sample = isSample(rawAsync);
+    final chatAsync = withSample(rawAsync, SampleData.chat);
 
     return Scaffold(
       backgroundColor: AffColors.pageBg,
@@ -63,20 +67,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         subtitle: 'LootHat Affiliate',
         actions: [
           AffHeaderIcon(icon: Icons.notifications_outlined, onTap: () {}),
-          const AffHeaderAvatar(initials: 'TA'),
+          const AffUserAvatar(),
         ],
       ),
-      body: chatAsync.when(
+      body: AffAmbient(
+        child: chatAsync.when(
         loading: () => const LoadingState(),
         error: (e, _) => ErrorState(message: 'Failed to load chat.\n$e', onRetry: () => ref.invalidate(chatProvider)),
         data: (chatState) {
           final closed = chatState.status == 'closed';
           return Column(
             children: [
+              if (sample)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                  child: SampleDataBanner(onRetry: () => ref.invalidate(chatProvider)),
+                ),
               _SupportBanner(),
               Expanded(
                 child: chatState.messages.isEmpty
-                    ? const Center(child: Text('No messages yet — say hello!', style: TextStyle(color: AffColors.inkMuted)))
+                    ? const EmptyState(message: 'No messages yet — say hello!', icon: Icons.forum_rounded)
                     : ListView.builder(
                         controller: _scrollController,
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -120,7 +130,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       children: [
                         Expanded(
                           child: Container(
-                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(999), boxShadow: AffColors.cardShadow),
+                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(999), border: Border.all(color: AffColors.hairline), boxShadow: AffColors.cardShadow),
                             child: TextField(
                               controller: _controller,
                               minLines: 1,
@@ -137,7 +147,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ),
                         const SizedBox(width: 8),
                         Container(
-                          decoration: const BoxDecoration(gradient: AffColors.gradient, shape: BoxShape.circle),
+                          decoration: BoxDecoration(
+                            gradient: AffColors.gradient,
+                            shape: BoxShape.circle,
+                            boxShadow: [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.4), blurRadius: 14, offset: const Offset(0, 6))],
+                          ),
                           child: IconButton(
                             icon: _sending
                                 ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
@@ -154,6 +168,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           );
         },
       ),
+      ),
     );
   }
 }
@@ -166,17 +181,18 @@ class _SupportBanner extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
       child: AffCard(
+        accent: AffColors.cyan,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
           children: [
             Stack(
               children: [
                 Container(
-                  width: 38,
-                  height: 38,
+                  width: 42,
+                  height: 42,
                   alignment: Alignment.center,
                   decoration: const BoxDecoration(gradient: AffColors.gradient, shape: BoxShape.circle),
-                  child: const Text('S', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                  child: const Icon(Icons.support_agent_rounded, color: Colors.white, size: 21),
                 ),
                 Positioned(
                   right: 0,
@@ -195,14 +211,9 @@ class _SupportBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('LootHat Support', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: AffColors.ink)),
-                  Text('Active · replies in minutes', style: TextStyle(fontSize: 11, color: AffColors.inkMuted, fontWeight: FontWeight.w500)),
+                  Text('Ask about offers, payouts or your account', style: TextStyle(fontSize: 11, color: AffColors.inkMuted, fontWeight: FontWeight.w500)),
                 ],
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(color: AffColors.purpleEnd.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
-              child: const Text('Direct help', style: TextStyle(color: AffColors.purpleEnd, fontSize: 11, fontWeight: FontWeight.w700)),
             ),
           ],
         ),
@@ -227,7 +238,7 @@ class _QuickReplyChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           alignment: Alignment.center,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(999), boxShadow: AffColors.cardShadow),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(999), border: Border.all(color: AffColors.hairline)),
           child: Text(label, style: const TextStyle(color: AffColors.ink, fontWeight: FontWeight.w600, fontSize: 12.5)),
         ),
       ),
@@ -245,17 +256,18 @@ class _Bubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final bubble = Container(
       constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.72),
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 8),
+      padding: const EdgeInsets.fromLTRB(15, 11, 15, 9),
       decoration: BoxDecoration(
         gradient: mine ? AffColors.gradient : null,
         color: mine ? null : Colors.white,
         borderRadius: BorderRadius.only(
-          topLeft: const Radius.circular(16),
-          topRight: const Radius.circular(16),
-          bottomLeft: Radius.circular(mine ? 16 : 4),
-          bottomRight: Radius.circular(mine ? 4 : 16),
+          topLeft: const Radius.circular(20),
+          topRight: const Radius.circular(20),
+          bottomLeft: Radius.circular(mine ? 20 : 5),
+          bottomRight: Radius.circular(mine ? 5 : 20),
         ),
-        boxShadow: AffColors.cardShadow,
+        border: mine ? null : Border.all(color: AffColors.hairline),
+        boxShadow: mine ? [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.25), blurRadius: 14, offset: const Offset(0, 6))] : AffColors.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/common.dart';
+import '../../presentation/widgets/affiliate_design.dart';
 import '../../../auth/presentation/auth_providers.dart';
 import '../../wallet/presentation/wallet_providers.dart';
 
@@ -53,20 +54,20 @@ class _RedeemScreenState extends ConsumerState<RedeemScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EEFB),
-      appBar: const PortalHeader(title: 'Redeem code'),
+      backgroundColor: AffColors.pageBg,
+      appBar: const AffHeader(title: 'Redeem code', subtitle: 'Credit a reward code to your wallet'),
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            GradientHeroCard(
+            AffHeroCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
-                  Icon(Icons.redeem, color: Colors.white, size: 32),
+                  Icon(Icons.redeem_rounded, color: AffColors.gold, size: 34),
                   SizedBox(height: 10),
-                  Text('Have a reward code?', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                  Text('Have a reward code?', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.4)),
                   SizedBox(height: 4),
                   Text('Redeem it below to instantly credit your wallet.', style: TextStyle(color: Colors.white70)),
                 ],
@@ -79,12 +80,7 @@ class _RedeemScreenState extends ConsumerState<RedeemScreen> {
               decoration: const InputDecoration(labelText: 'Redeem code', prefixIcon: Icon(Icons.confirmation_number_outlined)),
             ),
             const SizedBox(height: 16),
-            FilledButton(
-              onPressed: _submitting ? null : _redeem,
-              child: _submitting
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Redeem'),
-            ),
+            GradientButton(label: 'Redeem', loading: _submitting, onPressed: _redeem),
           ],
         ),
       ),

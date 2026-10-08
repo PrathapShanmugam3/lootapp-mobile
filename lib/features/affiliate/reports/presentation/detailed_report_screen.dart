@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/common.dart';
+import '../../presentation/sample_data.dart';
+import '../../presentation/widgets/affiliate_design.dart';
 import 'reports_providers.dart';
 
 final _currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
@@ -35,11 +37,13 @@ class _DetailedReportScreenState extends ConsumerState<DetailedReportScreen> {
   @override
   Widget build(BuildContext context) {
     final filter = DetailedReportFilter(offId: widget.offId, startDate: widget.startDate, endDate: widget.endDate);
-    final reportAsync = ref.watch(detailedReportProvider(filter));
+    final rawAsync = ref.watch(detailedReportProvider(filter));
+    final sample = isSample(rawAsync);
+    final reportAsync = withSample(rawAsync, SampleData.detailedReport);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EEFB),
-      appBar: PortalHeader(title: widget.offerName),
+      backgroundColor: AffColors.pageBg,
+      appBar: AffHeader(title: widget.offerName, subtitle: 'Click-level report'),
       body: reportAsync.when(
         loading: () => const LoadingState(),
         error: (e, _) => ErrorState(
@@ -47,6 +51,8 @@ class _DetailedReportScreenState extends ConsumerState<DetailedReportScreen> {
           onRetry: () => ref.invalidate(detailedReportProvider(filter)),
         ),
         data: (data) => _Body(
+          sample: sample,
+          onRetry: () => ref.invalidate(detailedReportProvider(filter)),
           data: data,
           statusFilter: _statusFilter,
           search: _search,
@@ -68,6 +74,8 @@ class _DetailedReportScreenState extends ConsumerState<DetailedReportScreen> {
 
 class _Body extends StatelessWidget {
   const _Body({
+    this.sample = false,
+    this.onRetry,
     required this.data,
     required this.statusFilter,
     required this.search,
@@ -77,6 +85,8 @@ class _Body extends StatelessWidget {
     required this.onPageChanged,
   });
 
+  final bool sample;
+  final VoidCallback? onRetry;
   final Map<String, dynamic> data;
   final String statusFilter;
   final String search;
@@ -114,8 +124,9 @@ class _Body extends StatelessWidget {
     final pageRows = rows.skip(clampedPage * _pageSize).take(_pageSize).toList();
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
       children: [
+        if (sample) SampleDataBanner(onRetry: onRetry),
         Row(
           children: [
             Expanded(child: StatTile(label: 'Clicks', value: (stats['totalClicks'] ?? 0).toString(), icon: Icons.ads_click)),
@@ -165,6 +176,7 @@ class _Body extends StatelessWidget {
                   for (var p = 0; p < totalPages; p++)
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         backgroundColor: p == clampedPage ? AppColors.primary : null,
                         foregroundColor: p == clampedPage ? Colors.white : null,
                         minimumSize: const Size(36, 36),
@@ -197,7 +209,8 @@ class _StatusPill extends StatelessWidget {
       selected: selected,
       onSelected: (_) => onTap(),
       selectedColor: AppColors.primary,
-      labelStyle: TextStyle(color: selected ? Colors.white : null, fontWeight: FontWeight.w600),
+      showCheckmark: false,
+      labelStyle: TextStyle(color: selected ? Colors.white : AffColors.inkMuted, fontWeight: FontWeight.w700),
     );
   }
 }
@@ -213,16 +226,16 @@ class _ClickRow extends StatelessWidget {
     final userIdentity = (row['userIdentity'] as Map?)?.cast<String, dynamic>() ?? {};
     final referIdentity = (row['referIdentity'] as Map?)?.cast<String, dynamic>() ?? {};
     final status = (row['status'] ?? '').toString();
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: AffCard(
         padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Text('#$index', style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                Text('#$index', style: const TextStyle(color: AffColors.inkFaint, fontSize: 12, fontWeight: FontWeight.w700)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -243,7 +256,7 @@ class _ClickRow extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               '${row['date'] ?? ''} ${row['time'] ?? ''}'.trim(),
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 11.5),
+              style: const TextStyle(color: AffColors.inkFaint, fontSize: 11.5),
             ),
           ],
         ),

@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/common.dart';
 import '../../auth/presentation/auth_providers.dart';
-import '../../legal/presentation/privacy_policy_screen.dart';
 import '../profile/presentation/profile_screen.dart';
 
-/// Account menu opened from the [PortalHeaderAvatar] — mirrors the Next.js
-/// header's profile dropdown (My Profile / Join Telegram / Join WhatsApp /
-/// Rate Us / Privacy Policy / Logout) at lootapp-ui's AppHeader.js, so the
-/// community links aren't lost in the Flutter port.
+/// Quick account sheet opened from the header avatar — just the essentials
+/// (view profile, log out). Community links, legal pages and the rest live
+/// on the Profile tab so they aren't duplicated here.
 Future<void> showProfileMenuSheet(BuildContext context, WidgetRef ref, {required String initials, required String name}) {
   return showModalBottomSheet(
     context: context,
@@ -27,20 +24,6 @@ class _ProfileMenuSheet extends StatelessWidget {
   final String name;
   final WidgetRef ref;
 
-  static const _telegramUrl = 'https://t.me/+p03Tb_KqMwMwNWM1';
-  static const _whatsappUrl = 'https://www.whatsapp.com/channel/0029VaDmXVGLY6dGWlmmJC2k';
-  static const _rateUsUrl = 'https://play.google.com/store/apps/details?id=com.camp.loothat';
-
-  Future<void> _open(BuildContext context, String url) async {
-    Navigator.of(context).pop();
-    final uri = Uri.parse(url);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not open $url')));
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -48,9 +31,8 @@ class _ProfileMenuSheet extends StatelessWidget {
         margin: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.hairline),
-          boxShadow: AppColors.softShadow(1.4),
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: AppColors.softShadow(1.6),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -58,22 +40,22 @@ class _ProfileMenuSheet extends StatelessWidget {
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-              color: AppColors.ink,
+              padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+              decoration: const BoxDecoration(gradient: AppColors.midnightGradient),
               child: Row(
                 children: [
                   CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.white,
-                    child: Text(initials, style: const TextStyle(color: AppColors.ink, fontWeight: FontWeight.w700)),
+                    radius: 22,
+                    backgroundColor: AppColors.gold,
+                    child: Text(initials, style: const TextStyle(color: AppColors.midnight, fontWeight: FontWeight.w900)),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(name.isNotEmpty ? name : 'Account', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
-                        const Text('Account menu', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        Text(name.isNotEmpty ? name : 'Account', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
+                        const Text('LootHat Affiliate', style: TextStyle(color: Colors.white70, fontSize: 12)),
                       ],
                     ),
                   ),
@@ -82,9 +64,9 @@ class _ProfileMenuSheet extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             SettingsRow(
-              icon: Icons.person_outline,
-              chipColor: AppColors.inkMuted,
-              label: 'My Profile',
+              icon: Icons.person_outline_rounded,
+              chipColor: AppColors.primary,
+              label: 'View profile',
               onTap: () {
                 Navigator.of(context).pop();
                 Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProfileScreen()));
@@ -92,40 +74,9 @@ class _ProfileMenuSheet extends StatelessWidget {
             ),
             const RowDivider(),
             SettingsRow(
-              icon: Icons.send_outlined,
-              chipColor: AppColors.inkMuted,
-              label: 'Join Telegram',
-              onTap: () => _open(context, _telegramUrl),
-            ),
-            const RowDivider(),
-            SettingsRow(
-              icon: Icons.chat_bubble_outline,
-              chipColor: AppColors.inkMuted,
-              label: 'Join WhatsApp',
-              onTap: () => _open(context, _whatsappUrl),
-            ),
-            const RowDivider(),
-            SettingsRow(
-              icon: Icons.star_outline,
-              chipColor: AppColors.inkMuted,
-              label: 'Rate Us',
-              onTap: () => _open(context, _rateUsUrl),
-            ),
-            const RowDivider(),
-            SettingsRow(
-              icon: Icons.privacy_tip_outlined,
-              chipColor: AppColors.inkMuted,
-              label: 'Privacy Policy',
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()));
-              },
-            ),
-            const RowDivider(),
-            SettingsRow(
-              icon: Icons.logout,
+              icon: Icons.logout_rounded,
               chipColor: AppColors.danger,
-              label: 'Logout',
+              label: 'Log out',
               labelColor: AppColors.danger,
               onTap: () {
                 Navigator.of(context).pop();

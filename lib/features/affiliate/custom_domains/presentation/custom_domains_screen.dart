@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/common.dart';
+import '../../presentation/widgets/affiliate_design.dart';
 import 'custom_domains_providers.dart';
 
 // Mirrors the Next.js form's HTML5 pattern:
@@ -71,7 +71,7 @@ class _CustomDomainsScreenState extends ConsumerState<CustomDomainsScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Remove', style: TextStyle(color: AppColors.danger)),
+            child: const Text('Remove', style: TextStyle(color: AffColors.danger)),
           ),
         ],
       ),
@@ -90,14 +90,21 @@ class _CustomDomainsScreenState extends ConsumerState<CustomDomainsScreen> {
     final domainsAsync = ref.watch(customDomainsProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EEFB),
-      appBar: const PortalHeader(title: 'Custom Domains'),
+      backgroundColor: AffColors.pageBg,
+      appBar: const AffHeader(title: 'Custom domains', subtitle: 'Use your own link domain'),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(customDomainsProvider),
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
           children: [
-            Form(
+            AffCard(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Connect a domain', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.5, color: AffColors.ink)),
+                  const SizedBox(height: 12),
+                  Form(
               key: _formKey,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,12 +131,15 @@ class _CustomDomainsScreenState extends ConsumerState<CustomDomainsScreen> {
                 ],
               ),
             ),
+                ],
+              ),
+            ),
             if (_pendingInstructions != null) ...[
               const SizedBox(height: 16),
               _DnsInstructionsCard(instructions: _pendingInstructions!, onDismiss: () => setState(() => _pendingInstructions = null)),
             ],
             const SizedBox(height: 24),
-            const SectionHeader(title: 'Your domains'),
+            const AffSectionHeader(title: 'Your domains'),
             domainsAsync.when(
               loading: () => const SizedBox(height: 120, child: LoadingState(compact: true)),
               error: (e, _) => ErrorState(message: 'Failed to load domains.\n$e', onRetry: () => ref.invalidate(customDomainsProvider)),
@@ -166,17 +176,17 @@ class _DnsInstructionsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final domain = instructions['domain']?.toString() ?? '';
     final token = instructions['verificationToken']?.toString() ?? '';
-    return Card(
-      color: AppColors.primary.withValues(alpha: 0.06),
+    return AffCard(
+      padding: const EdgeInsets.all(16),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.dns_outlined, color: AppColors.primary),
-                const SizedBox(width: 8),
+                const AffIconChip(icon: Icons.dns_rounded, size: 36, solid: true),
+                const SizedBox(width: 10),
                 const Expanded(child: Text('Add this DNS TXT record', style: TextStyle(fontWeight: FontWeight.w700))),
                 IconButton(icon: const Icon(Icons.close, size: 18), onPressed: onDismiss),
               ],
@@ -203,7 +213,7 @@ class _DnsRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(width: 50, child: Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 12))),
+        SizedBox(width: 50, child: Text(label, style: const TextStyle(color: AffColors.inkMuted, fontSize: 12, fontWeight: FontWeight.w600))),
         Expanded(
           child: SelectableText(value, style: const TextStyle(fontFamily: 'monospace', fontSize: 12.5)),
         ),
@@ -222,18 +232,26 @@ class _DomainTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final verified = domain['verified'] == true;
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Icon(Icons.language, color: verified ? AppColors.success : Colors.grey),
-        title: Text(domain['domain']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: StatusChip(text: verified ? 'Verified' : 'Pending', color: verified ? AppColors.success : AppColors.warning),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: AffCard(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
           children: [
-            if (!verified)
-              IconButton(icon: const Icon(Icons.refresh), tooltip: 'Check DNS', onPressed: onVerify),
-            IconButton(icon: const Icon(Icons.delete_outline, color: AppColors.danger), onPressed: onRemove),
+            AffIconChip(icon: Icons.language_rounded, color: verified ? AffColors.success : AffColors.warning, size: 42),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(domain['domain']?.toString() ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5, color: AffColors.ink)),
+                  const SizedBox(height: 5),
+                  StatusChip(text: verified ? 'Verified' : 'Pending', color: verified ? AffColors.success : AffColors.warning),
+                ],
+              ),
+            ),
+            if (!verified) IconButton(icon: const Icon(Icons.refresh_rounded, color: AffColors.purpleEnd), tooltip: 'Check DNS', onPressed: onVerify),
+            IconButton(icon: const Icon(Icons.delete_outline_rounded, color: AffColors.danger), onPressed: onRemove),
           ],
         ),
       ),
