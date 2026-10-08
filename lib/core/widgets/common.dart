@@ -1,0 +1,1079 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:shimmer/shimmer.dart';
+
+import '../theme/app_theme.dart';
+
+/// Flat "headline" surface — used for wallet balance, dashboard greeting,
+/// etc. Ink-colored (not a purple gradient) so it reads as a confident
+/// block of primary content rather than decoration. Keep this (not a plain
+/// [Card]) as the go-to headline surface across all three portals.
+class GradientHeroCard extends StatelessWidget {
+  const GradientHeroCard({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(22),
+    this.gradient,
+  });
+
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final Gradient? gradient;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: padding,
+      decoration: BoxDecoration(
+        color: AppColors.ink,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: DefaultTextStyle.merge(
+        style: const TextStyle(color: Colors.white),
+        child: child,
+      ),
+    );
+  }
+}
+
+/// No-op placeholder kept for call-site compatibility — the flat design
+/// doesn't use decorative orbs on gradient surfaces.
+class DecorativeOrbs extends StatelessWidget {
+  const DecorativeOrbs({super.key, this.scale = 1});
+
+  final double scale;
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
+}
+
+/// Compact stat tile for KPI rows — icon, label, value, optional trend chip.
+class StatTile extends StatelessWidget {
+  const StatTile({
+    super.key,
+    required this.label,
+    required this.value,
+    this.icon,
+    this.trendText,
+    this.trendUp,
+    this.subtitle,
+  });
+
+  final String label;
+  final String value;
+  final IconData? icon;
+  final String? trendText;
+  final bool? trendUp;
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return BentoCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              if (icon != null)
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceTint,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.hairline),
+                  ),
+                  child: Icon(icon, size: 17, color: AppColors.inkMuted),
+                ),
+              const Spacer(),
+              if (trendText != null)
+                TrendChip(text: trendText!, up: trendUp ?? true),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 21,
+              letterSpacing: -0.4,
+              color: AppColors.ink,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12.5),
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              subtitle!,
+              style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 11),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class TrendChip extends StatelessWidget {
+  const TrendChip({super.key, required this.text, required this.up});
+
+  final String text;
+  final bool up;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = up ? AppColors.success : AppColors.danger;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: up ? AppColors.successMuted : AppColors.dangerMuted,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            up ? Icons.arrow_upward : Icons.arrow_downward,
+            size: 11,
+            color: color,
+          ),
+          const SizedBox(width: 2),
+          Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class SectionHeader extends StatelessWidget {
+  const SectionHeader({
+    super.key,
+    required this.title,
+    this.action,
+    this.onActionTap,
+  });
+
+  final String title;
+  final String? action;
+  final VoidCallback? onActionTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 15.5,
+                letterSpacing: -0.1,
+                color: AppColors.ink,
+              ),
+            ),
+          ),
+          if (action != null)
+            TextButton(
+              onPressed: onActionTap,
+              style: TextButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+              ),
+              child: Text(action!, style: const TextStyle(fontSize: 12.5)),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Full-screen loading state — a page-shaped shimmer skeleton (hero card +
+/// bento stat row + a few list rows) rather than a bare spinner, so screens
+/// never show a blank page while fetching. Pass [compact] for shorter
+/// content areas (sheets, cards) where the full hero+stats skeleton would
+/// overflow.
+class LoadingState extends StatelessWidget {
+  const LoadingState({super.key, this.compact = false});
+
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppColors.hairline,
+      highlightColor: const Color(0xFFF4F4F6),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          if (!compact) ...[
+            const SkeletonBox(height: 120, borderRadius: 16),
+            const SizedBox(height: 12),
+            Row(
+              children: const [
+                Expanded(child: SkeletonBox(height: 88, borderRadius: 14)),
+                SizedBox(width: 12),
+                Expanded(child: SkeletonBox(height: 88, borderRadius: 14)),
+              ],
+            ),
+            const SizedBox(height: 22),
+          ],
+          for (var i = 0; i < 4; i++) ...[
+            const SkeletonBox(height: 60, borderRadius: 12),
+            const SizedBox(height: 10),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// A single shimmering placeholder block — the atom [LoadingState] and
+/// per-screen skeletons are built from.
+class SkeletonBox extends StatelessWidget {
+  const SkeletonBox({
+    super.key,
+    this.height = 16,
+    this.width,
+    this.borderRadius = 8,
+  });
+
+  final double height;
+  final double? width;
+  final double borderRadius;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: height,
+      width: width ?? double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(borderRadius),
+      ),
+    );
+  }
+}
+
+/// Branded inline spinner for buttons/pull-to-refresh moments where a full
+/// skeleton page doesn't apply — use instead of a bare
+/// [CircularProgressIndicator] so even small loading moments pick up the
+/// accent color.
+class BrandSpinner extends StatelessWidget {
+  const BrandSpinner({super.key, this.size = 22, this.strokeWidth = 2.6});
+
+  final double size;
+  final double strokeWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CircularProgressIndicator(
+        strokeWidth: strokeWidth,
+        valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+        strokeCap: StrokeCap.round,
+      ),
+    );
+  }
+}
+
+class ErrorState extends StatelessWidget {
+  const ErrorState({super.key, required this.message, this.onRetry});
+
+  final String message;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.dangerMuted,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.error_outline,
+                size: 26,
+                color: AppColors.danger,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.inkMuted, fontSize: 13.5),
+            ),
+            if (onRetry != null) ...[
+              const SizedBox(height: 18),
+              OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class EmptyState extends StatelessWidget {
+  const EmptyState({
+    super.key,
+    required this.message,
+    this.icon = Icons.inbox_outlined,
+  });
+
+  final String message;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+        child: FadeSlideIn(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceTint,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.hairline),
+                ),
+                child: Icon(icon, size: 26, color: AppColors.inkFaint),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.inkMuted,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Status pill — used for offer categories, user status, pay-record status.
+class StatusChip extends StatelessWidget {
+  const StatusChip({super.key, required this.text, this.color});
+
+  final String text;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = color ?? AppColors.primary;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(7, 3, 9, 3),
+      decoration: BoxDecoration(
+        color: c.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 5,
+            height: 5,
+            decoration: BoxDecoration(color: c, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            text,
+            style: TextStyle(
+              color: c,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Flat page header — replaces the previous purple-gradient banner. Plain
+/// canvas-colored surface, a hairline bottom border, high-contrast ink
+/// title. Keeps each screen's own actions (bell, settings, etc.) via
+/// [actions] so every screen shares the same chrome.
+///
+/// Auto-adds a back arrow when the current route can be popped (same
+/// behavior a plain [AppBar] gives for free) — pass [automaticallyImplyLeading]
+/// false to suppress it, or [leading] to use a custom leading widget instead.
+class PortalHeader extends StatelessWidget implements PreferredSizeWidget {
+  const PortalHeader({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.actions,
+    this.leading,
+    this.automaticallyImplyLeading = true,
+    this.bottom,
+  });
+
+  /// Optional strip (usually a [TabBar]) rendered below the title row.
+  final PreferredSizeWidget? bottom;
+
+  final String title;
+  final String? subtitle;
+  final List<Widget>? actions;
+  final Widget? leading;
+  final bool automaticallyImplyLeading;
+
+  // Row content height is the max of: the title+subtitle text block, or a
+  // 44px icon button (leading/actions use a shrunk tap target below, not
+  // the default 48px one — that default was the cause of a ~7px bottom
+  // overflow here before). Content row is top/bottom padding (10+10) + 44,
+  // which comfortably fits both the one-line and two-line title block.
+  static const double _rowHeight = 64;
+
+  @override
+  Size get preferredSize =>
+      Size.fromHeight(_rowHeight + (bottom?.preferredSize.height ?? 0));
+
+  @override
+  Widget build(BuildContext context) {
+    final canPop = ModalRoute.of(context)?.canPop ?? false;
+    final resolvedLeading =
+        leading ??
+        (automaticallyImplyLeading && canPop
+            ? _HeaderIconButton(
+                icon: Icons.arrow_back_ios_new_rounded,
+                onPressed: () => Navigator.of(context).pop(),
+              )
+            : null);
+
+    // No SafeArea here: like a plain AppBar, Scaffold already adds the
+    // status-bar inset on top of preferredSize for the app-bar slot, so
+    // applying SafeArea too double-counts that inset and overflows this
+    // widget's own fixed-height box by exactly the (small) rounding
+    // difference between the two insets.
+    // The outer Container is placed in a ConstrainedBox(maxHeight:
+    // preferredSize.height) by Scaffold — using Expanded for the title row
+    // (instead of a SizedBox pinned to the same _rowHeight constant) means
+    // it always fills whatever height Scaffold actually grants, so the two
+    // numbers can never drift apart by a stray pixel of rounding.
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.canvas,
+        border: Border(bottom: BorderSide(color: AppColors.hairline)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                resolvedLeading != null ? 6 : 20,
+                0,
+                12,
+                0,
+              ),
+              child: Row(
+                children: [
+                  if (resolvedLeading != null) ...[
+                    resolvedLeading,
+                    const SizedBox(width: 2),
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            color: AppColors.ink,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 20,
+                            letterSpacing: -0.3,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (subtitle != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 1),
+                            child: Text(
+                              subtitle!,
+                              style: const TextStyle(
+                                color: AppColors.inkMuted,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (actions != null) ...actions!,
+                ],
+              ),
+            ),
+          ),
+          if (bottom != null) bottom!,
+        ],
+      ),
+    );
+  }
+}
+
+/// Compact header icon button — 40×40 tap target (not the default 48px),
+/// so it fits inside [PortalHeader]'s fixed-height row without overflow.
+class _HeaderIconButton extends StatelessWidget {
+  const _HeaderIconButton({
+    required this.icon,
+    required this.onPressed,
+    this.tooltip,
+    this.size = 19,
+  });
+
+  final IconData icon;
+  final VoidCallback onPressed;
+  final String? tooltip;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(),
+        icon: Icon(icon, size: size),
+        color: AppColors.ink,
+        tooltip: tooltip,
+        onPressed: onPressed,
+      ),
+    );
+  }
+}
+
+/// Circular icon button for [PortalHeader] actions (bell, settings, redeem…)
+/// with an optional unread dot.
+class PortalHeaderAction extends StatelessWidget {
+  const PortalHeaderAction({
+    super.key,
+    required this.icon,
+    required this.onPressed,
+    this.showDot = false,
+    this.tooltip,
+  });
+
+  final IconData icon;
+  final VoidCallback onPressed;
+  final bool showDot;
+  final String? tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 2),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          _HeaderIconButton(
+            icon: icon,
+            size: 21,
+            tooltip: tooltip,
+            onPressed: onPressed,
+          ),
+          if (showDot)
+            Positioned(
+              right: 10,
+              top: 10,
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.canvas, width: 1.5),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Initials avatar used at the right end of [PortalHeader] actions.
+class PortalHeaderAvatar extends StatelessWidget {
+  const PortalHeaderAvatar({super.key, required this.initials, this.onTap});
+
+  final String initials;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: GestureDetector(
+        onTap: onTap,
+        child: CircleAvatar(
+          radius: 17,
+          backgroundColor: AppColors.ink,
+          child: Text(
+            initials,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 13,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// White card with a hairline border and a whisper of shadow — the flat
+/// replacement for the old colored-shadow bento card. Used throughout for
+/// stat tiles, chart cards, campaign lists, settings groups.
+class BentoCard extends StatelessWidget {
+  const BentoCard({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(16),
+    this.onTap,
+  });
+
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final card = Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.hairline),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Material(
+          color: Colors.transparent,
+          child: onTap == null
+              ? Padding(padding: padding, child: child)
+              : InkWell(
+                  onTap: onTap,
+                  child: Padding(padding: padding, child: child),
+                ),
+        ),
+      ),
+    );
+    return card;
+  }
+}
+
+/// A settings/menu row with a neutral icon chip, used inside [BentoCard]
+/// groups (Profile's "More" section, etc.) in place of a plain [ListTile].
+class SettingsRow extends StatelessWidget {
+  const SettingsRow({
+    super.key,
+    required this.icon,
+    required this.chipColor,
+    required this.label,
+    this.labelColor,
+    this.subtitle,
+    this.onTap,
+    this.trailing,
+  });
+
+  final IconData icon;
+  final Color chipColor;
+  final String label;
+  final Color? labelColor;
+  final String? subtitle;
+  final VoidCallback? onTap;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: chipColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(icon, color: chipColor, size: 17),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: labelColor ?? AppColors.ink,
+                      ),
+                    ),
+                    if (subtitle != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          subtitle!,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: AppColors.inkFaint,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              trailing ??
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.inkFaint,
+                  ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Hairline divider between [SettingsRow]s inside a [BentoCard] group.
+class RowDivider extends StatelessWidget {
+  const RowDivider({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Divider(
+    height: 1,
+    indent: 16,
+    endIndent: 16,
+    color: AppColors.hairline,
+  );
+}
+
+/// Maps common status strings to a semantic color; falls back to primary.
+Color statusColor(String? status) {
+  switch ((status ?? '').toLowerCase()) {
+    case 'success':
+    case 'active':
+    case 'approved':
+    case 'live':
+    case 'open':
+      return AppColors.success;
+    case 'failed':
+    case 'rejected':
+    case 'banned':
+    case 'suspended':
+    case 'closed':
+      return AppColors.danger;
+    case 'pending':
+    case 'processing':
+      return AppColors.warning;
+    default:
+      return AppColors.primary;
+  }
+}
+
+/// Full-width button filled with ink (near-black) — the flat replacement for
+/// the old gradient pill. Shows a white spinner while [loading].
+class GradientButton extends StatelessWidget {
+  const GradientButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.loading = false,
+    this.icon,
+    this.height = 50,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final bool loading;
+  final IconData? icon;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onPressed != null && !loading;
+    return SizedBox(
+      height: height,
+      child: ElevatedButton(
+        onPressed: enabled ? onPressed : null,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: loading
+              ? const SizedBox(
+                  key: ValueKey('spin'),
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.4,
+                    color: Colors.white,
+                    strokeCap: StrokeCap.round,
+                  ),
+                )
+              : Row(
+                  key: const ValueKey('label'),
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (icon != null) ...[
+                      Icon(icon, size: 18),
+                      const SizedBox(width: 8),
+                    ],
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Subtle shrink-on-press feedback for tappable cards and buttons.
+class PressableScale extends StatefulWidget {
+  const PressableScale({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.scale = 0.98,
+  });
+
+  final Widget child;
+  final VoidCallback? onTap;
+  final double scale;
+
+  @override
+  State<PressableScale> createState() => _PressableScaleState();
+}
+
+class _PressableScaleState extends State<PressableScale> {
+  bool _down = false;
+
+  void _set(bool v) {
+    if (widget.onTap == null || _down == v) return;
+    setState(() => _down = v);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: (_) => _set(true),
+      onPointerUp: (_) => _set(false),
+      onPointerCancel: (_) => _set(false),
+      child: AnimatedScale(
+        scale: _down ? widget.scale : 1,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOut,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+/// Fades and slides its child up on first build. Pass increasing [index]
+/// values to stagger a list of sections.
+class FadeSlideIn extends StatelessWidget {
+  const FadeSlideIn({
+    super.key,
+    required this.child,
+    this.index = 0,
+    this.offset = 10,
+  });
+
+  final Widget child;
+  final int index;
+  final double offset;
+
+  @override
+  Widget build(BuildContext context) {
+    final delay = (index * 50).clamp(0, 400);
+    final total = 300 + delay;
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: Duration(milliseconds: total),
+      curve: Interval(delay / total, 1, curve: Curves.easeOut),
+      child: child,
+      builder: (context, t, child) => Opacity(
+        opacity: t,
+        child: Transform.translate(
+          offset: Offset(0, (1 - t) * offset),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+/// One destination in [BrandNavBar].
+class BrandNavItem {
+  const BrandNavItem({
+    required this.icon,
+    required this.selectedIcon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final IconData selectedIcon;
+  final String label;
+}
+
+/// Flat bottom navigation bar — white surface, hairline top border, ink
+/// icon/label when selected. Shared by the affiliate, manager and admin
+/// shells.
+class BrandNavBar extends StatelessWidget {
+  const BrandNavBar({
+    super.key,
+    required this.items,
+    required this.selectedIndex,
+    required this.onSelected,
+  });
+
+  final List<BrandNavItem> items;
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: AppColors.hairline)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 58,
+          child: Row(
+            children: [
+              for (var i = 0; i < items.length; i++)
+                Expanded(
+                  child: _BrandNavButton(
+                    item: items[i],
+                    selected: i == selectedIndex,
+                    onTap: () {
+                      if (i != selectedIndex) HapticFeedback.selectionClick();
+                      onSelected(i);
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BrandNavButton extends StatelessWidget {
+  const _BrandNavButton({
+    required this.item,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final BrandNavItem item;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected ? AppColors.ink : AppColors.inkFaint;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: item.label,
+      child: InkResponse(
+        onTap: onTap,
+        highlightColor: Colors.transparent,
+        splashFactory: NoSplash.splashFactory,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              selected ? item.selectedIcon : item.icon,
+              size: 22,
+              color: color,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              item.label,
+              maxLines: 1,
+              overflow: TextOverflow.fade,
+              softWrap: false,
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
