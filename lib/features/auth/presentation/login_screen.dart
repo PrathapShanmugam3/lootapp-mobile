@@ -63,7 +63,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         Transform.translate(
                           offset: const Offset(0, -24),
-                          child: Container(
+                          child: FadeSlideIn(
+                            index: 4,
+                            offset: 28,
+                            child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 16),
                             padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
                             decoration: BoxDecoration(
@@ -86,14 +89,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       setState(() => _signInTab = v),
                                 ),
                                 const SizedBox(height: 24),
-                                if (_signInTab)
-                                  const _SignInForm()
-                                else
-                                  const _CreateAccountForm(),
+                                AnimatedSize(
+                                  duration: const Duration(milliseconds: 280),
+                                  curve: Curves.easeOutCubic,
+                                  alignment: Alignment.topCenter,
+                                  child: AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 260),
+                                    switchInCurve: Curves.easeOut,
+                                    transitionBuilder: (child, anim) => FadeTransition(
+                                      opacity: anim,
+                                      child: SlideTransition(
+                                        position: Tween(begin: const Offset(0, 0.03), end: Offset.zero).animate(anim),
+                                        child: child,
+                                      ),
+                                    ),
+                                    child: KeyedSubtree(
+                                      key: ValueKey(_signInTab),
+                                      child: _signInTab ? const _SignInForm() : const _CreateAccountForm(),
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
                         ),
+                          ),
                       ],
                     ),
                   ),
@@ -120,7 +140,8 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                FadeSlideIn(
+                  child: Row(
                   children: [
                     Container(
                       width: 52,
@@ -158,13 +179,17 @@ class _Header extends StatelessWidget {
                     ),
                   ],
                 ),
+                ),
                 const SizedBox(height: 34),
-                const Text(
+                const FadeSlideIn(
+                  index: 1,
+                  child: Text(
                   'Share offers.\nEarn real rewards.',
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 31, height: 1.1, letterSpacing: -1),
                 ),
+                ),
                 const SizedBox(height: 18),
-                const _EarnBadge(icon: Icons.verified_user_rounded, text: 'Secure partner sign in'),
+                const FadeSlideIn(index: 2, child: _EarnBadge(icon: Icons.verified_user_rounded, text: 'Secure partner sign in')),
               ],
             ),
           ),

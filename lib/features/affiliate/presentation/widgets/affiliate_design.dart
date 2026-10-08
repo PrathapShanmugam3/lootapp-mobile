@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/widgets/common.dart' show DecorativeOrbs;
+import '../../../../core/widgets/common.dart' show DecorativeOrbs, PressableScale;
 
 /// "Midnight Violet" design system for the Affiliate (User) portal — scoped
 /// to this feature so it never touches the shared theme used by
@@ -271,7 +271,7 @@ class AffCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final card = Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -289,6 +289,8 @@ class AffCard extends StatelessWidget {
         ),
       ),
     );
+    // Tappable cards sink slightly under the finger.
+    return onTap == null ? card : PressableScale(onTap: onTap, scale: 0.975, child: card);
   }
 }
 
@@ -479,7 +481,12 @@ class _AffNavButton extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                   boxShadow: selected ? [BoxShadow(color: AffColors.purpleStart.withValues(alpha: 0.55), blurRadius: 14, offset: const Offset(0, 4))] : null,
                 ),
-                child: Icon(selected ? item.selectedIcon : item.icon, size: 21, color: color),
+                child: AnimatedScale(
+                  scale: selected ? 1.12 : 1,
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeOutBack,
+                  child: Icon(selected ? item.selectedIcon : item.icon, size: 21, color: color),
+                ),
               ),
               const SizedBox(height: 3),
               Text(

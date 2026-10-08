@@ -5,6 +5,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/widgets/common.dart';
 import '../../notifications/presentation/notifications_screen.dart';
 import '../../presentation/widgets/aff_user_avatar.dart';
+import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'offer_detail_screen.dart';
 import 'offers_providers.dart';
@@ -29,7 +30,9 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final offersAsync = ref.watch(offersListProvider);
+    final rawAsync = ref.watch(offersListProvider);
+    final sample = isSample(rawAsync);
+    final offersAsync = withSample(rawAsync, SampleData.offers);
 
     return Scaffold(
       backgroundColor: AffColors.pageBg,
@@ -63,6 +66,7 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 18, 16, 110),
               children: [
+                if (sample) SampleDataBanner(onRetry: () => ref.invalidate(offersListProvider)),
                 FadeSlideIn(
                   child: AffCard(
                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 6),
@@ -120,7 +124,7 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
                       index: 4 + i,
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: _OfferCard(offer: filtered[i]),
+                        child: _OfferCard(offer: filtered[i], sample: sample),
                       ),
                     ),
               ],
@@ -194,8 +198,9 @@ class _FilterPill extends StatelessWidget {
 }
 
 class _OfferCard extends StatelessWidget {
-  const _OfferCard({required this.offer});
+  const _OfferCard({required this.offer, this.sample = false});
   final Map<String, dynamic> offer;
+  final bool sample;
 
   @override
   Widget build(BuildContext context) {
@@ -208,7 +213,13 @@ class _OfferCard extends StatelessWidget {
     final initials = name.isNotEmpty ? name.trim().substring(0, name.trim().length >= 2 ? 2 : 1).toUpperCase() : '?';
 
     return AffCard(
-      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => OfferDetailScreen(offId: offId))),
+      onTap: () {
+        if (sample) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sample offer — reconnect to open real campaigns')));
+          return;
+        }
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => OfferDetailScreen(offId: offId)));
+      },
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [

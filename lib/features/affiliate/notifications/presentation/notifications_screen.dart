@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/widgets/common.dart';
+import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'notifications_providers.dart';
 
@@ -10,7 +11,9 @@ class NotificationsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notesAsync = ref.watch(notificationsProvider);
+    final rawAsync = ref.watch(notificationsProvider);
+    final sample = isSample(rawAsync);
+    final notesAsync = withSample(rawAsync, SampleData.notifications);
 
     return Scaffold(
       backgroundColor: AffColors.pageBg,
@@ -20,10 +23,12 @@ class NotificationsScreen extends ConsumerWidget {
         actions: [
           TextButton(
             style: TextButton.styleFrom(foregroundColor: Colors.white, textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-            onPressed: () async {
-              await ref.read(notificationsRepositoryProvider).markRead();
-              ref.invalidate(notificationsProvider);
-            },
+            onPressed: sample
+                ? null
+                : () async {
+                    await ref.read(notificationsRepositoryProvider).markRead();
+                    ref.invalidate(notificationsProvider);
+                  },
             child: const Text('Mark all read'),
           ),
         ],
@@ -41,18 +46,22 @@ class NotificationsScreen extends ConsumerWidget {
             }
             return ListView.separated(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-              itemCount: notes.length,
+              itemCount: notes.length + (sample ? 1 : 0),
               separatorBuilder: (_, __) => const SizedBox(height: 10),
-              itemBuilder: (context, i) {
+              itemBuilder: (context, idx) {
+                if (sample && idx == 0) return SampleDataBanner(onRetry: () => ref.invalidate(notificationsProvider));
+                final i = sample ? idx - 1 : idx;
                 final n = notes[i];
                 return FadeSlideIn(
                   index: i,
                   child: AffCard(
                     padding: const EdgeInsets.all(14),
-                    onTap: () async {
-                      await ref.read(notificationsRepositoryProvider).markRead(id: n.id);
-                      ref.invalidate(notificationsProvider);
-                    },
+                    onTap: sample
+                        ? null
+                        : () async {
+                            await ref.read(notificationsRepositoryProvider).markRead(id: n.id);
+                            ref.invalidate(notificationsProvider);
+                          },
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

@@ -7,6 +7,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/widgets/chat_message.dart';
 import '../../../../core/widgets/common.dart';
 import '../../presentation/widgets/aff_user_avatar.dart';
+import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'chat_providers.dart';
 
@@ -55,7 +56,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final chatAsync = ref.watch(chatProvider);
+    final rawAsync = ref.watch(chatProvider);
+    final sample = isSample(rawAsync);
+    final chatAsync = withSample(rawAsync, SampleData.chat);
 
     return Scaffold(
       backgroundColor: AffColors.pageBg,
@@ -74,6 +77,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           final closed = chatState.status == 'closed';
           return Column(
             children: [
+              if (sample)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                  child: SampleDataBanner(onRetry: () => ref.invalidate(chatProvider)),
+                ),
               _SupportBanner(),
               Expanded(
                 child: chatState.messages.isEmpty

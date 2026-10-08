@@ -9,6 +9,7 @@ import '../../../legal/presentation/privacy_policy_screen.dart';
 import '../../../legal/presentation/terms_screen.dart';
 import '../../custom_domains/presentation/custom_domains_screen.dart';
 import '../../notifications/presentation/notifications_screen.dart';
+import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import '../../reports/presentation/reports_screen.dart';
 import 'edit_account_screen.dart';
@@ -19,7 +20,9 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profileAsync = ref.watch(profileProvider);
+    final rawAsync = ref.watch(profileProvider);
+    final sample = isSample(rawAsync);
+    final profileAsync = withSample(rawAsync, SampleData.profile);
 
     return Scaffold(
       backgroundColor: AffColors.pageBg,
@@ -38,7 +41,7 @@ class ProfileScreen extends ConsumerWidget {
         child: profileAsync.when(
           loading: () => const LoadingState(),
           error: (e, _) => ErrorState(message: 'Failed to load profile.\n$e', onRetry: () => ref.invalidate(profileProvider)),
-          data: (profile) => _ProfileBody(profile: profile),
+          data: (profile) => _ProfileBody(profile: profile, sample: sample, onRetry: () => ref.invalidate(profileProvider)),
         ),
       ),
     );
@@ -46,9 +49,11 @@ class ProfileScreen extends ConsumerWidget {
 }
 
 class _ProfileBody extends ConsumerStatefulWidget {
-  const _ProfileBody({required this.profile});
+  const _ProfileBody({required this.profile, this.sample = false, this.onRetry});
 
   final Map<String, dynamic> profile;
+  final bool sample;
+  final VoidCallback? onRetry;
 
   @override
   ConsumerState<_ProfileBody> createState() => _ProfileBodyState();
@@ -71,6 +76,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
       children: [
+        if (widget.sample) SampleDataBanner(onRetry: widget.onRetry),
         FadeSlideIn(
           child: AffHeroCard(
             padding: const EdgeInsets.fromLTRB(20, 26, 20, 20),
@@ -116,9 +122,9 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                 const SizedBox(height: 20),
                 Row(
                   children: [
-                    Expanded(child: _HeroStat(label: 'WALLET', value: '₹${wallet.toString()}', highlight: true)),
+                    Expanded(child: _HeroStat(label: 'WALLET', value: '₹${wallet.toString()}', highlight: true, countTo: num.tryParse(wallet.toString()), prefix: '₹')),
                     const SizedBox(width: 10),
-                    Expanded(child: _HeroStat(label: 'REF LINKS', value: refLinks.toString())),
+                    Expanded(child: _HeroStat(label: 'REF LINKS', value: refLinks.toString(), countTo: num.tryParse(refLinks.toString()))),
                   ],
                 ),
               ],
@@ -131,7 +137,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
           child: AffSectionHeader(
             title: 'Account details',
             action: 'Edit',
-            onActionTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditAccountScreen(profile: p))),
+            onActionTap: () => _openEdit(context, p),
           ),
         ),
         FadeSlideIn(
@@ -161,7 +167,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                   icon: Icons.manage_accounts_rounded,
                   label: 'Edit account',
                   subtitle: 'Payout details and password',
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditAccountScreen(profile: p))),
+                  onTap: () => _openEdit(context, p),
                 ),
                 const _MenuDivider(),
                 _MenuRow(
@@ -251,6 +257,14 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
     );
   }
 
+  void _openEdit(BuildContext context, Map<String, dynamic> p) {
+    if (widget.sample) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reconnect to the server to edit your account')));
+      return;
+    }
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditAccountScreen(profile: p)));
+  }
+
   Future<void> _openExternal(BuildContext context, String url) async {
     final uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
@@ -262,9 +276,11 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
 }
 
 class _HeroStat extends StatelessWidget {
-  const _HeroStat({required this.label, required this.value, this.highlight = false});
+  const _HeroStat({required this.label, required this.value, this.highlight = false, this.countTo, this.prefix = ''});
   final String label;
   final String value;
+  final num? countTo;
+  final String prefix;
   final bool highlight;
 
   @override
@@ -282,10 +298,12 @@ class _HeroStat extends StatelessWidget {
           const SizedBox(height: 5),
           FittedBox(
             fit: BoxFit.scaleDown,
-            child: Text(
-              value,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.4, color: highlight ? AffColors.gold : Colors.white),
-            ),
+            child: () {
+              final style = TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.4, color: highlight ? AffColors.gold : Colors.white);
+              return countTo != null
+                  ? AnimatedCount(value: countTo!, format: (n) => '$prefix${countTo == countTo!.roundToDouble() ? n.round() : n.toStringAsFixed(2)}', style: style)
+                  : Text(value, style: style);
+            }(),
           ),
         ],
       ),

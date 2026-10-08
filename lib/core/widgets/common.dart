@@ -50,14 +50,40 @@ class GradientHeroCard extends StatelessWidget {
 }
 
 /// Soft radial glows layered on a dark gradient surface — gives hero
-/// blocks depth without any image assets. Fills its parent [Stack].
-class DecorativeOrbs extends StatelessWidget {
+/// blocks depth without any image assets. They drift slowly so the surface
+/// feels alive (static when the OS asks to reduce motion). Fills its parent
+/// [Stack].
+class DecorativeOrbs extends StatefulWidget {
   const DecorativeOrbs({super.key, this.scale = 1});
 
   final double scale;
 
   @override
+  State<DecorativeOrbs> createState() => _DecorativeOrbsState();
+}
+
+class _DecorativeOrbsState extends State<DecorativeOrbs> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(seconds: 9));
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.maybeOf(context)?.disableAnimations ?? false) {
+      _c.stop();
+    } else if (!_c.isAnimating) {
+      _c.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final scale = widget.scale;
     Widget orb(double size, Color color, double alpha) => Container(
           width: size * scale,
           height: size * scale,
@@ -69,13 +95,94 @@ class DecorativeOrbs extends StatelessWidget {
           ),
         );
     return IgnorePointer(
-      child: Stack(
-        clipBehavior: Clip.hardEdge,
-        children: [
-          Positioned(right: -70 * scale, top: -80 * scale, child: orb(240, const Color(0xFFC4A8FF), 0.38)),
-          Positioned(left: -60 * scale, bottom: -90 * scale, child: orb(220, AppColors.gold, 0.16)),
-          Positioned(right: 30 * scale, bottom: -60 * scale, child: orb(150, const Color(0xFF6C4DF6), 0.45)),
-        ],
+      child: AnimatedBuilder(
+        animation: CurvedAnimation(parent: _c, curve: Curves.easeInOut),
+        builder: (context, _) {
+          final t = Curves.easeInOut.transform(_c.value) - 0.5; // -0.5..0.5
+          return Stack(
+            clipBehavior: Clip.hardEdge,
+            children: [
+              Positioned(right: (-70 + t * 40) * scale, top: (-80 + t * 24) * scale, child: orb(240, const Color(0xFFC4A8FF), 0.38)),
+              Positioned(left: (-60 - t * 36) * scale, bottom: (-90 + t * 30) * scale, child: orb(220, AppColors.gold, 0.16)),
+              Positioned(right: (30 - t * 50) * scale, bottom: (-60 - t * 20) * scale, child: orb(150, const Color(0xFF6C4DF6), 0.45)),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Number that counts up (or tweens) to [value] when first shown and
+/// whenever [value] changes. [format] turns the in-flight number into text.
+class AnimatedCount extends StatelessWidget {
+  const AnimatedCount({
+    super.key,
+    required this.value,
+    required this.format,
+    this.style,
+    this.duration = const Duration(milliseconds: 900),
+  });
+
+  final num value;
+  final String Function(num) format;
+  final TextStyle? style;
+  final Duration duration;
+
+  @override
+  Widget build(BuildContext context) {
+    if (MediaQuery.maybeOf(context)?.disableAnimations ?? false) {
+      return Text(format(value), style: style);
+    }
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: value.toDouble()),
+      duration: duration,
+      curve: Curves.easeOutCubic,
+      builder: (context, v, _) => Text(format(v), style: style),
+    );
+  }
+}
+
+/// Visible flag that the content below is offline sample data, not the
+/// user's real account — shown whenever the server couldn't be reached.
+class SampleDataBanner extends StatelessWidget {
+  const SampleDataBanner({super.key, this.onRetry});
+
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeSlideIn(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
+        decoration: BoxDecoration(
+          color: AppColors.goldMuted,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.gold.withValues(alpha: 0.5)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.cloud_off_rounded, size: 18, color: AppColors.warning),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text(
+                'Sample data — couldn\'t reach the server',
+                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.warning),
+              ),
+            ),
+            if (onRetry != null)
+              TextButton(
+                onPressed: onRetry,
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.warning,
+                  visualDensity: VisualDensity.compact,
+                  textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12.5),
+                ),
+                child: const Text('Retry'),
+              ),
+          ],
+        ),
       ),
     );
   }

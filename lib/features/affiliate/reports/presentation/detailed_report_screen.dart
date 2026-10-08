@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/common.dart';
+import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'reports_providers.dart';
 
@@ -36,7 +37,9 @@ class _DetailedReportScreenState extends ConsumerState<DetailedReportScreen> {
   @override
   Widget build(BuildContext context) {
     final filter = DetailedReportFilter(offId: widget.offId, startDate: widget.startDate, endDate: widget.endDate);
-    final reportAsync = ref.watch(detailedReportProvider(filter));
+    final rawAsync = ref.watch(detailedReportProvider(filter));
+    final sample = isSample(rawAsync);
+    final reportAsync = withSample(rawAsync, SampleData.detailedReport);
 
     return Scaffold(
       backgroundColor: AffColors.pageBg,
@@ -48,6 +51,8 @@ class _DetailedReportScreenState extends ConsumerState<DetailedReportScreen> {
           onRetry: () => ref.invalidate(detailedReportProvider(filter)),
         ),
         data: (data) => _Body(
+          sample: sample,
+          onRetry: () => ref.invalidate(detailedReportProvider(filter)),
           data: data,
           statusFilter: _statusFilter,
           search: _search,
@@ -69,6 +74,8 @@ class _DetailedReportScreenState extends ConsumerState<DetailedReportScreen> {
 
 class _Body extends StatelessWidget {
   const _Body({
+    this.sample = false,
+    this.onRetry,
     required this.data,
     required this.statusFilter,
     required this.search,
@@ -78,6 +85,8 @@ class _Body extends StatelessWidget {
     required this.onPageChanged,
   });
 
+  final bool sample;
+  final VoidCallback? onRetry;
   final Map<String, dynamic> data;
   final String statusFilter;
   final String search;
@@ -117,6 +126,7 @@ class _Body extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
       children: [
+        if (sample) SampleDataBanner(onRetry: onRetry),
         Row(
           children: [
             Expanded(child: StatTile(label: 'Clicks', value: (stats['totalClicks'] ?? 0).toString(), icon: Icons.ads_click)),

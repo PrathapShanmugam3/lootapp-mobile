@@ -7,6 +7,7 @@ import '../../../../core/widgets/common.dart';
 import '../../../auth/presentation/auth_providers.dart';
 import '../../notifications/presentation/notifications_screen.dart';
 import '../../presentation/widgets/aff_user_avatar.dart';
+import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'wallet_providers.dart';
 import 'withdraw_sheet.dart';
@@ -18,8 +19,12 @@ class WalletScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final summaryAsync = ref.watch(walletSummaryProvider);
-    final txnsAsync = ref.watch(transactionsProvider);
+    final rawSummary = ref.watch(walletSummaryProvider);
+    final rawTxns = ref.watch(transactionsProvider);
+    final summarySample = isSample(rawSummary);
+    final txnsSample = isSample(rawTxns);
+    final summaryAsync = withSample(rawSummary, SampleData.walletSummary);
+    final txnsAsync = withSample(rawTxns, SampleData.transactions);
 
     return Scaffold(
       backgroundColor: AffColors.pageBg,
@@ -42,6 +47,11 @@ class WalletScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 18, 16, 110),
           children: [
+            if (summarySample || txnsSample)
+              SampleDataBanner(onRetry: () {
+                ref.invalidate(walletSummaryProvider);
+                ref.invalidate(transactionsProvider);
+              }),
             FadeSlideIn(
               child: Text('Wallet & Payouts', style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800, color: AffColors.ink)),
             ),
@@ -66,24 +76,27 @@ class WalletScreen extends ConsumerWidget {
                           Text('AVAILABLE BALANCE',
                               style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, letterSpacing: 1.2, color: Colors.white.withValues(alpha: 0.78))),
                           const SizedBox(height: 4),
-                          Text(
-                            _currency.format(summary.balance),
+                          AnimatedCount(
+                            value: summary.balance,
+                            format: _currency.format,
                             style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1),
                           ),
                           const SizedBox(height: 18),
                           SizedBox(
                             width: double.infinity,
                             child: PressableScale(
-                              onTap: () => _openWithdrawSheet(context, ref),
-                              child: Ink(
-                                decoration: ShapeDecoration(
+                              onTap: () => _openWithdrawSheet(context, ref, sample: summarySample),
+                              child: Material(
+                                type: MaterialType.transparency,
+                                child: Ink(
+                                decoration: BoxDecoration(
                                   gradient: const LinearGradient(colors: [AffColors.goldSoft, AffColors.gold]),
-                                  shape: const StadiumBorder(),
-                                  shadows: [BoxShadow(color: AffColors.gold.withValues(alpha: 0.4), blurRadius: 18, offset: const Offset(0, 8))],
+                                  borderRadius: BorderRadius.circular(999),
+                                  boxShadow: [BoxShadow(color: AffColors.gold.withValues(alpha: 0.4), blurRadius: 18, offset: const Offset(0, 8))],
                                 ),
                                 child: InkWell(
                                   customBorder: const StadiumBorder(),
-                                  onTap: () => _openWithdrawSheet(context, ref),
+                                  onTap: () => _openWithdrawSheet(context, ref, sample: summarySample),
                                   child: const SizedBox(
                                     height: 48,
                                     child: Row(
@@ -96,6 +109,7 @@ class WalletScreen extends ConsumerWidget {
                                     ),
                                   ),
                                 ),
+                              ),
                               ),
                             ),
                           ),
@@ -145,7 +159,7 @@ class WalletScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    if (ref.read(transactionsProvider.notifier).hasMore)
+                    if (!txnsSample && ref.read(transactionsProvider.notifier).hasMore)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         child: OutlinedButton.icon(
@@ -164,7 +178,11 @@ class WalletScreen extends ConsumerWidget {
     );
   }
 
-  void _openWithdrawSheet(BuildContext context, WidgetRef ref) {
+  void _openWithdrawSheet(BuildContext context, WidgetRef ref, {bool sample = false}) {
+    if (sample) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reconnect to the server to withdraw')));
+      return;
+    }
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

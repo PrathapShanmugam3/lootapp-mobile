@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/widgets/common.dart';
+import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'detailed_report_screen.dart';
 import 'reports_providers.dart';
@@ -56,7 +57,9 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final reportsAsync = ref.watch(reportsProvider(_filter));
+    final rawAsync = ref.watch(reportsProvider(_filter));
+    final sample = isSample(rawAsync);
+    final reportsAsync = withSample(rawAsync, SampleData.reports);
 
     return Scaffold(
       backgroundColor: AffColors.pageBg,
@@ -72,6 +75,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
           children: [
+            if (sample) SampleDataBanner(onRetry: () => ref.invalidate(reportsProvider)),
             _FilterBar(
               dateOption: _dateOption,
               startDate: _startDate,

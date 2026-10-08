@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/widgets/common.dart';
 import '../../notifications/presentation/notifications_screen.dart';
 import '../../presentation/widgets/aff_user_avatar.dart';
+import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import '../../reports/presentation/reports_screen.dart';
 import 'dashboard_providers.dart';
@@ -24,7 +25,9 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dashboardAsync = ref.watch(dashboardProvider);
+    final rawAsync = ref.watch(dashboardProvider);
+    final sample = isSample(rawAsync);
+    final dashboardAsync = withSample(rawAsync, SampleData.dashboard);
     return Scaffold(
       backgroundColor: AffColors.pageBg,
       appBar: AffHeader(
@@ -46,7 +49,7 @@ class DashboardScreen extends ConsumerWidget {
             message: 'Could not load dashboard.\n$err',
             onRetry: () => ref.invalidate(dashboardProvider),
           ),
-          data: (data) => _DashboardBody(data: data),
+          data: (data) => _DashboardBody(data: data, sample: sample, onRetry: () => ref.invalidate(dashboardProvider)),
         ),
       ),
     );
@@ -54,9 +57,11 @@ class DashboardScreen extends ConsumerWidget {
 }
 
 class _DashboardBody extends ConsumerWidget {
-  const _DashboardBody({required this.data});
+  const _DashboardBody({required this.data, this.sample = false, this.onRetry});
 
   final Map<String, dynamic> data;
+  final bool sample;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -76,6 +81,7 @@ class _DashboardBody extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 110),
       children: [
+        if (sample) SampleDataBanner(onRetry: onRetry),
         FadeSlideIn(
           child: AffHeroCard(
             padding: const EdgeInsets.fromLTRB(22, 22, 22, 22),
@@ -130,6 +136,7 @@ class _DashboardBody extends ConsumerWidget {
                   child: _StatTile(
                     label: 'CLICKS',
                     value: clicks['value']?.toString() ?? '0',
+                    countTo: num.tryParse(clicks['value']?.toString() ?? '0'),
                     icon: Icons.near_me_rounded,
                     color: AffColors.purpleEnd,
                     trend: clicks['trend'] != null ? '${clicks['trend']}% vs yesterday' : null,
@@ -141,6 +148,7 @@ class _DashboardBody extends ConsumerWidget {
                   child: _StatTile(
                     label: 'CONVERSIONS',
                     value: conversions['value']?.toString() ?? '0',
+                    countTo: num.tryParse(conversions['value']?.toString() ?? '0'),
                     icon: Icons.autorenew_rounded,
                     color: const Color(0xFFE0359B),
                     trend: conversions['mtd'] != null ? 'MTD: ${conversions['mtd']}' : null,
@@ -158,6 +166,8 @@ class _DashboardBody extends ConsumerWidget {
             value: _currency.format(
               (earnings['value'] is num) ? earnings['value'] as num : num.tryParse(earnings['value']?.toString() ?? '') ?? 0,
             ),
+            countTo: (earnings['value'] is num) ? earnings['value'] as num : num.tryParse(earnings['value']?.toString() ?? '') ?? 0,
+            format: _currency.format,
             icon: Icons.currency_rupee_rounded,
             color: const Color(0xFFE08A1E),
             big: true,
@@ -297,6 +307,8 @@ class _StatTile extends StatelessWidget {
     required this.value,
     required this.icon,
     required this.color,
+    this.countTo,
+    this.format,
     this.trend,
     this.trendUp = true,
     this.big = false,
@@ -306,6 +318,8 @@ class _StatTile extends StatelessWidget {
   final String value;
   final IconData icon;
   final Color color;
+  final num? countTo;
+  final String Function(num)? format;
   final String? trend;
   final bool trendUp;
   final bool big;
@@ -318,10 +332,10 @@ class _StatTile extends StatelessWidget {
       label,
       style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AffColors.inkMuted, letterSpacing: 1.1),
     );
-    final valueText = Text(
-      value,
-      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AffColors.ink, height: 1.1, letterSpacing: -1),
-    );
+    const valueStyle = TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AffColors.ink, height: 1.1, letterSpacing: -1);
+    final valueText = countTo != null
+        ? AnimatedCount(value: countTo!, format: format ?? (n) => n.round().toString(), style: valueStyle)
+        : Text(value, style: valueStyle);
 
     final content = big
           ? Row(
@@ -436,7 +450,12 @@ class _CampaignRow extends StatelessWidget {
                     child: Stack(
                       children: [
                         Container(color: AffColors.hairline),
-                        FractionallySizedBox(widthFactor: progress, child: Container(decoration: const BoxDecoration(gradient: AffColors.gradient))),
+                        TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 0, end: progress),
+                          duration: const Duration(milliseconds: 900),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, w, _) => FractionallySizedBox(widthFactor: w, child: Container(decoration: const BoxDecoration(gradient: AffColors.gradient))),
+                        ),
                       ],
                     ),
                   ),
@@ -468,9 +487,21 @@ class _Chart extends StatelessWidget {
       final y = (v is num) ? v.toDouble() : double.tryParse(v.toString()) ?? 0;
       spots.add(FlSpot(i.toDouble(), y));
     }
+    final maxY = spots.fold<double>(0, (m, s) => s.y > m ? s.y : m);
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 1100),
+      curve: Curves.easeOutCubic,
+      builder: (context, t, _) => _chartBody([for (final s in spots) FlSpot(s.x, s.y * t)], maxY <= 0 ? 1 : maxY * 1.15),
+    );
+  }
+
+  Widget _chartBody(List<FlSpot> spots, double maxY) {
     return LineChart(
+      duration: Duration.zero,
       LineChartData(
         minY: 0,
+        maxY: maxY,
         gridData: FlGridData(
           show: true,
           drawVerticalLine: false,
