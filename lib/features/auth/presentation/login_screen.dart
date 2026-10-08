@@ -12,7 +12,7 @@ import 'forgot_password_screen.dart';
 // Exact text colors from the "1a Polished Violet" design (LootHat Redesign
 // .dc.html) — not generic Material greys, which read washed-out against the
 // design's warmer, purple-tinted ink.
-const _kInkDark = Color(0xFF1C1235); // headings, "I'm not a robot"
+const _kInkDark = Color(0xFF14112B); // headings, "I'm not a robot"
 const _kInkMuted = Color(0xFF6B6285); // subtitles, helper text
 const _kInkLabel = Color(0xFF3D3456); // field labels (bold)
 
@@ -68,12 +68,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(28),
+                              borderRadius: BorderRadius.circular(30),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF3C1478).withValues(alpha: 0.12),
-                                  blurRadius: 32,
-                                  offset: const Offset(0, 12),
+                                  color: const Color(0xFF1E1550).withValues(alpha: 0.16),
+                                  blurRadius: 40,
+                                  offset: const Offset(0, 16),
                                 ),
                               ],
                             ),
@@ -114,31 +114,30 @@ class _Header extends StatelessWidget {
       decoration: const BoxDecoration(gradient: AppColors.heroGradient),
       child: Stack(
         children: [
-          const DecorativeOrbs(scale: 1.3),
+          const Positioned.fill(child: DecorativeOrbs(scale: 1.5)),
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 64),
+            padding: const EdgeInsets.fromLTRB(24, 32, 24, 70),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
                     Container(
-                      width: 56,
-                      height: 56,
+                      width: 52,
+                      height: 52,
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.18), blurRadius: 20, offset: const Offset(0, 8)),
-                        ],
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFFE3A3), AppColors.gold],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(17),
+                        boxShadow: AppColors.glow(AppColors.gold, 0.8),
                       ),
                       alignment: Alignment.center,
-                      child: ShaderMask(
-                        shaderCallback: (r) => AppColors.buttonGradient.createShader(r),
-                        child: const Text(
-                          'LH',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20, letterSpacing: -0.5),
-                        ),
+                      child: const Text(
+                        'LH',
+                        style: TextStyle(color: AppColors.midnight, fontWeight: FontWeight.w900, fontSize: 19, letterSpacing: -0.5),
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -148,24 +147,31 @@ class _Header extends StatelessWidget {
                         children: [
                           Text(
                             'Loot Hat',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 24, letterSpacing: -0.5),
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 23, letterSpacing: -0.6),
                           ),
                           Text(
                             'Affiliate partner portal',
-                            style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
+                            style: TextStyle(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 26),
+                const SizedBox(height: 34),
                 const Text(
                   'Share offers.\nEarn real rewards.',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 26, height: 1.15, letterSpacing: -0.6),
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 31, height: 1.1, letterSpacing: -1),
                 ),
-                const SizedBox(height: 14),
-                _EarnBadge(),
+                const SizedBox(height: 18),
+                const Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _EarnBadge(icon: Icons.bolt_rounded, text: 'Instant payouts'),
+                    _EarnBadge(icon: Icons.verified_rounded, text: 'Verified signups'),
+                  ],
+                ),
               ],
             ),
           ),
@@ -176,39 +182,30 @@ class _Header extends StatelessWidget {
 }
 
 class _EarnBadge extends StatelessWidget {
+  const _EarnBadge({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.18),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: Color(0xFF4ADE80),
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Earn on every verified signup',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: AppColors.gold),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+          ),
+        ],
       ),
     );
   }
@@ -271,7 +268,7 @@ class _TabButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           gradient: selected ? AppColors.buttonGradient : null,
-          boxShadow: selected ? AppColors.glow(AppColors.violet, 0.6) : null,
+          boxShadow: selected ? AppColors.glow(AppColors.violet, 0.55) : null,
           borderRadius: BorderRadius.circular(999),
         ),
         alignment: Alignment.center,

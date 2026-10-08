@@ -6,8 +6,6 @@ import '../../features/auth/presentation/auth_providers.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/reset_password_screen.dart';
 import '../../features/affiliate/presentation/affiliate_shell.dart';
-import '../../features/manager/presentation/manager_shell.dart';
-import '../../features/admin/presentation/admin_shell.dart';
 import '../network/role.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -48,22 +46,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: 'offers/:offId', builder: (c, s) => AffiliateShell(deepLinkOfferId: s.pathParameters['offId'])),
         ],
       ),
-      GoRoute(path: '/manager', builder: (context, state) => const ManagerShell()),
-      GoRoute(path: '/admin', builder: (context, state) => const AdminShell()),
     ],
   );
 });
 
-String _homeFor(AppRole role) {
-  switch (role) {
-    case AppRole.affiliate:
-    case AppRole.manager:
-    case AppRole.admin:
-      return '/affiliate';
-    case AppRole.unverified:
-      return '/login';
-  }
-}
+/// The mobile app is user-only: every verified account lands in the
+/// affiliate portal.
+String _homeFor(AppRole role) =>
+    role == AppRole.unverified ? '/login' : '/affiliate';
 
 class _SplashScreen extends StatelessWidget {
   const _SplashScreen();

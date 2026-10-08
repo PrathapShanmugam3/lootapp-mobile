@@ -4,10 +4,10 @@ import 'package:shimmer/shimmer.dart';
 
 import '../theme/app_theme.dart';
 
-/// Flat "headline" surface — used for wallet balance, dashboard greeting,
-/// etc. Ink-colored (not a purple gradient) so it reads as a confident
-/// block of primary content rather than decoration. Keep this (not a plain
-/// [Card]) as the go-to headline surface across all three portals.
+/// Headline surface — wallet balance, greetings, key totals. A deep
+/// midnight-violet gradient with soft radial glows and a hairline highlight
+/// border, so it reads as the premium focal point of the page. Keep this
+/// (not a plain [Card]) as the go-to headline surface across all portals.
 class GradientHeroCard extends StatelessWidget {
   const GradientHeroCard({
     super.key,
@@ -24,28 +24,61 @@ class GradientHeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: padding,
       decoration: BoxDecoration(
-        color: AppColors.ink,
-        borderRadius: BorderRadius.circular(16),
+        gradient: gradient ?? AppColors.midnightGradient,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+        boxShadow: AppColors.glow(AppColors.primaryDeep, 0.9),
       ),
-      child: DefaultTextStyle.merge(
-        style: const TextStyle(color: Colors.white),
-        child: child,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(23),
+        child: Stack(
+          children: [
+            const Positioned.fill(child: DecorativeOrbs()),
+            Padding(
+              padding: padding,
+              child: DefaultTextStyle.merge(
+                style: const TextStyle(color: Colors.white),
+                child: child,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-/// No-op placeholder kept for call-site compatibility — the flat design
-/// doesn't use decorative orbs on gradient surfaces.
+/// Soft radial glows layered on a dark gradient surface — gives hero
+/// blocks depth without any image assets. Fills its parent [Stack].
 class DecorativeOrbs extends StatelessWidget {
   const DecorativeOrbs({super.key, this.scale = 1});
 
   final double scale;
 
   @override
-  Widget build(BuildContext context) => const SizedBox.shrink();
+  Widget build(BuildContext context) {
+    Widget orb(double size, Color color, double alpha) => Container(
+          width: size * scale,
+          height: size * scale,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: RadialGradient(
+              colors: [color.withValues(alpha: alpha), color.withValues(alpha: 0)],
+            ),
+          ),
+        );
+    return IgnorePointer(
+      child: Stack(
+        clipBehavior: Clip.hardEdge,
+        children: [
+          Positioned(right: -70 * scale, top: -80 * scale, child: orb(240, const Color(0xFFC4A8FF), 0.38)),
+          Positioned(left: -60 * scale, bottom: -90 * scale, child: orb(220, AppColors.gold, 0.16)),
+          Positioned(right: 30 * scale, bottom: -60 * scale, child: orb(150, const Color(0xFF6C4DF6), 0.45)),
+        ],
+      ),
+    );
+  }
 }
 
 /// Compact stat tile for KPI rows — icon, label, value, optional trend chip.
@@ -80,11 +113,10 @@ class StatTile extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceTint,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.hairline),
+                    color: AppColors.primaryMuted,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, size: 17, color: AppColors.inkMuted),
+                  child: Icon(icon, size: 17, color: AppColors.primary),
                 ),
               const Spacer(),
               if (trendText != null)
@@ -95,9 +127,9 @@ class StatTile extends StatelessWidget {
           Text(
             value,
             style: const TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 21,
-              letterSpacing: -0.4,
+              fontWeight: FontWeight.w800,
+              fontSize: 22,
+              letterSpacing: -0.6,
               color: AppColors.ink,
             ),
           ),
@@ -132,7 +164,7 @@ class TrendChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
         color: up ? AppColors.successMuted : AppColors.dangerMuted,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -182,9 +214,9 @@ class SectionHeader extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 15.5,
-                letterSpacing: -0.1,
+                fontWeight: FontWeight.w800,
+                fontSize: 16,
+                letterSpacing: -0.2,
                 color: AppColors.ink,
               ),
             ),
@@ -218,7 +250,7 @@ class LoadingState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
       baseColor: AppColors.hairline,
-      highlightColor: const Color(0xFFF4F4F6),
+      highlightColor: const Color(0xFFF7F5FD),
       child: ListView(
         padding: const EdgeInsets.all(16),
         physics: const NeverScrollableScrollPhysics(),
@@ -365,11 +397,10 @@ class EmptyState extends StatelessWidget {
                 height: 56,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceTint,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.hairline),
+                  color: AppColors.primaryMuted,
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: Icon(icon, size: 26, color: AppColors.inkFaint),
+                child: Icon(icon, size: 26, color: AppColors.primary),
               ),
               const SizedBox(height: 12),
               Text(
@@ -402,8 +433,8 @@ class StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(7, 3, 9, 3),
       decoration: BoxDecoration(
-        color: c.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(6),
+        color: c.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -490,9 +521,16 @@ class PortalHeader extends StatelessWidget implements PreferredSizeWidget {
     // it always fills whatever height Scaffold actually grants, so the two
     // numbers can never drift apart by a stray pixel of rounding.
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.canvas,
-        border: Border(bottom: BorderSide(color: AppColors.hairline)),
+        border: const Border(bottom: BorderSide(color: AppColors.hairline)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryDeep.withValues(alpha: 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.max,
@@ -521,9 +559,9 @@ class PortalHeader extends StatelessWidget implements PreferredSizeWidget {
                           title,
                           style: const TextStyle(
                             color: AppColors.ink,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w800,
                             fontSize: 20,
-                            letterSpacing: -0.3,
+                            letterSpacing: -0.4,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -652,14 +690,22 @@ class PortalHeaderAvatar extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: CircleAvatar(
-          radius: 17,
-          backgroundColor: AppColors.ink,
-          child: Text(
-            initials,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-              fontSize: 13,
+          radius: 18,
+          backgroundColor: Colors.transparent,
+          child: Ink(
+            decoration: const BoxDecoration(
+              gradient: AppColors.accentGradient,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                initials,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13,
+                ),
+              ),
             ),
           ),
         ),
@@ -689,11 +735,12 @@ class BentoCard extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.hairline),
+        boxShadow: AppColors.softShadow(0.7),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(19),
         child: Material(
           color: Colors.transparent,
           child: onTap == null
@@ -746,8 +793,8 @@ class SettingsRow extends StatelessWidget {
                 height: 34,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: chipColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(9),
+                  color: chipColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(11),
                 ),
                 child: Icon(icon, color: chipColor, size: 17),
               ),
@@ -759,7 +806,7 @@ class SettingsRow extends StatelessWidget {
                     Text(
                       label,
                       style: TextStyle(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                         fontSize: 14,
                         color: labelColor ?? AppColors.ink,
                       ),
@@ -827,8 +874,9 @@ Color statusColor(String? status) {
   }
 }
 
-/// Full-width button filled with ink (near-black) — the flat replacement for
-/// the old gradient pill. Shows a white spinner while [loading].
+/// Full-width primary CTA — violet gradient with a soft colored glow and a
+/// subtle top highlight. Shows a white spinner while [loading]; goes flat
+/// grey when disabled.
 class GradientButton extends StatelessWidget {
   const GradientButton({
     super.key,
@@ -836,7 +884,7 @@ class GradientButton extends StatelessWidget {
     required this.onPressed,
     this.loading = false,
     this.icon,
-    this.height = 50,
+    this.height = 52,
   });
 
   final String label;
@@ -848,46 +896,72 @@ class GradientButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null && !loading;
-    return SizedBox(
-      height: height,
-      child: ElevatedButton(
-        onPressed: enabled ? onPressed : null,
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          child: loading
-              ? const SizedBox(
-                  key: ValueKey('spin'),
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.4,
-                    color: Colors.white,
-                    strokeCap: StrokeCap.round,
-                  ),
-                )
-              : Row(
-                  key: const ValueKey('label'),
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (icon != null) ...[
-                      Icon(icon, size: 18),
-                      const SizedBox(width: 8),
-                    ],
-                    Flexible(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          label,
-                          maxLines: 1,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
+    final radius = BorderRadius.circular(16);
+    return PressableScale(
+      onTap: enabled ? onPressed : null,
+      scale: 0.985,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        opacity: onPressed == null && !loading ? 0.5 : 1,
+        child: Container(
+          height: height,
+          decoration: BoxDecoration(
+            gradient: AppColors.accentGradient,
+            borderRadius: radius,
+            border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+            boxShadow: enabled ? AppColors.glow(AppColors.primary, 0.9) : null,
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: radius,
+              onTap: enabled ? onPressed : null,
+              child: Center(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: loading
+                      ? const SizedBox(
+                          key: ValueKey('spin'),
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.4,
+                            color: Colors.white,
+                            strokeCap: StrokeCap.round,
+                          ),
+                        )
+                      : Padding(
+                          key: const ValueKey('label'),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (icon != null) ...[
+                                Icon(icon, size: 18, color: Colors.white),
+                                const SizedBox(width: 8),
+                              ],
+                              Flexible(
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    label,
+                                    maxLines: 1,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15.5,
+                                      letterSpacing: 0.1,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ),
-                  ],
                 ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -982,9 +1056,9 @@ class BrandNavItem {
   final String label;
 }
 
-/// Flat bottom navigation bar — white surface, hairline top border, ink
-/// icon/label when selected. Shared by the affiliate, manager and admin
-/// shells.
+/// Bottom navigation bar — white sheet with rounded top corners and a
+/// lifted shadow; the selected destination gets a tinted capsule behind its
+/// icon and a brand-colored label. Shared by the manager and admin shells.
 class BrandNavBar extends StatelessWidget {
   const BrandNavBar({
     super.key,
@@ -1000,14 +1074,21 @@ class BrandNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.hairline)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.midnightSoft.withValues(alpha: 0.10),
+            blurRadius: 24,
+            offset: const Offset(0, -6),
+          ),
+        ],
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 58,
+          height: 66,
           child: Row(
             children: [
               for (var i = 0; i < items.length; i++)
@@ -1042,7 +1123,7 @@ class _BrandNavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.ink : AppColors.inkFaint;
+    final color = selected ? AppColors.primary : AppColors.inkFaint;
     return Semantics(
       button: true,
       selected: selected,
@@ -1054,12 +1135,23 @@ class _BrandNavButton extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              selected ? item.selectedIcon : item.icon,
-              size: 22,
-              color: color,
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              width: selected ? 52 : 32,
+              height: 30,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: selected ? AppColors.primaryMuted : Colors.transparent,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Icon(
+                selected ? item.selectedIcon : item.icon,
+                size: 22,
+                color: color,
+              ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
               item.label,
               maxLines: 1,
@@ -1067,7 +1159,7 @@ class _BrandNavButton extends StatelessWidget {
               softWrap: false,
               style: TextStyle(
                 fontSize: 10.5,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                 color: color,
               ),
             ),

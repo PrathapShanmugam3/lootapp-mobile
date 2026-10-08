@@ -75,9 +75,12 @@ class WalletScreen extends ConsumerWidget {
                             width: double.infinity,
                             child: PressableScale(
                               onTap: () => _openWithdrawSheet(context, ref),
-                              child: Material(
-                                color: Colors.white,
-                                shape: const StadiumBorder(),
+                              child: Ink(
+                                decoration: ShapeDecoration(
+                                  gradient: const LinearGradient(colors: [AffColors.goldSoft, AffColors.gold]),
+                                  shape: const StadiumBorder(),
+                                  shadows: [BoxShadow(color: AffColors.gold.withValues(alpha: 0.4), blurRadius: 18, offset: const Offset(0, 8))],
+                                ),
                                 child: InkWell(
                                   customBorder: const StadiumBorder(),
                                   onTap: () => _openWithdrawSheet(context, ref),
@@ -86,9 +89,9 @@ class WalletScreen extends ConsumerWidget {
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        Icon(Icons.bolt_rounded, color: AffColors.purpleEnd, size: 18),
+                                        Icon(Icons.bolt_rounded, color: AffColors.midnight, size: 19),
                                         SizedBox(width: 6),
-                                        Text('Withdraw Funds', style: TextStyle(color: AffColors.purpleEnd, fontWeight: FontWeight.w800, fontSize: 14.5)),
+                                        Text('Withdraw Funds', style: TextStyle(color: AffColors.midnight, fontWeight: FontWeight.w900, fontSize: 15)),
                                       ],
                                     ),
                                   ),
