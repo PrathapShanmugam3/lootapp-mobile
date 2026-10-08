@@ -47,7 +47,8 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
           const AffUserAvatar(),
         ],
       ),
-      body: RefreshIndicator(
+      body: AffAmbient(
+        child: RefreshIndicator(
         onRefresh: () async => ref.refresh(offersListProvider.future),
         child: offersAsync.when(
           loading: () => const LoadingState(),
@@ -132,6 +133,7 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
           },
         ),
       ),
+      ),
     );
   }
 
@@ -212,7 +214,9 @@ class _OfferCard extends StatelessWidget {
     final payout = offer['payout'] ?? offer['maxPayout'] ?? offer['payoutAmount'];
     final initials = name.isNotEmpty ? name.trim().substring(0, name.trim().length >= 2 ? 2 : 1).toUpperCase() : '?';
 
+    final accent = AffColors.colorFor(name);
     return AffCard(
+      accent: accent,
       onTap: () {
         if (sample) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sample offer — reconnect to open real campaigns')));
@@ -230,7 +234,7 @@ class _OfferCard extends StatelessWidget {
                 child: Container(
                   width: 52,
                   height: 52,
-                  decoration: const BoxDecoration(gradient: AffColors.gradient),
+                  decoration: BoxDecoration(gradient: AffColors.gradientFor(name)),
                   alignment: Alignment.center,
                   child: logo != null && logo.isNotEmpty
                       ? Image.network(
@@ -264,7 +268,7 @@ class _OfferCard extends StatelessWidget {
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                decoration: BoxDecoration(color: AffColors.success.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(999)),
+                decoration: BoxDecoration(color: const Color(0xFFE3F6EA), borderRadius: BorderRadius.circular(999)),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -283,10 +287,10 @@ class _OfferCard extends StatelessWidget {
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(color: AffColors.pageBg, borderRadius: BorderRadius.circular(16)),
+                    decoration: BoxDecoration(color: accent.withValues(alpha: 0.10), borderRadius: BorderRadius.circular(16)),
                     child: Row(
                       children: [
-                        const Icon(Icons.payments_rounded, size: 18, color: Color(0xFFE08A1E)),
+                        Icon(Icons.payments_rounded, size: 18, color: accent),
                         const SizedBox(width: 8),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,9 +310,9 @@ class _OfferCard extends StatelessWidget {
                 height: 48,
                 padding: const EdgeInsets.symmetric(horizontal: 18),
                 decoration: BoxDecoration(
-                  gradient: AffColors.gradient,
+                  gradient: AffColors.gradientFor(name),
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.32), blurRadius: 14, offset: const Offset(0, 6))],
+                  boxShadow: [BoxShadow(color: accent.withValues(alpha: 0.45), blurRadius: 16, offset: const Offset(0, 6))],
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,

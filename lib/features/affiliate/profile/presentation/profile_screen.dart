@@ -36,13 +36,15 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: RefreshIndicator(
+      body: AffAmbient(
+        child: RefreshIndicator(
         onRefresh: () async => ref.refresh(profileProvider.future),
         child: profileAsync.when(
           loading: () => const LoadingState(),
           error: (e, _) => ErrorState(message: 'Failed to load profile.\n$e', onRetry: () => ref.invalidate(profileProvider)),
           data: (profile) => _ProfileBody(profile: profile, sample: sample, onRetry: () => ref.invalidate(profileProvider)),
         ),
+      ),
       ),
     );
   }
@@ -172,6 +174,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                 const _MenuDivider(),
                 _MenuRow(
                   icon: Icons.insights_rounded,
+                  color: AffColors.cyan,
                   label: 'Reports',
                   subtitle: 'Clicks, conversions and earnings',
                   onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ReportsScreen())),
@@ -179,6 +182,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                 const _MenuDivider(),
                 _MenuRow(
                   icon: Icons.public_rounded,
+                  color: AffColors.pink,
                   label: 'Custom domains',
                   subtitle: 'Use your own link domain',
                   onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CustomDomainsScreen())),
@@ -351,7 +355,8 @@ class _MenuDivider extends StatelessWidget {
 }
 
 class _MenuRow extends StatelessWidget {
-  const _MenuRow({required this.icon, required this.label, required this.onTap, this.subtitle});
+  const _MenuRow({required this.icon, required this.label, required this.onTap, this.subtitle, this.color = AffColors.purpleEnd});
+  final Color color;
   final IconData icon;
   final String label;
   final String? subtitle;
@@ -367,7 +372,7 @@ class _MenuRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
-              AffIconChip(icon: icon, size: 40),
+              AffIconChip(icon: icon, color: color, size: 40),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(

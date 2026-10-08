@@ -39,7 +39,8 @@ class WalletScreen extends ConsumerWidget {
           const AffUserAvatar(),
         ],
       ),
-      body: RefreshIndicator(
+      body: AffAmbient(
+        child: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(walletSummaryProvider);
           ref.invalidate(transactionsProvider);
@@ -86,16 +87,16 @@ class WalletScreen extends ConsumerWidget {
                             width: double.infinity,
                             child: PressableScale(
                               onTap: () => _openWithdrawSheet(context, ref, sample: summarySample),
-                              child: Material(
-                                type: MaterialType.transparency,
-                                child: Ink(
+                              child: Container(
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(colors: [AffColors.goldSoft, AffColors.gold]),
                                   borderRadius: BorderRadius.circular(999),
                                   boxShadow: [BoxShadow(color: AffColors.gold.withValues(alpha: 0.4), blurRadius: 18, offset: const Offset(0, 8))],
                                 ),
-                                child: InkWell(
-                                  customBorder: const StadiumBorder(),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                  borderRadius: BorderRadius.circular(999),
                                   onTap: () => _openWithdrawSheet(context, ref, sample: summarySample),
                                   child: const SizedBox(
                                     height: 48,
@@ -108,8 +109,8 @@ class WalletScreen extends ConsumerWidget {
                                       ],
                                     ),
                                   ),
+                                  ),
                                 ),
-                              ),
                               ),
                             ),
                           ),
@@ -174,6 +175,7 @@ class WalletScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -260,6 +262,7 @@ class _RedeemCardState extends ConsumerState<_RedeemCard> {
   @override
   Widget build(BuildContext context) {
     return AffCard(
+      accent: AffColors.pink,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

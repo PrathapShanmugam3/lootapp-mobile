@@ -70,7 +70,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           const AffUserAvatar(),
         ],
       ),
-      body: chatAsync.when(
+      body: AffAmbient(
+        child: chatAsync.when(
         loading: () => const LoadingState(),
         error: (e, _) => ErrorState(message: 'Failed to load chat.\n$e', onRetry: () => ref.invalidate(chatProvider)),
         data: (chatState) {
@@ -167,6 +168,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           );
         },
       ),
+      ),
     );
   }
 }
@@ -179,6 +181,7 @@ class _SupportBanner extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
       child: AffCard(
+        accent: AffColors.cyan,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
           children: [

@@ -25,6 +25,12 @@ class AppColors {
   static const gold = Color(0xFFF5B942);
   static const goldMuted = Color(0xFFFFF4DC);
 
+  // Vivid accents for variety — icon chips, avatars, tab colors, glows.
+  static const pinkAccent = Color(0xFFFF4DA6);
+  static const cyan = Color(0xFF22D3EE);
+  static const emerald = Color(0xFF10B981);
+  static const orange = Color(0xFFFF8A3D);
+
   // Midnight surfaces used for hero blocks, nav and the login header.
   static const midnight = Color(0xFF110C2E);
   static const midnightSoft = Color(0xFF1E1550);

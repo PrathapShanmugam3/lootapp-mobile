@@ -105,6 +105,8 @@ class _DecorativeOrbsState extends State<DecorativeOrbs> with SingleTickerProvid
               Positioned(right: (-70 + t * 40) * scale, top: (-80 + t * 24) * scale, child: orb(240, const Color(0xFFC4A8FF), 0.38)),
               Positioned(left: (-60 - t * 36) * scale, bottom: (-90 + t * 30) * scale, child: orb(220, AppColors.gold, 0.16)),
               Positioned(right: (30 - t * 50) * scale, bottom: (-60 - t * 20) * scale, child: orb(150, const Color(0xFF6C4DF6), 0.45)),
+              Positioned(left: (90 + t * 60) * scale, top: (-70 - t * 20) * scale, child: orb(170, AppColors.pinkAccent, 0.30)),
+              Positioned(right: (110 + t * 40) * scale, bottom: (-80 + t * 24) * scale, child: orb(150, AppColors.cyan, 0.22)),
             ],
           );
         },
@@ -981,6 +983,74 @@ Color statusColor(String? status) {
   }
 }
 
+/// A soft highlight that sweeps across its parent every few seconds —
+/// the "shine" on primary buttons. Static under reduce-motion.
+class ShineSweep extends StatefulWidget {
+  const ShineSweep({super.key});
+
+  @override
+  State<ShineSweep> createState() => _ShineSweepState();
+}
+
+class _ShineSweepState extends State<ShineSweep> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 3600));
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.maybeOf(context)?.disableAnimations ?? false) {
+      _c.stop();
+    } else if (!_c.isAnimating) {
+      _c.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final w = constraints.maxWidth;
+          return AnimatedBuilder(
+            animation: _c,
+            builder: (context, _) {
+              final p = (_c.value / 0.4).clamp(0.0, 1.0); // sweep in the first 40%, then rest
+              final x = -90 + (w + 180) * Curves.easeInOut.transform(p);
+              return Stack(
+                clipBehavior: Clip.hardEdge,
+                children: [
+                  Positioned(
+                    left: x,
+                    top: -10,
+                    bottom: -10,
+                    width: 70,
+                    child: Transform(
+                      transform: Matrix4.skewX(-0.45),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.white.withValues(alpha: 0), Colors.white.withValues(alpha: 0.30), Colors.white.withValues(alpha: 0)],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
 /// Full-width primary CTA — violet gradient with a soft colored glow and a
 /// subtle top highlight. Shows a white spinner while [loading]; goes flat
 /// grey when disabled.
@@ -1018,7 +1088,10 @@ class GradientButton extends StatelessWidget {
             border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
             boxShadow: enabled ? AppColors.glow(AppColors.primary, 0.9) : null,
           ),
-          child: Material(
+          child: Stack(
+            children: [
+              if (enabled) Positioned.fill(child: ClipRRect(borderRadius: BorderRadius.circular(15), child: const ShineSweep())),
+              Material(
             color: Colors.transparent,
             child: InkWell(
               borderRadius: radius,
@@ -1068,6 +1141,8 @@ class GradientButton extends StatelessWidget {
                 ),
               ),
             ),
+          ),
+            ],
           ),
         ),
       ),

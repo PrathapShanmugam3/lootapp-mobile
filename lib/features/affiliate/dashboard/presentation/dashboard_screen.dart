@@ -41,7 +41,8 @@ class DashboardScreen extends ConsumerWidget {
           const AffUserAvatar(),
         ],
       ),
-      body: RefreshIndicator(
+      body: AffAmbient(
+        child: RefreshIndicator(
         onRefresh: () async => ref.refresh(dashboardProvider.future),
         child: dashboardAsync.when(
           loading: () => const LoadingState(),
@@ -51,6 +52,7 @@ class DashboardScreen extends ConsumerWidget {
           ),
           data: (data) => _DashboardBody(data: data, sample: sample, onRetry: () => ref.invalidate(dashboardProvider)),
         ),
+      ),
       ),
     );
   }
@@ -377,7 +379,7 @@ class _StatTile extends StatelessWidget {
               ],
             );
 
-    return AffCard(padding: const EdgeInsets.fromLTRB(18, 18, 18, 18), child: content);
+    return AffCard(accent: color, padding: const EdgeInsets.fromLTRB(18, 18, 18, 18), child: content);
   }
 }
 
@@ -409,7 +411,7 @@ class _CampaignRow extends StatelessWidget {
                 width: 42,
                 height: 42,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(gradient: AffColors.gradient, borderRadius: BorderRadius.circular(14)),
+                decoration: BoxDecoration(gradient: AffColors.gradientFor(name), borderRadius: BorderRadius.circular(14)),
                 child: Text(initials, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Colors.white)),
               ),
               if (rank <= 3)
@@ -454,7 +456,7 @@ class _CampaignRow extends StatelessWidget {
                           tween: Tween(begin: 0, end: progress),
                           duration: const Duration(milliseconds: 900),
                           curve: Curves.easeOutCubic,
-                          builder: (context, w, _) => FractionallySizedBox(widthFactor: w, child: Container(decoration: const BoxDecoration(gradient: AffColors.gradient))),
+                          builder: (context, w, _) => FractionallySizedBox(widthFactor: w, child: Container(decoration: BoxDecoration(gradient: AffColors.gradientFor(name)))),
                         ),
                       ],
                     ),

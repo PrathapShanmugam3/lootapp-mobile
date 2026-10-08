@@ -212,6 +212,7 @@ class _ReportsBody extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: AffCard(
+                accent: AffColors.colorFor(name),
                 padding: const EdgeInsets.all(16),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
@@ -232,7 +233,7 @@ class _ReportsBody extends StatelessWidget {
                           width: 40,
                           height: 40,
                           alignment: Alignment.center,
-                          decoration: BoxDecoration(gradient: AffColors.gradient, borderRadius: BorderRadius.circular(13)),
+                          decoration: BoxDecoration(gradient: AffColors.gradientFor(name), borderRadius: BorderRadius.circular(13)),
                           child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
                         ),
                         const SizedBox(width: 12),
