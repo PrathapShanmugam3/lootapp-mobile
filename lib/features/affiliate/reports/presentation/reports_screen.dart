@@ -170,6 +170,7 @@ class _ReportsBody extends StatelessWidget {
               child: _TrendStat(
                 label: 'Total Clicks',
                 icon: Icons.ads_click_rounded,
+                color: AffColors.purpleEnd,
                 value: (current['totalClicks'] ?? 0).toString(),
                 current: current['totalClicks'],
                 previous: previous['totalClicks'],
@@ -180,6 +181,7 @@ class _ReportsBody extends StatelessWidget {
               child: _TrendStat(
                 label: 'Total Conversions',
                 icon: Icons.check_circle_outline_rounded,
+                color: AffColors.pink,
                 value: (current['totalConversions'] ?? 0).toString(),
                 current: current['totalConversions'],
                 previous: previous['totalConversions'],
@@ -191,6 +193,7 @@ class _ReportsBody extends StatelessWidget {
         _TrendStat(
           label: 'Total Revenue',
           icon: Icons.payments_rounded,
+          color: AffColors.amber,
           value: _currency.format((current['totalEarnings'] as num?) ?? 0),
           current: current['totalEarnings'],
           previous: previous['totalEarnings'],
@@ -305,6 +308,7 @@ class _TrendStat extends StatelessWidget {
     required this.current,
     required this.previous,
     required this.icon,
+    required this.color,
     this.fullWidth = false,
   });
 
@@ -313,6 +317,7 @@ class _TrendStat extends StatelessWidget {
   final dynamic current;
   final dynamic previous;
   final IconData icon;
+  final Color color;
   final bool fullWidth;
 
   @override
@@ -330,6 +335,6 @@ class _TrendStat extends StatelessWidget {
         trendText = '${pct.abs().toStringAsFixed(1)}%';
       }
     }
-    return StatTile(label: label, value: value, icon: icon, trendText: trendText, trendUp: trendUp);
+    return StatTile(label: label, value: value, icon: icon, color: color, trendText: trendText, trendUp: trendUp);
   }
 }

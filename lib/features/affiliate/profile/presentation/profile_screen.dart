@@ -163,14 +163,16 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
           index: 2,
           child: Column(
             children: [
-              _RowTile(label: 'Edit account', value: 'Payout & password', onTap: _openEdit),
+              _RowTile(label: 'Edit account', icon: Icons.manage_accounts_rounded, tint: AffColors.purpleEnd, value: 'Payout & password', onTap: _openEdit),
               const SizedBox(height: 9),
-              _RowTile(label: 'Reports', onTap: () => _push(const ReportsScreen())),
+              _RowTile(label: 'Reports', icon: Icons.insights_rounded, tint: const Color(0xFF0284C7), onTap: () => _push(const ReportsScreen())),
               const SizedBox(height: 9),
-              _RowTile(label: 'Custom domains', onTap: () => _push(const CustomDomainsScreen())),
+              _RowTile(label: 'Custom domains', icon: Icons.public_rounded, tint: const Color(0xFFDB2777), onTap: () => _push(const CustomDomainsScreen())),
               const SizedBox(height: 9),
               _RowTile(
                 label: 'Log out',
+                icon: Icons.logout_rounded,
+                tint: AffColors.danger,
                 color: AffColors.danger,
                 onTap: () async {
                   if (!await confirmLogout(context)) return;
@@ -269,7 +271,9 @@ class _DetailRow extends StatelessWidget {
 
 /// White rounded-16 row from the design: bold label, muted value + chevron.
 class _RowTile extends StatelessWidget {
-  const _RowTile({required this.label, required this.onTap, this.value, this.color = AffColors.ink});
+  const _RowTile({required this.label, required this.onTap, this.value, this.color = AffColors.ink, this.icon, this.tint = AffColors.purpleEnd});
+  final IconData? icon;
+  final Color tint;
   final String label;
   final String? value;
   final Color color;
@@ -283,6 +287,10 @@ class _RowTile extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
+          if (icon != null) ...[
+            AffIconChip(icon: icon!, color: tint, size: 32, solid: true),
+            const SizedBox(width: 12),
+          ],
           Expanded(child: Text(label, style: AffText.jakarta(13, FontWeight.w700, color: color))),
           if (value != null) Text('$value ›', style: AffText.jakarta(13, FontWeight.w700, color: AffColors.inkFaint))
           else if (color == AffColors.ink) Text('›', style: AffText.jakarta(13, FontWeight.w700, color: AffColors.inkFaint)),

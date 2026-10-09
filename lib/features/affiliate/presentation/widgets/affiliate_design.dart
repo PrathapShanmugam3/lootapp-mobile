@@ -78,13 +78,19 @@ class AffColors {
 
   /// Card elevation: 0 4px 16px rgba(60,20,120,.08).
   static List<BoxShadow> cardShadow = [
-    BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.08), blurRadius: 16, offset: const Offset(0, 4)),
+    BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.05), blurRadius: 2, offset: const Offset(0, 1)),
+    BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.08), blurRadius: 18, offset: const Offset(0, 6)),
   ];
 
-  // --- Per-item tints (offer / campaign avatars) ---
-  static const _tints = [
-    (bg: chipLilac, fg: purpleEnd),
-    (bg: chipPink, fg: Color(0xFFDB2777)),
+  // --- Vivid per-item palette (offer / campaign avatars, buttons, chips) ---
+  // Each entry: [light, strong, tint-bg, tint-fg]
+  static const _palette = [
+    (a: Color(0xFFA855F7), b: Color(0xFF7C3AED), bg: Color(0xFFEDE9FE), fg: Color(0xFF7C3AED)), // violet
+    (a: Color(0xFFF472B6), b: Color(0xFFE11D74), bg: Color(0xFFFCE7F3), fg: Color(0xFFDB2777)), // pink
+    (a: Color(0xFFFBBF24), b: Color(0xFFF97316), bg: Color(0xFFFEF3C7), fg: Color(0xFFD97706)), // amber → orange
+    (a: Color(0xFF34D399), b: Color(0xFF059669), bg: Color(0xFFD1FAE5), fg: Color(0xFF059669)), // emerald
+    (a: Color(0xFF38BDF8), b: Color(0xFF2563EB), bg: Color(0xFFE0F2FE), fg: Color(0xFF0284C7)), // sky → blue
+    (a: Color(0xFF818CF8), b: Color(0xFF4F46E5), bg: Color(0xFFE0E7FF), fg: Color(0xFF4F46E5)), // indigo
   ];
 
   static int _hash(String seed) {
@@ -95,15 +101,22 @@ class AffColors {
     return h;
   }
 
-  /// Stable chip colours for [seed] — lilac or pink, like the design's
-  /// alternating campaign chips.
-  static ({Color bg, Color fg}) tintFor(String seed) => _tints[_hash(seed) % _tints.length];
+  static ({Color a, Color b, Color bg, Color fg}) _pick(String seed) => _palette[_hash(seed) % _palette.length];
+
+  /// Stable pale chip colours for [seed] (tinted bg + strong text).
+  static ({Color bg, Color fg}) tintFor(String seed) {
+    final c = _pick(seed);
+    return (bg: c.bg, fg: c.fg);
+  }
 
   /// Stable accent colour for [seed].
-  static Color colorFor(String seed) => tintFor(seed).fg;
+  static Color colorFor(String seed) => _pick(seed).b;
 
-  /// Violet gradient (kept for call sites that want a solid avatar).
-  static LinearGradient gradientFor(String seed) => gradient;
+  /// Stable vivid gradient for [seed] — avatars and per-item buttons.
+  static LinearGradient gradientFor(String seed) {
+    final c = _pick(seed);
+    return LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [c.a, c.b]);
+  }
 }
 
 /// Text styles from the design: Plus Jakarta Sans for copy, Space Grotesk
@@ -145,7 +158,26 @@ class AffHeader extends StatelessWidget implements PreferredSizeWidget {
         gradient: AffColors.heroGradient,
         boxShadow: [BoxShadow(color: AffColors.violetDeep.withValues(alpha: 0.35), blurRadius: 22, offset: const Offset(0, 6))],
       ),
-      child: SafeArea(
+      child: Stack(
+        children: [
+          // Soft light in the top-right corner for depth.
+          Positioned(
+            top: -70,
+            right: -50,
+            child: IgnorePointer(
+              child: Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(colors: [Colors.white.withValues(alpha: 0.22), Colors.white.withValues(alpha: 0)], stops: const [0, 0.7]),
+                ),
+              ),
+            ),
+          ),
+          // 1px highlight along the bottom edge.
+          Positioned(left: 0, right: 0, bottom: 0, child: Container(height: 1, color: Colors.white.withValues(alpha: 0.18))),
+          SafeArea(
         bottom: false,
         child: SizedBox(
           height: 74,
@@ -194,6 +226,8 @@ class AffHeader extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
         ),
+      ),
+        ],
       ),
     );
   }
@@ -352,20 +386,32 @@ class AffHeroCard extends StatelessWidget {
 /// surface for stat tiles, lists and forms. Tappable cards sink slightly
 /// under the finger.
 class AffCard extends StatelessWidget {
-  const AffCard({super.key, required this.child, this.padding = const EdgeInsets.all(16), this.onTap, this.radius = 20});
+  const AffCard({super.key, required this.child, this.padding = const EdgeInsets.all(16), this.onTap, this.radius = 20, this.wash});
 
   final Widget child;
   final EdgeInsetsGeometry padding;
   final VoidCallback? onTap;
   final double radius;
 
+  /// Optional colour wash: a soft tint of this colour fading in from the
+  /// top-right corner of the white card.
+  final Color? wash;
+
   @override
   Widget build(BuildContext context) {
     final card = Container(
       width: double.infinity,
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(radius), boxShadow: AffColors.cardShadow),
-      child: ClipRRect(
+      decoration: BoxDecoration(
+        color: wash == null ? Colors.white : null,
+        gradient: wash == null
+            ? null
+            : RadialGradient(center: Alignment.topRight, radius: 0.95, colors: [wash!.withValues(alpha: 0.13), Colors.white], stops: const [0, 1]),
         borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: AffColors.purpleEnd.withValues(alpha: 0.07)),
+        boxShadow: AffColors.cardShadow,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radius - 1),
         child: Material(
           color: Colors.transparent,
           child: onTap == null
@@ -394,9 +440,11 @@ class AffIconChip extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        gradient: solid ? LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [color, Color.lerp(color, Colors.white, 0.28)!]) : null,
+        gradient: solid ? LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color.lerp(color, Colors.white, 0.22)!, color]) : null,
         color: solid ? null : color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(size * 0.34),
+        border: solid ? Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1) : null,
+        boxShadow: solid ? [BoxShadow(color: color.withValues(alpha: 0.38), blurRadius: 10, offset: const Offset(0, 4))] : null,
       ),
       child: Icon(icon, color: solid ? Colors.white : color, size: size * 0.48),
     );
@@ -405,10 +453,20 @@ class AffIconChip extends StatelessWidget {
 
 /// One destination in [AffNavBar].
 class AffNavItem {
-  const AffNavItem({required this.icon, required this.selectedIcon, required this.label});
+  const AffNavItem({
+    required this.icon,
+    required this.selectedIcon,
+    required this.label,
+    this.from = AffColors.purpleEnd,
+    this.to = AffColors.magenta,
+  });
   final IconData icon;
   final IconData selectedIcon;
   final String label;
+
+  /// Gradient of the sliding pill while this tab is selected.
+  final Color from;
+  final Color to;
 }
 
 /// Floating glass tab bar from the design: 68px tall, radius 26, frosted
@@ -450,11 +508,19 @@ class AffNavBar extends StatelessWidget {
                           left: selectedIndex * itemW + (itemW - pillW) / 2,
                           width: pillW,
                           height: 52,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: AffColors.pillGradient,
-                              borderRadius: BorderRadius.circular(19),
-                              boxShadow: [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.4), blurRadius: 18, offset: const Offset(0, 8))],
+                          child: TweenAnimationBuilder<Color?>(
+                            tween: ColorTween(end: items[selectedIndex].from),
+                            duration: const Duration(milliseconds: 380),
+                            builder: (context, from, _) => TweenAnimationBuilder<Color?>(
+                              tween: ColorTween(end: items[selectedIndex].to),
+                              duration: const Duration(milliseconds: 380),
+                              builder: (context, to, _) => Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [from ?? AffColors.purpleEnd, to ?? AffColors.magenta]),
+                                  borderRadius: BorderRadius.circular(19),
+                                  boxShadow: [BoxShadow(color: (from ?? AffColors.purpleEnd).withValues(alpha: 0.42), blurRadius: 18, offset: const Offset(0, 8))],
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -534,7 +600,21 @@ class AffSectionHeader extends StatelessWidget {
         textBaseline: TextBaseline.alphabetic,
         children: [
           Flexible(
-            child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(15, FontWeight.w800)),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 4,
+                  height: 15,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [AffColors.purpleStart, AffColors.magenta]),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Flexible(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(15, FontWeight.w800))),
+              ],
+            ),
           ),
           if (action != null)
             GestureDetector(
