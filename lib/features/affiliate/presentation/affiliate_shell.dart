@@ -71,11 +71,11 @@ class _AffiliateShellState extends State<AffiliateShell> with SingleTickerProvid
         selectedIndex: _index,
         onSelected: _select,
         items: const [
-          AffNavItem(icon: Icons.grid_view_rounded, selectedIcon: Icons.grid_view_rounded, label: 'Dash'),
-          AffNavItem(icon: Icons.diamond_outlined, selectedIcon: Icons.diamond, label: 'Campaigns'),
-          AffNavItem(icon: Icons.currency_rupee_rounded, selectedIcon: Icons.currency_rupee_rounded, label: 'Payouts'),
-          AffNavItem(icon: Icons.mail_outline_rounded, selectedIcon: Icons.mail_rounded, label: 'Chat'),
-          AffNavItem(icon: Icons.sentiment_satisfied_alt_rounded, selectedIcon: Icons.sentiment_satisfied_alt_rounded, label: 'Profile'),
+          AffNavItem(icon: Icons.grid_view_rounded, selectedIcon: Icons.grid_view_rounded, label: 'Dash', from: AffColors.purpleEnd, to: AffColors.magenta),
+          AffNavItem(icon: Icons.diamond_outlined, selectedIcon: Icons.diamond, label: 'Campaigns', from: Color(0xFFF472B6), to: Color(0xFFE11D74)),
+          AffNavItem(icon: Icons.currency_rupee_rounded, selectedIcon: Icons.currency_rupee_rounded, label: 'Payouts', from: Color(0xFFFBBF24), to: Color(0xFFF97316)),
+          AffNavItem(icon: Icons.mail_outline_rounded, selectedIcon: Icons.mail_rounded, label: 'Chat', from: Color(0xFF38BDF8), to: Color(0xFF2563EB)),
+          AffNavItem(icon: Icons.sentiment_satisfied_alt_rounded, selectedIcon: Icons.sentiment_satisfied_alt_rounded, label: 'Profile', from: Color(0xFF34D399), to: Color(0xFF059669)),
         ],
       ),
     );

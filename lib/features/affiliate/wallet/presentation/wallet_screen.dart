@@ -353,7 +353,7 @@ class _TransactionRow extends StatelessWidget {
         Container(
           width: 32,
           height: 32,
-          decoration: BoxDecoration(color: AffColors.pageBg, borderRadius: BorderRadius.circular(11)),
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(11)),
           child: Icon(isDebit ? Icons.north_east_rounded : Icons.south_west_rounded, size: 15, color: color),
         ),
         const SizedBox(width: 11),

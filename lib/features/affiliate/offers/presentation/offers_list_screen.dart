@@ -223,8 +223,10 @@ class _OfferCard extends StatelessWidget {
     final trimmed = name.trim();
     final abbr = trimmed.isEmpty ? '?' : trimmed.substring(0, trimmed.length >= 2 ? 2 : 1).toUpperCase();
 
+    final accent = AffColors.colorFor(name);
     return AffCard(
       radius: 22,
+      wash: accent,
       padding: const EdgeInsets.all(15),
       onTap: () {
         if (sample) {
@@ -243,8 +245,9 @@ class _OfferCard extends StatelessWidget {
                 clipBehavior: Clip.antiAlias,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AffColors.chipLilac, Color(0xFFFAE8FF)]),
+                  gradient: AffColors.gradientFor(name),
                   borderRadius: BorderRadius.circular(14),
+                  boxShadow: [BoxShadow(color: accent.withValues(alpha: 0.35), blurRadius: 10, offset: const Offset(0, 4))],
                 ),
                 child: logo != null && logo.isNotEmpty
                     ? Image.network(
@@ -252,9 +255,9 @@ class _OfferCard extends StatelessWidget {
                         fit: BoxFit.cover,
                         width: 42,
                         height: 42,
-                        errorBuilder: (_, __, ___) => Text(abbr, style: AffText.number(13, FontWeight.w700, color: AffColors.purpleEnd)),
+                        errorBuilder: (_, __, ___) => Text(abbr, style: AffText.number(13, FontWeight.w700, color: Colors.white)),
                       )
-                    : Text(abbr, style: AffText.number(13, FontWeight.w700, color: AffColors.purpleEnd)),
+                    : Text(abbr, style: AffText.number(13, FontWeight.w700, color: Colors.white)),
               ),
               const SizedBox(width: 11),
               Expanded(
@@ -289,7 +292,7 @@ class _OfferCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('PAYOUT', style: AffText.jakarta(9.5, FontWeight.w700, color: AffColors.inkFaint, letterSpacing: 0.76)),
-                    Text('₹$payout', style: AffText.number(19, FontWeight.w700)),
+                    Text('₹$payout', style: AffText.number(19, FontWeight.w700, color: accent)),
                   ],
                 )
               else
@@ -297,9 +300,9 @@ class _OfferCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(begin: Alignment(-1, -0.6), end: Alignment(1, 0.6), colors: [AffColors.purpleEnd, AffColors.magenta]),
+                  gradient: AffColors.gradientFor(name),
                   borderRadius: BorderRadius.circular(99),
-                  boxShadow: [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.35), blurRadius: 16, offset: const Offset(0, 6))],
+                  boxShadow: [BoxShadow(color: accent.withValues(alpha: 0.38), blurRadius: 16, offset: const Offset(0, 6))],
                 ),
                 child: Text('View Offer ↗', style: AffText.jakarta(12.5, FontWeight.w700, color: Colors.white)),
               ),

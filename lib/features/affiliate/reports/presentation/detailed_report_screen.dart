@@ -129,11 +129,11 @@ class _Body extends StatelessWidget {
         if (sample) SampleDataBanner(onRetry: onRetry),
         Row(
           children: [
-            Expanded(child: StatTile(label: 'Clicks', value: (stats['totalClicks'] ?? 0).toString(), icon: Icons.ads_click)),
+            Expanded(child: StatTile(label: 'Clicks', value: (stats['totalClicks'] ?? 0).toString(), icon: Icons.ads_click, color: AffColors.purpleEnd)),
             const SizedBox(width: 10),
-            Expanded(child: StatTile(label: 'Conversions', value: (stats['totalConversions'] ?? 0).toString(), icon: Icons.check_circle_outline)),
+            Expanded(child: StatTile(label: 'Conversions', value: (stats['totalConversions'] ?? 0).toString(), icon: Icons.check_circle_outline, color: AffColors.pink)),
             const SizedBox(width: 10),
-            Expanded(child: StatTile(label: 'Earnings', value: _currency.format((stats['totalEarnings'] as num?) ?? 0), icon: Icons.payments_outlined)),
+            Expanded(child: StatTile(label: 'Earnings', value: _currency.format((stats['totalEarnings'] as num?) ?? 0), icon: Icons.payments_outlined, color: AffColors.amber)),
           ],
         ),
         const SizedBox(height: 20),

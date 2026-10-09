@@ -212,6 +212,7 @@ class StatTile extends StatelessWidget {
     this.trendText,
     this.trendUp,
     this.subtitle,
+    this.color = AppColors.primary,
   });
 
   final String label;
@@ -220,11 +221,13 @@ class StatTile extends StatelessWidget {
   final String? trendText;
   final bool? trendUp;
   final String? subtitle;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return BentoCard(
+      wash: color,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -234,10 +237,11 @@ class StatTile extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryMuted,
+                    gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color.lerp(color, Colors.white, 0.22)!, color]),
                     borderRadius: BorderRadius.circular(12),
+                    boxShadow: [BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 10, offset: const Offset(0, 4))],
                   ),
-                  child: Icon(icon, size: 17, color: AppColors.primary),
+                  child: Icon(icon, size: 17, color: Colors.white),
                 ),
               const Spacer(),
               if (trendText != null)
@@ -844,8 +848,10 @@ class BentoCard extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.all(16),
     this.onTap,
+    this.wash,
   });
 
+  final Color? wash;
   final Widget child;
   final EdgeInsetsGeometry padding;
   final VoidCallback? onTap;
@@ -855,10 +861,13 @@ class BentoCard extends StatelessWidget {
     final card = Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: wash == null ? Colors.white : null,
+        gradient: wash == null
+            ? null
+            : RadialGradient(center: Alignment.topRight, radius: 0.95, colors: [wash!.withValues(alpha: 0.13), Colors.white], stops: const [0, 1]),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.hairline),
-        boxShadow: AppColors.softShadow(0.7),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.07)),
+        boxShadow: AppColors.softShadow(1),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(19),

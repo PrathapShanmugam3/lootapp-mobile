@@ -144,6 +144,7 @@ class _DashboardBody extends ConsumerWidget {
         FadeSlideIn(
           index: 2,
           child: AffCard(
+            wash: AffColors.amber,
             padding: const EdgeInsets.fromLTRB(15, 14, 15, 14),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -168,6 +169,7 @@ class _DashboardBody extends ConsumerWidget {
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AffColors.amber, AffColors.amberSoft]),
                     borderRadius: BorderRadius.circular(12),
+                    boxShadow: [BoxShadow(color: AffColors.amber.withValues(alpha: 0.4), blurRadius: 10, offset: const Offset(0, 4))],
                   ),
                   alignment: Alignment.center,
                   child: Text('₹', style: AffText.jakarta(16, FontWeight.w700, color: Colors.white)),
@@ -281,6 +283,7 @@ class _StatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AffCard(
+      wash: gradient.first,
       padding: const EdgeInsets.fromLTRB(15, 14, 15, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,6 +299,7 @@ class _StatTile extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: gradient),
                   borderRadius: BorderRadius.circular(11),
+                  boxShadow: [BoxShadow(color: gradient.first.withValues(alpha: 0.38), blurRadius: 10, offset: const Offset(0, 4))],
                 ),
                 child: Icon(icon, color: Colors.white, size: 15),
               ),
