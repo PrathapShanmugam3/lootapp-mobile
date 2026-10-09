@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/common.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import '../../../auth/presentation/auth_providers.dart';
 import '../../wallet/presentation/wallet_providers.dart';
+import '../../../../core/widgets/app_toast.dart';
 
 class RedeemScreen extends ConsumerStatefulWidget {
   const RedeemScreen({super.key});
@@ -34,18 +34,18 @@ class _RedeemScreenState extends ConsumerState<RedeemScreen> {
       final res = await client.dio.post('/api/redeem', data: {'code': code});
       if (!mounted) return;
       final success = res.isSuccess;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(res.message.isNotEmpty ? res.message : (success ? 'Code redeemed!' : 'Redemption failed')),
-          backgroundColor: success ? AppColors.success : AppColors.danger,
-        ),
+      showToast(
+        context,
+        res.message.isNotEmpty ? res.message : (success ? 'Code redeemed!' : 'Redemption failed'),
+        type: success ? ToastType.success : ToastType.error,
+        title: success ? 'Code redeemed' : null,
       );
       if (success) {
         _codeCtrl.clear();
         ref.invalidate(walletSummaryProvider);
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+      if (mounted) showErrorToast(context, e);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

@@ -11,6 +11,7 @@ import '../../notifications/presentation/notifications_screen.dart';
 import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/aff_user_avatar.dart';
 import '../../presentation/widgets/affiliate_design.dart';
+import '../../presentation/widgets/community_join.dart';
 import '../../reports/presentation/reports_screen.dart';
 import 'dashboard_providers.dart';
 
@@ -223,9 +224,12 @@ class _DashboardBody extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 14),
+        // --- Telegram / WhatsApp community ---
+        const FadeSlideIn(index: 3, child: CommunityJoinCard()),
+        const SizedBox(height: 14),
         // --- 7-day performance ---
         FadeSlideIn(
-          index: 3,
+          index: 4,
           child: AffCard(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -267,7 +271,7 @@ class _DashboardBody extends ConsumerWidget {
         const SizedBox(height: 14),
         // --- Top campaigns ---
         FadeSlideIn(
-          index: 4,
+          index: 5,
           child: AffCard(
             padding: const EdgeInsets.all(16),
             child: Column(

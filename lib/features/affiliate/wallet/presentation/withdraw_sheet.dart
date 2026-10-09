@@ -5,6 +5,7 @@ import '../../../../core/utils/input_formatters.dart';
 import '../../../../core/widgets/common.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'wallet_providers.dart';
+import '../../../../core/widgets/app_toast.dart';
 
 class WithdrawSheet extends ConsumerStatefulWidget {
   const WithdrawSheet({super.key});
@@ -138,15 +139,15 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
       if (!context.mounted) return;
       final success = result['success'] == true;
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message']?.toString() ?? (success ? 'Withdrawal requested' : 'Withdrawal failed')),
-          backgroundColor: success ? AffColors.success : AffColors.danger,
-        ),
+      showToast(
+        context,
+        result['message']?.toString() ?? (success ? 'Withdrawal requested' : 'Withdrawal failed'),
+        type: success ? ToastType.success : ToastType.error,
+        title: success ? 'Withdrawal requested' : null,
       );
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+        showErrorToast(context, e);
       }
     } finally {
       if (mounted) setState(() => _submitting = false);

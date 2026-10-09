@@ -9,6 +9,7 @@ import '../../presentation/widgets/aff_user_avatar.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'offer_detail_screen.dart';
 import 'offers_providers.dart';
+import '../../../../core/widgets/app_toast.dart';
 
 class OffersListScreen extends ConsumerStatefulWidget {
   const OffersListScreen({super.key});
@@ -230,7 +231,7 @@ class _OfferCard extends StatelessWidget {
       padding: const EdgeInsets.all(15),
       onTap: () {
         if (sample) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sample offer — reconnect to open real campaigns')));
+          showInfoToast(context, 'Sample offer — reconnect to open real campaigns');
           return;
         }
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => OfferDetailScreen(offId: offId)));

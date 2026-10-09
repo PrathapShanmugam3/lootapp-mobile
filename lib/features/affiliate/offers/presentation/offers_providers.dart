@@ -12,6 +12,10 @@ final offersListProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>
   return ref.watch(offersRepositoryProvider).getOffers();
 });
 
-final offerDetailProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, String>((ref, offId) {
+final linkDomainsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
+  return ref.watch(offersRepositoryProvider).getLinkDomains().catchError((_) => <Map<String, dynamic>>[]);
+});
+
+final offerDetailProvider =FutureProvider.autoDispose.family<Map<String, dynamic>, String>((ref, offId) {
   return ref.watch(offersRepositoryProvider).getOfferDetail(offId);
 });

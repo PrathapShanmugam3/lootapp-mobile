@@ -5,6 +5,7 @@ import '../../../../core/utils/input_formatters.dart';
 import '../../../../core/widgets/common.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'profile_providers.dart';
+import '../../../../core/widgets/app_toast.dart';
 
 /// Edit account — account info (read-only) plus the editable payout details
 /// and the change-password action, all in one place.
@@ -47,9 +48,9 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
       final result = await ref.read(profileRepositoryProvider).updatePayoutDetails(upi: _upiCtrl.text, accNo: _accNoCtrl.text, ifsc: _ifscCtrl.text);
       if (!mounted) return;
       ref.invalidate(profileProvider);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message']?.toString() ?? 'Payout details updated')));
+      showSuccessToast(context, result['message']?.toString() ?? 'Payout details updated');
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+      if (mounted) showErrorToast(context, e);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -264,14 +265,13 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
       if (!mounted) return;
       final success = result['success'] == true;
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message']?.toString() ?? (success ? 'Password changed' : 'Failed to change password')),
-          backgroundColor: success ? AffColors.success : AffColors.danger,
-        ),
+      showToast(
+        context,
+        result['message']?.toString() ?? (success ? 'Password changed' : 'Failed to change password'),
+        type: success ? ToastType.success : ToastType.error,
       );
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+      if (mounted) showErrorToast(context, e);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

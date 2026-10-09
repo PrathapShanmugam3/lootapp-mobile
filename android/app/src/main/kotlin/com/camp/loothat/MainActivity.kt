@@ -1,4 +1,4 @@
-package com.loothat.loothat_app
+package com.camp.loothat
 
 import io.flutter.embedding.android.FlutterActivity
 

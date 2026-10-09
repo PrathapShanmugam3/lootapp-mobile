@@ -14,6 +14,7 @@ import '../../presentation/widgets/aff_user_avatar.dart';
 import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'chat_providers.dart';
+import '../../../../core/widgets/app_toast.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -48,7 +49,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.dispose();
   }
 
-  void _toast(String message) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  void _toast(String message, [ToastType type = ToastType.error]) => showToast(context, message, type: type);
 
   Future<void> _pick(ImageSource source) async {
     try {
@@ -111,7 +112,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final value = _controller.text.trim();
     if ((value.isEmpty && _attachment == null) || _sending) return;
     if (sample) {
-      _toast('Reconnect to the server to send messages');
+      _toast('Reconnect to the server to send messages', ToastType.warning);
       return;
     }
     setState(() => _sending = true);

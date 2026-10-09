@@ -5,6 +5,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/widgets/common.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'custom_domains_providers.dart';
+import '../../../../core/widgets/app_toast.dart';
 
 // Mirrors the Next.js form's HTML5 pattern:
 // ^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63})+$
@@ -41,7 +42,7 @@ class _CustomDomainsScreenState extends ConsumerState<CustomDomainsScreen> {
       _domainCtrl.clear();
       ref.invalidate(customDomainsProvider);
     } on ApiException catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      if (mounted) showErrorToast(context, e);
     } finally {
       if (mounted) setState(() => _adding = false);
     }
@@ -52,12 +53,14 @@ class _CustomDomainsScreenState extends ConsumerState<CustomDomainsScreen> {
       final result = await ref.read(customDomainsRepositoryProvider).verifyDomain(id);
       if (!mounted) return;
       final verified = result['alreadyVerified'] == true || result['success'] == true;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message']?.toString() ?? (verified ? 'Domain verified' : 'Verification pending'))),
+      showToast(
+        context,
+        result['message']?.toString() ?? (verified ? 'Domain verified' : 'Verification pending'),
+        type: verified ? ToastType.success : ToastType.warning,
       );
       ref.invalidate(customDomainsProvider);
     } on ApiException catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      if (mounted) showErrorToast(context, e);
     }
   }
 
@@ -81,7 +84,7 @@ class _CustomDomainsScreenState extends ConsumerState<CustomDomainsScreen> {
       await ref.read(customDomainsRepositoryProvider).deleteDomain(id);
       ref.invalidate(customDomainsProvider);
     } on ApiException catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      if (mounted) showErrorToast(context, e);
     }
   }
 

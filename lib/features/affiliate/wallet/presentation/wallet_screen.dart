@@ -11,6 +11,7 @@ import '../../presentation/widgets/aff_user_avatar.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'wallet_providers.dart';
 import 'withdraw_sheet.dart';
+import '../../../../core/widgets/app_toast.dart';
 
 final _currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
 
@@ -182,7 +183,7 @@ class WalletScreen extends ConsumerWidget {
 
   void _openWithdrawSheet(BuildContext context, WidgetRef ref, {bool sample = false}) {
     if (sample) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reconnect to the server to withdraw')));
+      showWarningToast(context, 'Reconnect to the server to withdraw');
       return;
     }
     showModalBottomSheet(
@@ -268,11 +269,11 @@ class _RedeemCardState extends ConsumerState<_RedeemCard> {
       final res = await client.dio.post('/api/redeem', data: {'code': code});
       if (!mounted) return;
       final success = res.isSuccess;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(res.message.isNotEmpty ? res.message : (success ? 'Code redeemed!' : 'Redemption failed')),
-          backgroundColor: success ? AffColors.success : AffColors.danger,
-        ),
+      showToast(
+        context,
+        res.message.isNotEmpty ? res.message : (success ? 'Code redeemed!' : 'Redemption failed'),
+        type: success ? ToastType.success : ToastType.error,
+        title: success ? 'Code redeemed' : null,
       );
       _codeCtrl.clear();
       if (success) {
@@ -280,7 +281,7 @@ class _RedeemCardState extends ConsumerState<_RedeemCard> {
       }
     } catch (e) {
       _codeCtrl.clear();
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+      if (mounted) showErrorToast(context, e);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

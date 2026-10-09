@@ -12,9 +12,11 @@ import '../../custom_domains/presentation/custom_domains_screen.dart';
 import '../../notifications/presentation/notifications_screen.dart';
 import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/affiliate_design.dart';
+import '../../presentation/widgets/community_join.dart';
 import '../../reports/presentation/reports_screen.dart';
 import 'edit_account_screen.dart';
 import 'profile_providers.dart';
+import '../../../../core/widgets/app_toast.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -64,7 +66,7 @@ class _ProfileBody extends ConsumerStatefulWidget {
 class _ProfileBodyState extends ConsumerState<_ProfileBody> {
   void _openEdit() {
     if (widget.sample) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reconnect to the server to edit your account')));
+      showWarningToast(context, 'Reconnect to the server to edit your account');
       return;
     }
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditAccountScreen(profile: widget.profile)));
@@ -183,17 +185,15 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
             ],
           ),
         ),
+        const SizedBox(height: 14),
+        const FadeSlideIn(index: 3, child: CommunityJoinCard()),
         const SizedBox(height: 18),
         FadeSlideIn(
-          index: 3,
+          index: 4,
           child: Wrap(
             alignment: WrapAlignment.center,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              _FooterLink(label: 'Telegram', onTap: () => _openExternal('https://t.me/+p03Tb_KqMwMwNWM1')),
-              const _FooterDot(),
-              _FooterLink(label: 'WhatsApp', onTap: () => _openExternal('https://www.whatsapp.com/channel/0029VaDmXVGLY6dGWlmmJC2k')),
-              const _FooterDot(),
               _FooterLink(label: 'Rate us', onTap: () => _openExternal('https://play.google.com/store/apps/details?id=com.camp.loothat')),
               const _FooterDot(),
               _FooterLink(label: 'Privacy', onTap: () => _push(const PrivacyPolicyScreen())),
@@ -213,7 +213,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
   Future<void> _openExternal(String url) async {
     final uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not open $url')));
+      if (mounted) showErrorToast(context, 'Could not open $url');
     }
   }
 }

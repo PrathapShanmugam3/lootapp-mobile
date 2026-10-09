@@ -27,4 +27,12 @@ class OffersRepository {
     final res = await _client.dio.put('/api/offers/$offId/landing-theme', data: {'theme': theme});
     if (!res.isSuccess) throw ApiException(res.message, statusCode: res.statusCode);
   }
+
+  /// Active short-link domains, default first. Empty when none are configured.
+  Future<List<Map<String, dynamic>>> getLinkDomains() async {
+    final res = await _client.dio.get('/api/link-domains');
+    if (!res.isSuccess) return [];
+    final list = (res.body['domains'] as List?) ?? [];
+    return list.map((e) => (e as Map).cast<String, dynamic>()).toList();
+  }
 }

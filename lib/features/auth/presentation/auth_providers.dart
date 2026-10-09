@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../../core/push/push_service.dart';
 import '../data/auth_repository.dart';
 import '../domain/user.dart';
 
@@ -39,6 +40,7 @@ class AuthController extends StateNotifier<AuthState> {
       state = user != null
           ? AuthState(status: AuthStatus.authenticated, user: user)
           : const AuthState(status: AuthStatus.unauthenticated);
+      if (user != null) PushService.login(userId: user.userId, name: user.name);
     } catch (_) {
       state = const AuthState(status: AuthStatus.unauthenticated);
     }
@@ -48,11 +50,13 @@ class AuthController extends StateNotifier<AuthState> {
     final repo = _ref.read(authRepositoryProvider);
     final user = await repo.login(mobile: mobile, password: password, recaptchaToken: recaptchaToken);
     state = AuthState(status: AuthStatus.authenticated, user: user);
+    PushService.login(userId: user.userId, name: user.name);
   }
 
   Future<void> logout() async {
     final repo = _ref.read(authRepositoryProvider);
     await repo.logout();
+    PushService.logout();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 }
