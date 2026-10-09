@@ -2,7 +2,10 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/announcement_dialog.dart';
 import '../../../../core/widgets/common.dart';
 import '../../notifications/presentation/notifications_screen.dart';
 import '../../presentation/sample_data.dart';
@@ -14,11 +17,52 @@ import 'dashboard_providers.dart';
 final _currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
 final _plain = NumberFormat.decimalPattern('en_IN');
 
-class DashboardScreen extends ConsumerWidget {
+/// Bump this whenever the announcement content changes so returning users
+/// see the new one instead of it staying silently dismissed forever.
+const _announcementVersion = 'v1';
+const _announcementPrefsKey = 'has_seen_announcement_$_announcementVersion';
+
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowAnnouncement());
+  }
+
+  Future<void> _maybeShowAnnouncement() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_announcementPrefsKey) ?? false) return;
+    if (!mounted) return;
+    await showAnnouncementDialog(
+      context,
+      slides: const [
+        AnnouncementSlide(
+          icon: Icons.celebration_rounded,
+          title: 'Welcome to the new LootHat app',
+          message: 'Track clicks, conversions, and earnings — now native on your phone, built for speed.',
+          accent: AppColors.primary,
+        ),
+        AnnouncementSlide(
+          icon: Icons.bolt_rounded,
+          title: 'Faster payouts',
+          message: 'Redeem your wallet balance in just a couple of taps, anytime.',
+          accent: AppColors.pinkAccent,
+        ),
+      ],
+      primaryLabel: 'Let\'s go',
+    );
+    await prefs.setBool(_announcementPrefsKey, true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final rawAsync = ref.watch(dashboardProvider);
     final sample = isSample(rawAsync);
     final dashboardAsync = withSample(rawAsync, SampleData.dashboard);
