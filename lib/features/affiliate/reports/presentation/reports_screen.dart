@@ -240,7 +240,7 @@ class _ReportsBody extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: Text(name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5, color: AffColors.ink), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          child: Text(name, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5, color: AffColors.ink), maxLines: 1, overflow: TextOverflow.ellipsis),
                         ),
                         Icon(
                           leads > 0 ? Icons.trending_up_rounded : Icons.remove_rounded,
@@ -265,7 +265,7 @@ class _ReportsBody extends StatelessWidget {
                         value: clicks > 0 ? (leads / clicks).clamp(0, 1).toDouble() : 0,
                         minHeight: 6,
                         backgroundColor: AffColors.purpleEnd.withValues(alpha: 0.10),
-                        valueColor: const AlwaysStoppedAnimation(AffColors.purpleEnd),
+                        valueColor: AlwaysStoppedAnimation(AffColors.purpleEnd),
                       ),
                     ),
                   ],
@@ -295,7 +295,7 @@ class _MiniStat extends StatelessWidget {
           child: Text(value, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: highlight ? AffColors.success : AffColors.ink)),
         ),
         const SizedBox(height: 1),
-        Text(label, style: const TextStyle(color: AffColors.inkFaint, fontSize: 10.5, fontWeight: FontWeight.w600)),
+        Text(label, style: TextStyle(color: AffColors.inkFaint, fontSize: 10.5, fontWeight: FontWeight.w600)),
       ],
     );
   }

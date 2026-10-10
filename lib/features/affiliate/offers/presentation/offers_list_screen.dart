@@ -103,13 +103,13 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: AffColors.surface,
                             borderRadius: BorderRadius.circular(99),
                             boxShadow: [BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.07), blurRadius: 12, offset: const Offset(0, 3))],
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.search_rounded, size: 18, color: AffColors.inkHint),
+                              Icon(Icons.search_rounded, size: 18, color: AffColors.inkHint),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: TextField(
@@ -198,7 +198,7 @@ class _FilterPill extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: selected ? AffColors.purpleEnd : Colors.white,
+          color: selected ? AffColors.purpleEnd : AffColors.surface,
           borderRadius: BorderRadius.circular(99),
           boxShadow: selected ? null : [BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.07), blurRadius: 12, offset: const Offset(0, 3))],
         ),

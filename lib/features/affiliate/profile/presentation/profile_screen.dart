@@ -1,7 +1,10 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/theme/theme_controller.dart';
 import '../../../../core/widgets/common.dart';
 import '../../../../core/widgets/confirm_dialog.dart';
 import '../../../auth/presentation/auth_providers.dart';
@@ -101,16 +104,18 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                Container(
-                  width: 74,
-                  height: 74,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.22),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 3),
+                _RotatingRingAvatar(
+                  child: Container(
+                    width: 74,
+                    height: 74,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.22),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 3),
+                    ),
+                    child: Text(initials, style: AffText.number(24, FontWeight.w800, color: Colors.white)),
                   ),
-                  child: Text(initials, style: AffText.number(24, FontWeight.w800, color: Colors.white)),
                 ),
                 const SizedBox(height: 8),
                 Text(name.isNotEmpty ? name : 'Affiliate', style: AffText.jakarta(20, FontWeight.w800, color: Colors.white)),
@@ -170,6 +175,8 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
               _RowTile(label: 'Reports', icon: Icons.insights_rounded, tint: const Color(0xFF0284C7), onTap: () => _push(const ReportsScreen())),
               const SizedBox(height: 9),
               _RowTile(label: 'Custom domains', icon: Icons.public_rounded, tint: const Color(0xFFDB2777), onTap: () => _push(const CustomDomainsScreen())),
+              const SizedBox(height: 9),
+              const _AppearanceTile(),
               const SizedBox(height: 9),
               _RowTile(
                 label: 'Log out',
@@ -271,12 +278,12 @@ class _DetailRow extends StatelessWidget {
 
 /// White rounded-16 row from the design: bold label, muted value + chevron.
 class _RowTile extends StatelessWidget {
-  const _RowTile({required this.label, required this.onTap, this.value, this.color = AffColors.ink, this.icon, this.tint = AffColors.purpleEnd});
+  const _RowTile({required this.label, required this.onTap, this.value, this.color, this.icon, this.tint = AffColors.violet});
   final IconData? icon;
   final Color tint;
   final String label;
   final String? value;
-  final Color color;
+  final Color? color;
   final VoidCallback onTap;
 
   @override
@@ -291,13 +298,214 @@ class _RowTile extends StatelessWidget {
             AffIconChip(icon: icon!, color: tint, size: 32, solid: true),
             const SizedBox(width: 12),
           ],
-          Expanded(child: Text(label, style: AffText.jakarta(13, FontWeight.w700, color: color))),
+          Expanded(child: Text(label, style: AffText.jakarta(13, FontWeight.w700, color: color ?? AffColors.ink))),
           if (value != null) Text('$value ›', style: AffText.jakarta(13, FontWeight.w700, color: AffColors.inkFaint))
-          else if (color == AffColors.ink) Text('›', style: AffText.jakarta(13, FontWeight.w700, color: AffColors.inkFaint)),
+          else if (color == null) Text('›', style: AffText.jakarta(13, FontWeight.w700, color: AffColors.inkFaint)),
         ],
       ),
     );
   }
+}
+
+/// Avatar with a dashed white ring spinning around it once every 9s — same as
+/// the PHP profile page's `.lh-prof-avatar-ring`.
+class _RotatingRingAvatar extends StatefulWidget {
+  const _RotatingRingAvatar({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_RotatingRingAvatar> createState() => _RotatingRingAvatarState();
+}
+
+class _RotatingRingAvatarState extends State<_RotatingRingAvatar> with SingleTickerProviderStateMixin {
+  late final AnimationController _spin = AnimationController(vsync: this, duration: const Duration(seconds: 9))..repeat();
+
+  @override
+  void dispose() {
+    _spin.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 90,
+      height: 90,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          RotationTransition(
+            turns: _spin,
+            child: CustomPaint(size: const Size(90, 90), painter: _DashedRingPainter(color: Colors.white.withValues(alpha: 0.55))),
+          ),
+          widget.child,
+        ],
+      ),
+    );
+  }
+}
+
+class _DashedRingPainter extends CustomPainter {
+  const _DashedRingPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const dashes = 24;
+    const gapFraction = 0.45;
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    final rect = Offset.zero & size;
+    final ring = rect.deflate(1);
+    const sweep = 2 * math.pi / dashes;
+    for (var i = 0; i < dashes; i++) {
+      canvas.drawArc(ring, i * sweep, sweep * (1 - gapFraction), false, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedRingPainter old) => old.color != color;
+}
+
+/// Dark mode on/off — light by default, saved on the device by
+/// [ThemeController].
+class _AppearanceTile extends ConsumerWidget {
+  const _AppearanceTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dark = ref.watch(themeModeProvider) == ThemeMode.dark;
+    void toggle() => ref.read(themeModeProvider.notifier).set(dark ? ThemeMode.light : ThemeMode.dark);
+
+    return AffCard(
+      radius: 16,
+      padding: const EdgeInsets.fromLTRB(16, 12, 14, 12),
+      onTap: toggle,
+      child: Row(
+        children: [
+          AffIconChip(icon: dark ? Icons.dark_mode_rounded : Icons.light_mode_rounded, color: dark ? const Color(0xFF4F46E5) : AffColors.amber, size: 32, solid: true),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Dark mode', style: AffText.jakarta(13, FontWeight.w700)),
+                Text(dark ? 'On' : 'Off', style: AffText.jakarta(11, FontWeight.w500, color: AffColors.inkFaint)),
+              ],
+            ),
+          ),
+          _DayNightSwitch(value: dark, onTap: toggle),
+        ],
+      ),
+    );
+  }
+}
+
+/// Sun/moon toggle: a sky-blue track with a sun knob that slides over to a
+/// night-violet track with a moon and stars.
+class _DayNightSwitch extends StatelessWidget {
+  const _DayNightSwitch({required this.value, required this.onTap});
+
+  final bool value;
+  final VoidCallback onTap;
+
+  static const _w = 64.0;
+  static const _h = 34.0;
+  static const _knob = 26.0;
+  static const _duration = Duration(milliseconds: 380);
+  static const _curve = Cubic(0.34, 1.4, 0.5, 1);
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      toggled: value,
+      label: 'Dark mode',
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: _duration,
+          curve: Curves.easeOut,
+          width: _w,
+          height: _h,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(_h),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: value ? const [Color(0xFF1E1B4B), Color(0xFF4C1D95)] : const [Color(0xFF7DD3FC), Color(0xFF38BDF8)],
+            ),
+            boxShadow: [BoxShadow(color: (value ? const Color(0xFF4C1D95) : const Color(0xFF38BDF8)).withValues(alpha: 0.4), blurRadius: 12, offset: const Offset(0, 4))],
+          ),
+          child: Stack(
+            children: [
+              // Stars (night) / cloud (day) behind the knob.
+              AnimatedOpacity(
+                duration: _duration,
+                opacity: value ? 1 : 0,
+                child: const Stack(
+                  children: [
+                    Positioned(left: 10, top: 8, child: _Dot(3)),
+                    Positioned(left: 20, top: 18, child: _Dot(2)),
+                    Positioned(left: 28, top: 7, child: _Dot(2)),
+                  ],
+                ),
+              ),
+              AnimatedOpacity(
+                duration: _duration,
+                opacity: value ? 0 : 1,
+                child: Align(
+                  alignment: const Alignment(0.62, 0.15),
+                  child: Icon(Icons.cloud_rounded, size: 16, color: Colors.white.withValues(alpha: 0.9)),
+                ),
+              ),
+              AnimatedAlign(
+                duration: _duration,
+                curve: _curve,
+                alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: AnimatedContainer(
+                    duration: _duration,
+                    width: _knob,
+                    height: _knob,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: value ? const Color(0xFFE0E7FF) : const Color(0xFFFACC15),
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 6, offset: const Offset(0, 2))],
+                    ),
+                    child: AnimatedSwitcher(
+                      duration: _duration,
+                      transitionBuilder: (child, anim) => RotationTransition(turns: Tween(begin: 0.5, end: 1.0).animate(anim), child: FadeTransition(opacity: anim, child: child)),
+                      child: Icon(
+                        value ? Icons.nightlight_round : Icons.wb_sunny_rounded,
+                        key: ValueKey(value),
+                        size: 16,
+                        color: value ? const Color(0xFF4C1D95) : const Color(0xFFEA580C),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Dot extends StatelessWidget {
+  const _Dot(this.size);
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => Container(width: size, height: size, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle));
 }
 
 class _FooterLink extends StatelessWidget {

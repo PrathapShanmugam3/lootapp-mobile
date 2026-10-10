@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme.dart' show Palette;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -80,12 +82,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(bottom: 8),
                 child: Text('Attach a picture', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: AffColors.ink)),
               ),
               ListTile(
-                leading: const AffIconChip(icon: Icons.photo_library_rounded, color: AffColors.purpleEnd, size: 42),
+                leading: AffIconChip(icon: Icons.photo_library_rounded, color: AffColors.purpleEnd, size: 42),
                 title: const Text('Choose from gallery', style: TextStyle(fontWeight: FontWeight.w700)),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -165,7 +167,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 Expanded(
                   child: FadeSlideIn(
                     child: Container(
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22), boxShadow: AffColors.cardShadow),
+                      decoration: BoxDecoration(color: AffColors.surface, borderRadius: BorderRadius.circular(22), boxShadow: AffColors.cardShadow),
                       clipBehavior: Clip.antiAlias,
                       child: Column(
                         children: [
@@ -202,7 +204,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
-                    decoration: BoxDecoration(color: const Color(0xFFFEF3C7), borderRadius: BorderRadius.circular(16)),
+                    decoration: BoxDecoration(color: Palette.dark ? const Color(0xFF33280F) : const Color(0xFFFEF3C7), borderRadius: BorderRadius.circular(16)),
                     child: Row(
                       children: [
                         const Icon(Icons.lock_outline, size: 16, color: AffColors.warning),
@@ -354,7 +356,7 @@ class _Composer extends StatelessWidget {
         Container(
           padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AffColors.surface,
             borderRadius: BorderRadius.circular(99),
             boxShadow: [BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.10), blurRadius: 16, offset: const Offset(0, 4))],
           ),
@@ -364,7 +366,7 @@ class _Composer extends StatelessWidget {
               GestureDetector(
                 onTap: sending ? null : onAttach,
                 behavior: HitTestBehavior.opaque,
-                child: const Padding(
+                child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   child: Icon(Icons.attach_file_rounded, color: AffColors.purpleEnd, size: 21),
                 ),
@@ -398,7 +400,7 @@ class _Composer extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: const LinearGradient(begin: Alignment(-1, -0.6), end: Alignment(1, 0.6), colors: [AffColors.purpleEnd, AffColors.magenta]),
+                    gradient: LinearGradient(begin: Alignment(-1, -0.6), end: Alignment(1, 0.6), colors: [AffColors.purpleEnd, AffColors.magenta]),
                     boxShadow: [BoxShadow(color: AffColors.purpleEnd.withValues(alpha: 0.35), blurRadius: 14, offset: const Offset(0, 6))],
                   ),
                   child: sending
@@ -427,7 +429,7 @@ class _Bubble extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(14, 11, 14, 9),
       decoration: BoxDecoration(
         gradient: mine ? AffColors.gradient : null,
-        color: mine ? null : Colors.white,
+        color: mine ? null : AffColors.surface,
         borderRadius: BorderRadius.only(
           topLeft: const Radius.circular(18),
           topRight: const Radius.circular(18),

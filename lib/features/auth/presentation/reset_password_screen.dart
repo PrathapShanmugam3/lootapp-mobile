@@ -84,7 +84,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
@@ -124,7 +124,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
             obscureText: _obscurePassword,
             decoration: InputDecoration(
               filled: true,
-              fillColor: const Color(0xFFF6F3FB),
+              fillColor: AppColors.fieldBg,
               hintText: 'Enter new password',
               prefixIcon: const Icon(Icons.lock_outline),
               suffixIcon: TextButton(
@@ -152,7 +152,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
             obscureText: _obscureConfirm,
             decoration: InputDecoration(
               filled: true,
-              fillColor: const Color(0xFFF6F3FB),
+              fillColor: AppColors.fieldBg,
               hintText: 'Confirm new password',
               prefixIcon: const Icon(Icons.lock_outline),
               suffixIcon: TextButton(
@@ -203,7 +203,7 @@ class _SuccessState extends StatelessWidget {
         Text(
           'You can now sign in with your new password',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.inkMuted, fontSize: 13),
+          style: TextStyle(color: AppColors.inkMuted, fontSize: 13),
         ),
         const SizedBox(height: 24),
         GradientButton(

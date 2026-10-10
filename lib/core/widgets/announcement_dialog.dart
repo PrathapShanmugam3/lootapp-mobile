@@ -130,7 +130,7 @@ class _AnnouncementDialogState extends State<_AnnouncementDialog> {
             color: Colors.transparent,
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(28),
                 boxShadow: [
                   BoxShadow(color: AppColors.primary.withValues(alpha: 0.28), blurRadius: 40, offset: const Offset(0, 20)),

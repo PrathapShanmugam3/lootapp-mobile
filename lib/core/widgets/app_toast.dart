@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../network/api_client.dart';
+import '../theme/app_theme.dart';
 
 enum ToastType { success, error, warning, info }
 
@@ -181,7 +182,7 @@ class _ToastCardState extends State<_ToastCard> with TickerProviderStateMixin {
               color: Colors.transparent,
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(color: accent.withValues(alpha: 0.16)),
                   boxShadow: [

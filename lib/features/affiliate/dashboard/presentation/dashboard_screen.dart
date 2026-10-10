@@ -164,7 +164,7 @@ class _DashboardBody extends ConsumerWidget {
                     label: 'CLICKS',
                     value: _num(clicks['value']),
                     icon: Icons.near_me_rounded,
-                    gradient: const [AffColors.purpleEnd, AffColors.purpleStart],
+                    gradient: [AffColors.purpleEnd, AffColors.purpleStart],
                     sub: clicks['trend'] != null ? '${clicks['direction']?.toString() == 'down' ? '▼' : '▲'} ${clicks['trend']}% vs yesterday' : null,
                     subColor: clicks['direction']?.toString() == 'down' ? AffColors.danger : AffColors.success,
                   ),
@@ -251,7 +251,7 @@ class _DashboardBody extends ConsumerWidget {
                   padding: const EdgeInsets.fromLTRB(0, 9, 0, 4),
                   child: Row(
                     children: [
-                      const _Legend(color: AffColors.purpleEnd, label: 'Earnings'),
+                      _Legend(color: AffColors.purpleEnd, label: 'Earnings'),
                       if (_series(chart, ['conversions']).any((v) => v > 0)) ...[
                         const SizedBox(width: 14),
                         const _Legend(color: AffColors.pink, label: 'Conversions'),
@@ -286,7 +286,7 @@ class _DashboardBody extends ConsumerWidget {
                   )
                 else
                   for (var i = 0; i < topCampaigns.length; i++) ...[
-                    if (i > 0) const Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Divider(height: 1, thickness: 1, color: AffColors.hairline)),
+                    if (i > 0) Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Divider(height: 1, thickness: 1, color: AffColors.hairline)),
                     _CampaignRow(campaign: (topCampaigns[i] as Map?)?.cast<String, dynamic>() ?? {}),
                   ],
               ],
@@ -319,14 +319,14 @@ class _Legend extends StatelessWidget {
 /// White stat tile from the design: tiny caps label + 30×30 gradient chip,
 /// a big Space Grotesk number, and a one-line sub caption.
 class _StatTile extends StatelessWidget {
-  const _StatTile({required this.label, required this.value, required this.icon, required this.gradient, this.sub, this.subColor = AffColors.inkFaint});
+  const _StatTile({required this.label, required this.value, required this.icon, required this.gradient, this.sub, this.subColor});
 
   final String label;
   final num value;
   final IconData icon;
   final List<Color> gradient;
   final String? sub;
-  final Color subColor;
+  final Color? subColor;
 
   @override
   Widget build(BuildContext context) {
@@ -361,7 +361,7 @@ class _StatTile extends StatelessWidget {
           ),
           if (sub != null) ...[
             const SizedBox(height: 6),
-            Text(sub!, maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(10.5, FontWeight.w600, color: subColor)),
+            Text(sub!, maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(10.5, FontWeight.w600, color: subColor ?? AffColors.inkFaint)),
           ],
         ],
       ),

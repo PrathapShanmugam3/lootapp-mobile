@@ -129,7 +129,7 @@ class _AccountDeleteScreenState extends ConsumerState<AccountDeleteScreen> {
             initialValue: _accountEmail,
             readOnly: true,
             enableInteractiveSelection: false,
-            style: const TextStyle(color: AffColors.inkMuted, fontWeight: FontWeight.w600),
+            style: TextStyle(color: AffColors.inkMuted, fontWeight: FontWeight.w600),
             decoration: const InputDecoration(
               hintText: 'Loading your account email…',
               prefixIcon: Icon(Icons.mail_outline),
@@ -164,7 +164,7 @@ class _AccountDeleteScreenState extends ConsumerState<AccountDeleteScreen> {
           Center(
             child: Text(
               'Need help? support@loothat.com',
-              style: const TextStyle(color: AffColors.inkMuted, fontSize: 12.5),
+              style: TextStyle(color: AffColors.inkMuted, fontSize: 12.5),
             ),
           ),
         ],
@@ -196,7 +196,7 @@ class _SubmittedState extends StatelessWidget {
           Text(
             "We've received your account deletion request and will process it shortly.",
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AffColors.inkMuted, fontSize: 13),
+            style: TextStyle(color: AffColors.inkMuted, fontSize: 13),
           ),
         ],
       ),

@@ -61,7 +61,7 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(4)),
                     ),
-                    const Text('Withdraw funds', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.4, color: AffColors.ink)),
+                    Text('Withdraw funds', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.4, color: AffColors.ink)),
                     const SizedBox(height: 16),
                     if (activeTypes.isEmpty)
                       const EmptyState(message: 'Withdrawals are currently unavailable', icon: Icons.block)

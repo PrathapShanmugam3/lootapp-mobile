@@ -44,7 +44,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 bottom: 0,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AffColors.surface,
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
                     boxShadow: [BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.10), blurRadius: 30, offset: const Offset(0, -8))],
                   ),
@@ -344,7 +344,7 @@ class _AuthFieldState extends State<_AuthField> {
               style: AffText.jakarta(14, FontWeight.w500),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: _focused ? Colors.white : AffColors.fieldBg,
+                fillColor: _focused ? AffColors.surface : AffColors.fieldBg,
                 hintText: widget.hint,
                 hintStyle: AffText.jakarta(14, FontWeight.w500, color: AffColors.inkHint),
                 prefixIcon: Icon(widget.icon, size: 17, color: AffColors.inkHint),
@@ -827,12 +827,12 @@ class _RecaptchaCheckboxState extends State<_RecaptchaCheckbox> {
               height: 26,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: _verified ? AffColors.success : Colors.white,
+                color: _verified ? AffColors.success : AffColors.surface,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: _verified ? AffColors.success : const Color(0xFFCFC6EA), width: 2),
               ),
               child: _verifying
-                  ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2.5, color: AffColors.purpleEnd))
+                  ? SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2.5, color: AffColors.purpleEnd))
                   : (_verified ? const Icon(Icons.check_rounded, size: 16, color: Colors.white) : null),
             ),
             const SizedBox(width: 12),

@@ -5,7 +5,7 @@ import '../../affiliate/presentation/widgets/affiliate_design.dart';
 class TermsScreen extends StatelessWidget {
   const TermsScreen({super.key});
 
-  static const _headingStyle = TextStyle(fontWeight: FontWeight.w800, fontSize: 16.5, color: AffColors.ink, letterSpacing: -0.2);
+  static TextStyle get _headingStyle => TextStyle(fontWeight: FontWeight.w800, fontSize: 16.5, color: AffColors.ink, letterSpacing: -0.2);
   static const _bodyStyle = TextStyle(fontSize: 13.5, height: 1.5, color: Colors.black87);
 
   @override

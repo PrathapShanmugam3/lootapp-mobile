@@ -2,6 +2,7 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme.dart' show Palette;
 import '../../../../core/widgets/common.dart' show PressableScale, ShineSweep;
 
 /// "1a Polished Violet" — the LootHat Redesign design system for the
@@ -13,7 +14,10 @@ class AffColors {
 
   // --- Brand violets (names kept for existing call sites) ---
   static const purpleStart = Color(0xFFA855F7); // lilac
-  static const purpleEnd = Color(0xFF7C3AED); // brand violet
+  /// Brand violet; lifted to violet-400 in dark mode so it stays readable
+  /// as text/icon colour on dark surfaces. Gradients and const defaults use [violet].
+  static Color get purpleEnd => Palette.dark ? const Color(0xFFA78BFA) : violet;
+  static const violet = Color(0xFF7C3AED);
   static const violetDeep = Color(0xFF6D28D9);
   static const purple = Color(0xFF9333EA);
   static const magenta = Color(0xFFC026D3);
@@ -35,22 +39,25 @@ class AffColors {
   static const midnightSoft = Color(0xFF3D3456);
 
   // --- Surfaces & ink ---
-  static const pageBg = Color(0xFFF6F4FF);
-  static const ink = Color(0xFF1C1235);
-  static const inkLabel = Color(0xFF3D3456);
-  static const inkMuted = Color(0xFF6B6285);
-  static const inkFaint = Color(0xFF8B82A8);
-  static const inkHint = Color(0xFF9A92B4);
-  static const hairline = Color(0xFFF1EDFA);
-  static const fieldBorder = Color(0xFFE6E0F5);
-  static const fieldBg = Color(0xFFFAF9FF);
-  static const chipLilac = Color(0xFFEDE9FE);
-  static const chipPink = Color(0xFFFCE7F3);
+  static Color get pageBg => Palette.dark ? const Color(0xFF0F0B1A) : const Color(0xFFF6F4FF);
+  static Color get ink => Palette.dark ? const Color(0xFFF3F0FF) : const Color(0xFF1C1235);
+  static Color get inkLabel => Palette.dark ? const Color(0xFFD9D3EE) : const Color(0xFF3D3456);
+  static Color get inkMuted => Palette.dark ? const Color(0xFFA9A0C6) : const Color(0xFF6B6285);
+  static Color get inkFaint => Palette.dark ? const Color(0xFF8C84AA) : const Color(0xFF8B82A8);
+  static Color get inkHint => Palette.dark ? const Color(0xFF7A7298) : const Color(0xFF9A92B4);
+  static Color get hairline => Palette.dark ? const Color(0xFF261F3A) : const Color(0xFFF1EDFA);
+  static Color get fieldBorder => Palette.dark ? const Color(0xFF2E2645) : const Color(0xFFE6E0F5);
+  static Color get fieldBg => Palette.dark ? const Color(0xFF211A33) : const Color(0xFFFAF9FF);
+  static Color get chipLilac => Palette.dark ? const Color(0xFF2D2150) : const Color(0xFFEDE9FE);
+  static Color get chipPink => Palette.dark ? const Color(0xFF3A1A30) : const Color(0xFFFCE7F3);
+
+  /// Card / sheet background (white in light mode).
+  static Color get surface => Palette.dark ? const Color(0xFF1A1428) : Colors.white;
 
   // --- Semantic ---
   static const success = Color(0xFF16A34A);
   static const live = Color(0xFF059669);
-  static const liveBg = Color(0xFFECFDF5);
+  static Color get liveBg => Palette.dark ? const Color(0xFF0F2A22) : const Color(0xFFECFDF5);
   static const danger = Color(0xFFE11D48);
   static const warning = Color(0xFFD97706);
 
@@ -59,28 +66,30 @@ class AffColors {
   static const _tiltEnd = Alignment(1, 0.6);
 
   /// Violet → lilac: buttons, avatars, icon chips.
-  static const gradient = LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight, colors: [purpleEnd, purpleStart]);
+  static const gradient = LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight, colors: [violet, purpleStart]);
 
   /// Header: 6d28d9 → 9333ea (55%) → c026d3.
   static const heroGradient = LinearGradient(begin: _tiltStart, end: _tiltEnd, colors: [violetDeep, purple, magenta], stops: [0, 0.55, 1]);
 
   /// Welcome / profile hero: 7c3aed → a855f7 (60%) → d946ef.
-  static const welcomeGradient = LinearGradient(begin: _tiltStart, end: _tiltEnd, colors: [purpleEnd, purpleStart, fuchsia], stops: [0, 0.6, 1]);
+  static const welcomeGradient = LinearGradient(begin: _tiltStart, end: _tiltEnd, colors: [violet, purpleStart, fuchsia], stops: [0, 0.6, 1]);
 
   /// Wallet balance card: db2777 → 9333ea (55%) → 6d28d9.
   static const walletGradient = LinearGradient(begin: _tiltStart, end: _tiltEnd, colors: [Color(0xFFDB2777), purple, violetDeep], stops: [0, 0.55, 1]);
 
   /// Primary call-to-action: 7c3aed → 9333ea (55%) → c026d3.
-  static const ctaGradient = LinearGradient(begin: _tiltStart, end: _tiltEnd, colors: [purpleEnd, purple, magenta], stops: [0, 0.55, 1]);
+  static const ctaGradient = LinearGradient(begin: _tiltStart, end: _tiltEnd, colors: [violet, purple, magenta], stops: [0, 0.55, 1]);
 
   /// Nav pill: 135deg 7c3aed → c026d3.
-  static const pillGradient = LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [purpleEnd, magenta]);
+  static const pillGradient = LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [violet, magenta]);
 
   /// Card elevation: 0 4px 16px rgba(60,20,120,.08).
-  static List<BoxShadow> cardShadow = [
-    BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.05), blurRadius: 2, offset: const Offset(0, 1)),
-    BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.08), blurRadius: 18, offset: const Offset(0, 6)),
-  ];
+  static List<BoxShadow> get cardShadow => Palette.dark
+      ? [BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 18, offset: const Offset(0, 6))]
+      : [
+          BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.05), blurRadius: 2, offset: const Offset(0, 1)),
+          BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.08), blurRadius: 18, offset: const Offset(0, 6)),
+        ];
 
   // --- Vivid per-item palette (offer / campaign avatars, buttons, chips) ---
   // Each entry: [light, strong, tint-bg, tint-fg]
@@ -106,7 +115,7 @@ class AffColors {
   /// Stable pale chip colours for [seed] (tinted bg + strong text).
   static ({Color bg, Color fg}) tintFor(String seed) {
     final c = _pick(seed);
-    return (bg: c.bg, fg: c.fg);
+    return (bg: Palette.dark ? c.fg.withValues(alpha: 0.18) : c.bg, fg: Palette.dark ? c.a : c.fg);
   }
 
   /// Stable accent colour for [seed].
@@ -124,11 +133,11 @@ class AffColors {
 class AffText {
   AffText._();
 
-  static TextStyle jakarta(double size, FontWeight weight, {Color color = AffColors.ink, double? letterSpacing, double? height}) =>
-      TextStyle(fontFamily: 'PlusJakartaSans', fontSize: size, fontWeight: weight, color: color, letterSpacing: letterSpacing, height: height);
+  static TextStyle jakarta(double size, FontWeight weight, {Color? color, double? letterSpacing, double? height}) =>
+      TextStyle(fontFamily: 'PlusJakartaSans', fontSize: size, fontWeight: weight, color: color ?? AffColors.ink, letterSpacing: letterSpacing, height: height);
 
-  static TextStyle number(double size, FontWeight weight, {Color color = AffColors.ink, double? letterSpacing, double? height}) =>
-      TextStyle(fontFamily: 'SpaceGrotesk', fontSize: size, fontWeight: weight, color: color, letterSpacing: letterSpacing, height: height);
+  static TextStyle number(double size, FontWeight weight, {Color? color, double? letterSpacing, double? height}) =>
+      TextStyle(fontFamily: 'SpaceGrotesk', fontSize: size, fontWeight: weight, color: color ?? AffColors.ink, letterSpacing: letterSpacing, height: height);
 }
 
 /// Flat gradient app header shared by every affiliate screen: title,
@@ -402,10 +411,10 @@ class AffCard extends StatelessWidget {
     final card = Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: wash == null ? Colors.white : null,
+        color: wash == null ? AffColors.surface : null,
         gradient: wash == null
             ? null
-            : RadialGradient(center: Alignment.topRight, radius: 0.95, colors: [wash!.withValues(alpha: 0.13), Colors.white], stops: const [0, 1]),
+            : RadialGradient(center: Alignment.topRight, radius: 0.95, colors: [wash!.withValues(alpha: 0.13), AffColors.surface], stops: const [0, 1]),
         borderRadius: BorderRadius.circular(radius),
         border: Border.all(color: AffColors.purpleEnd.withValues(alpha: 0.07)),
         boxShadow: AffColors.cardShadow,
@@ -427,7 +436,7 @@ class AffCard extends StatelessWidget {
 /// Rounded-square icon chip. [solid] = gradient fill with a white icon (the
 /// design's stat-tile chips); otherwise a soft tint of [color].
 class AffIconChip extends StatelessWidget {
-  const AffIconChip({super.key, required this.icon, this.color = AffColors.purpleEnd, this.size = 34, this.solid = false});
+  const AffIconChip({super.key, required this.icon, this.color = AffColors.violet, this.size = 34, this.solid = false});
 
   final IconData icon;
   final Color color;
@@ -457,7 +466,7 @@ class AffNavItem {
     required this.icon,
     required this.selectedIcon,
     required this.label,
-    this.from = AffColors.purpleEnd,
+    this.from = AffColors.violet,
     this.to = AffColors.magenta,
   });
   final IconData icon;
@@ -495,7 +504,7 @@ class AffNavBar extends StatelessWidget {
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
               child: Container(
-                color: Colors.white.withValues(alpha: 0.92),
+                color: AffColors.surface.withValues(alpha: 0.92),
                 child: LayoutBuilder(
                   builder: (context, c) {
                     final itemW = c.maxWidth / items.length;

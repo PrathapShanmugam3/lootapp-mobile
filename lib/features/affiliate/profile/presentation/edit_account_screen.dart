@@ -86,14 +86,14 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(name.isNotEmpty ? name : 'Affiliate', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AffColors.ink)),
+                        Text(name.isNotEmpty ? name : 'Affiliate', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AffColors.ink)),
                         const SizedBox(height: 2),
-                        Text(p['email']?.toString() ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12.5, color: AffColors.inkMuted)),
-                        if (mobile.isNotEmpty) Text(mobile, style: const TextStyle(fontSize: 12.5, color: AffColors.inkMuted)),
+                        Text(p['email']?.toString() ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12.5, color: AffColors.inkMuted)),
+                        if (mobile.isNotEmpty) Text(mobile, style: TextStyle(fontSize: 12.5, color: AffColors.inkMuted)),
                       ],
                     ),
                   ),
-                  const Icon(Icons.lock_outline_rounded, size: 18, color: AffColors.inkFaint),
+                  Icon(Icons.lock_outline_rounded, size: 18, color: AffColors.inkFaint),
                 ],
               ),
             ),
@@ -155,7 +155,7 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
                   children: [
                     const AffIconChip(icon: Icons.lock_outline_rounded, size: 40),
                     const SizedBox(width: 14),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -165,7 +165,7 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
                         ],
                       ),
                     ),
-                    const Icon(Icons.chevron_right_rounded, color: AffColors.inkFaint),
+                    Icon(Icons.chevron_right_rounded, color: AffColors.inkFaint),
                   ],
                 ),
               ),
@@ -178,7 +178,7 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
 
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 8),
-        child: Text(text, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AffColors.ink)),
+        child: Text(text, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AffColors.ink)),
       );
 }
 

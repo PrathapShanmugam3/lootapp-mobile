@@ -41,9 +41,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/affiliate',
-        builder: (context, state) => const AffiliateShell(),
+        builder: (context, state) => AffiliateShell(initialTab: state.uri.queryParameters['tab']),
         routes: [
           GoRoute(path: 'offers/:offId', builder: (c, s) => AffiliateShell(deepLinkOfferId: s.pathParameters['offId'])),
+          GoRoute(path: 'notifications', builder: (c, s) => const AffiliateShell(openNotifications: true)),
         ],
       ),
     ],

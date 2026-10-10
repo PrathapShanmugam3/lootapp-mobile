@@ -72,7 +72,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
@@ -111,7 +111,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           const SizedBox(height: 4),
           Text(
             "Enter your email and we'll send you a reset link",
-            style: const TextStyle(color: AppColors.inkMuted, fontSize: 13),
+            style: TextStyle(color: AppColors.inkMuted, fontSize: 13),
           ),
           const SizedBox(height: 20),
           const Text('Email Address', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
@@ -119,9 +119,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           TextFormField(
             controller: _emailCtrl,
             keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               filled: true,
-              fillColor: Color(0xFFF6F3FB),
+              fillColor: AppColors.fieldBg,
               hintText: 'Enter email address',
               prefixIcon: Icon(Icons.mail_outline),
             ),
@@ -180,7 +180,7 @@ class _SentState extends StatelessWidget {
         Text(
           "We've sent a password reset link to $email",
           textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.inkMuted, fontSize: 13),
+          style: TextStyle(color: AppColors.inkMuted, fontSize: 13),
         ),
         const SizedBox(height: 24),
         GradientButton(

@@ -105,7 +105,7 @@ class _CustomDomainsScreenState extends ConsumerState<CustomDomainsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Connect a domain', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.5, color: AffColors.ink)),
+                  Text('Connect a domain', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.5, color: AffColors.ink)),
                   const SizedBox(height: 12),
                   Form(
               key: _formKey,
@@ -216,7 +216,7 @@ class _DnsRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(width: 50, child: Text(label, style: const TextStyle(color: AffColors.inkMuted, fontSize: 12, fontWeight: FontWeight.w600))),
+        SizedBox(width: 50, child: Text(label, style: TextStyle(color: AffColors.inkMuted, fontSize: 12, fontWeight: FontWeight.w600))),
         Expanded(
           child: SelectableText(value, style: const TextStyle(fontFamily: 'monospace', fontSize: 12.5)),
         ),
@@ -247,13 +247,13 @@ class _DomainTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(domain['domain']?.toString() ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5, color: AffColors.ink)),
+                  Text(domain['domain']?.toString() ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5, color: AffColors.ink)),
                   const SizedBox(height: 5),
                   StatusChip(text: verified ? 'Verified' : 'Pending', color: verified ? AffColors.success : AffColors.warning),
                 ],
               ),
             ),
-            if (!verified) IconButton(icon: const Icon(Icons.refresh_rounded, color: AffColors.purpleEnd), tooltip: 'Check DNS', onPressed: onVerify),
+            if (!verified) IconButton(icon: Icon(Icons.refresh_rounded, color: AffColors.purpleEnd), tooltip: 'Check DNS', onPressed: onVerify),
             IconButton(icon: const Icon(Icons.delete_outline_rounded, color: AffColors.danger), onPressed: onRemove),
           ],
         ),

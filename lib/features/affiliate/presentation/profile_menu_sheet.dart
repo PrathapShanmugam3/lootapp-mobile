@@ -31,7 +31,7 @@ class _ProfileMenuSheet extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(28),
           boxShadow: AppColors.softShadow(1.6),
         ),

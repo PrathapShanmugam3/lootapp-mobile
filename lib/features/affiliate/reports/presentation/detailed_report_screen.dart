@@ -235,7 +235,7 @@ class _ClickRow extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text('#$index', style: const TextStyle(color: AffColors.inkFaint, fontSize: 12, fontWeight: FontWeight.w700)),
+                Text('#$index', style: TextStyle(color: AffColors.inkFaint, fontSize: 12, fontWeight: FontWeight.w700)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -256,7 +256,7 @@ class _ClickRow extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               '${row['date'] ?? ''} ${row['time'] ?? ''}'.trim(),
-              style: const TextStyle(color: AffColors.inkFaint, fontSize: 11.5),
+              style: TextStyle(color: AffColors.inkFaint, fontSize: 11.5),
             ),
           ],
         ),

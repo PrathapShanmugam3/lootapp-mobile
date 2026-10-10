@@ -251,7 +251,7 @@ class StatTile extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w800,
               fontSize: 22,
               letterSpacing: -0.6,
@@ -338,7 +338,7 @@ class SectionHeader extends StatelessWidget {
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 16,
                 letterSpacing: -0.2,
@@ -373,9 +373,30 @@ class LoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Skeleton underneath, branded spinner on top, so the page shape and an
+    // explicit "loading" signal are both visible.
+    return Stack(
+      children: [
+        Positioned.fill(child: _skeleton()),
+        Center(
+          child: Container(
+            padding: EdgeInsets.all(compact ? 10 : 16),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(compact ? 14 : 18),
+              boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.15), blurRadius: 20, offset: const Offset(0, 6))],
+            ),
+            child: BrandSpinner(size: compact ? 22 : 30, strokeWidth: compact ? 2.6 : 3),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _skeleton() {
     return Shimmer.fromColors(
       baseColor: AppColors.hairline,
-      highlightColor: const Color(0xFFF7F5FD),
+      highlightColor: Palette.dark ? const Color(0xFF2E2645) : const Color(0xFFF7F5FD),
       child: ListView(
         padding: const EdgeInsets.all(16),
         physics: const NeverScrollableScrollPhysics(),
@@ -485,7 +506,7 @@ class ErrorState extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.inkMuted, fontSize: 13.5),
+              style: TextStyle(color: AppColors.inkMuted, fontSize: 13.5),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 18),
@@ -531,7 +552,7 @@ class EmptyState extends StatelessWidget {
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.inkMuted,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -648,7 +669,7 @@ class PortalHeader extends StatelessWidget implements PreferredSizeWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.canvas,
-        border: const Border(bottom: BorderSide(color: AppColors.hairline)),
+        border: Border(bottom: BorderSide(color: AppColors.hairline)),
         boxShadow: [
           BoxShadow(
             color: AppColors.primaryDeep.withValues(alpha: 0.04),
@@ -682,7 +703,7 @@ class PortalHeader extends StatelessWidget implements PreferredSizeWidget {
                       children: [
                         Text(
                           title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.ink,
                             fontWeight: FontWeight.w800,
                             fontSize: 20,
@@ -696,7 +717,7 @@ class PortalHeader extends StatelessWidget implements PreferredSizeWidget {
                             padding: const EdgeInsets.only(top: 1),
                             child: Text(
                               subtitle!,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.inkMuted,
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w500,
@@ -861,10 +882,10 @@ class BentoCard extends StatelessWidget {
     final card = Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: wash == null ? Colors.white : null,
+        color: wash == null ? AppColors.surface : null,
         gradient: wash == null
             ? null
-            : RadialGradient(center: Alignment.topRight, radius: 0.95, colors: [wash!.withValues(alpha: 0.13), Colors.white], stops: const [0, 1]),
+            : RadialGradient(center: Alignment.topRight, radius: 0.95, colors: [wash!.withValues(alpha: 0.13), AppColors.surface], stops: const [0, 1]),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.07)),
         boxShadow: AppColors.softShadow(1),
@@ -946,7 +967,7 @@ class SettingsRow extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 2),
                         child: Text(
                           subtitle!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11.5,
                             color: AppColors.inkFaint,
                           ),
@@ -956,7 +977,7 @@ class SettingsRow extends StatelessWidget {
                 ),
               ),
               trailing ??
-                  const Icon(
+                  Icon(
                     Icons.chevron_right_rounded,
                     color: AppColors.inkFaint,
                   ),
@@ -973,7 +994,7 @@ class RowDivider extends StatelessWidget {
   const RowDivider({super.key});
 
   @override
-  Widget build(BuildContext context) => const Divider(
+  Widget build(BuildContext context) => Divider(
     height: 1,
     indent: 16,
     endIndent: 16,
@@ -1278,7 +1299,7 @@ class BrandNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
         boxShadow: [
           BoxShadow(

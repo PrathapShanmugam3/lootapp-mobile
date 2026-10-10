@@ -18,7 +18,7 @@ Future<bool> showConfirmDialog(
   final result = await showDialog<bool>(
     context: context,
     builder: (ctx) => Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
       surfaceTintColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 28),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
@@ -41,13 +41,13 @@ Future<bool> showConfirmDialog(
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w900, letterSpacing: -0.4, color: AppColors.ink),
+              style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900, letterSpacing: -0.4, color: AppColors.ink),
             ),
             const SizedBox(height: 8),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13.5, height: 1.45, color: AppColors.inkMuted),
+              style: TextStyle(fontSize: 13.5, height: 1.45, color: AppColors.inkMuted),
             ),
             const SizedBox(height: 24),
             Row(
