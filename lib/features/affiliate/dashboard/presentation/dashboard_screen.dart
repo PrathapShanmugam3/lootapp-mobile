@@ -47,7 +47,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         AnnouncementSlide(
           icon: Icons.celebration_rounded,
           title: 'Welcome to the new LootHat app',
-          message: 'Track clicks, conversions, and earnings — now native on your phone, built for speed.',
+          message: 'Track clicks, conversions, and earnings — all in one app, built for speed.',
           accent: AppColors.primary,
         ),
         AnnouncementSlide(

@@ -25,10 +25,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _setTab(bool signIn) => setState(() => _signInTab = signIn);
 
+  static const _headerAnim = Duration(milliseconds: 300);
+
   @override
   Widget build(BuildContext context) {
     final top = MediaQuery.of(context).padding.top;
-    final headerH = top + 26 + 46 + 18 + 31 + 64.0; // design: 26/24/64 padding
+    // Create Account has 5 fields, so its header drops the tagline pill and
+    // tightens up — that's what lets the whole form fit without scrolling.
+    final compact = !_signInTab;
+    final headerH = compact ? top + 26 + 46 + 52.0 : top + 26 + 46 + 18 + 31 + 64.0; // design: 26/24/64 padding
     return Scaffold(
       backgroundColor: AffColors.pageBg,
       body: Center(
@@ -36,8 +41,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           constraints: const BoxConstraints(maxWidth: 480),
           child: Stack(
             children: [
-              Positioned(top: 0, left: 0, right: 0, height: headerH, child: _Header(topInset: top)),
-              Positioned(
+              AnimatedPositioned(
+                duration: _headerAnim,
+                curve: Curves.easeOutCubic,
+                top: 0,
+                left: 0,
+                right: 0,
+                height: headerH,
+                child: _Header(topInset: top, compact: compact),
+              ),
+              AnimatedPositioned(
+                duration: _headerAnim,
+                curve: Curves.easeOutCubic,
                 top: headerH - 36,
                 left: 0,
                 right: 0,
@@ -57,7 +72,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           _TabSwitcher(signInSelected: _signInTab, onChanged: _setTab),
-                          const SizedBox(height: 16),
+                          SizedBox(height: compact ? 12 : 16),
                           AnimatedSize(
                             duration: const Duration(milliseconds: 280),
                             curve: Curves.easeOutCubic,
@@ -67,7 +82,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               switchInCurve: Curves.easeOut,
                               transitionBuilder: (child, anim) => FadeTransition(
                                 opacity: anim,
-                                child: SlideTransition(position: Tween(begin: const Offset(0, 0.03), end: Offset.zero).animate(anim), child: child),
+                                child: SlideTransition(
+                                  position: Tween(begin: const Offset(0, 0.03), end: Offset.zero).animate(anim),
+                                  child: child,
+                                ),
                               ),
                               child: KeyedSubtree(
                                 key: ValueKey(_signInTab),
@@ -90,20 +108,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.topInset});
+  const _Header({required this.topInset, this.compact = false});
 
   final double topInset;
+
+  /// Hides the "Earn on every verified signup" pill (Create Account tab).
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment(-1, -0.7),
-          end: Alignment(1, 0.7),
-          colors: [AffColors.violetDeep, AffColors.purple, AffColors.magenta],
-          stops: [0, 0.55, 1],
-        ),
+        gradient: LinearGradient(begin: Alignment(-1, -0.7), end: Alignment(1, 0.7), colors: [AffColors.violetDeep, AffColors.purple, AffColors.magenta], stops: [0, 0.55, 1]),
       ),
       child: Stack(
         children: [
@@ -140,21 +156,30 @@ class _Header extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 18),
-                FadeSlideIn(
-                  index: 2,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(99)),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const PulseDot(color: Color(0xFF4ADE80), size: 7),
-                        const SizedBox(width: 7),
-                        Text('Earn on every verified signup', style: AffText.jakarta(11.5, FontWeight.w600, color: Colors.white)),
-                      ],
-                    ),
-                  ),
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  alignment: Alignment.topLeft,
+                  child: compact
+                      ? const SizedBox(width: double.infinity)
+                      : Padding(
+                          padding: const EdgeInsets.only(top: 18),
+                          child: FadeSlideIn(
+                            index: 2,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(99)),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const PulseDot(color: Color(0xFF4ADE80), size: 7),
+                                  const SizedBox(width: 7),
+                                  Text('Earn on every verified signup', style: AffText.jakarta(11.5, FontWeight.w600, color: Colors.white)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                 ),
               ],
             ),
@@ -200,8 +225,12 @@ class _TabSwitcher extends StatelessWidget {
           ),
           Row(
             children: [
-              Expanded(child: _TabLabel(label: 'Sign In', selected: signInSelected, onTap: () => onChanged(true))),
-              Expanded(child: _TabLabel(label: 'Create Account', selected: !signInSelected, onTap: () => onChanged(false))),
+              Expanded(
+                child: _TabLabel(label: 'Sign In', selected: signInSelected, onTap: () => onChanged(true)),
+              ),
+              Expanded(
+                child: _TabLabel(label: 'Create Account', selected: !signInSelected, onTap: () => onChanged(false)),
+              ),
             ],
           ),
         ],
@@ -274,6 +303,7 @@ class _AuthField extends StatefulWidget {
     this.onSubmitted,
     this.trailingLabel,
     this.index = 0,
+    this.dense = false,
   });
 
   final String label;
@@ -288,6 +318,9 @@ class _AuthField extends StatefulWidget {
   final ValueChanged<String>? onSubmitted;
   final Widget? trailingLabel;
   final int index;
+
+  /// Slightly shorter field + label gap, for the longer Create Account form.
+  final bool dense;
 
   @override
   State<_AuthField> createState() => _AuthFieldState();
@@ -311,7 +344,10 @@ class _AuthFieldState extends State<_AuthField> {
 
   @override
   Widget build(BuildContext context) {
-    OutlineInputBorder border(Color c) => OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: c, width: 1.5));
+    OutlineInputBorder border(Color c) => OutlineInputBorder(
+      borderRadius: BorderRadius.circular(15),
+      borderSide: BorderSide(color: c, width: 1.5),
+    );
     return FadeSlideIn(
       index: widget.index,
       child: Column(
@@ -326,7 +362,7 @@ class _AuthFieldState extends State<_AuthField> {
               if (widget.trailingLabel != null) widget.trailingLabel!,
             ],
           ),
-          const SizedBox(height: 7),
+          SizedBox(height: widget.dense ? 5 : 7),
           AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
@@ -351,7 +387,7 @@ class _AuthFieldState extends State<_AuthField> {
                 prefixIconConstraints: const BoxConstraints(minWidth: 44),
                 suffixIcon: widget.suffix,
                 counterText: '',
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: widget.dense ? 11 : 14),
                 border: border(AffColors.fieldBorder),
                 enabledBorder: border(AffColors.fieldBorder),
                 focusedBorder: border(AffColors.purpleEnd),
@@ -403,8 +439,10 @@ class _ErrorText extends StatelessWidget {
   final String message;
 
   @override
-  Widget build(BuildContext context) =>
-      Padding(padding: const EdgeInsets.only(top: 2), child: Text(message, style: AffText.jakarta(12, FontWeight.w600, color: AffColors.danger)));
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 2),
+    child: Text(message, style: AffText.jakarta(12, FontWeight.w600, color: AffColors.danger)),
+  );
 }
 
 class _FootLink extends StatelessWidget {
@@ -427,7 +465,10 @@ class _FootLink extends StatelessWidget {
               WidgetSpan(
                 alignment: PlaceholderAlignment.baseline,
                 baseline: TextBaseline.alphabetic,
-                child: GestureDetector(onTap: onTap, child: Text(action, style: AffText.jakarta(12.5, FontWeight.w800, color: AffColors.purpleEnd))),
+                child: GestureDetector(
+                  onTap: onTap,
+                  child: Text(action, style: AffText.jakarta(12.5, FontWeight.w800, color: AffColors.purpleEnd)),
+                ),
               ),
             ],
           ),
@@ -477,13 +518,7 @@ class _SignInFormState extends ConsumerState<_SignInForm> {
       _error = null;
     });
     try {
-      await ref
-          .read(authControllerProvider.notifier)
-          .login(
-            mobile: _mobileCtrl.text.trim(),
-            password: _passwordCtrl.text,
-            recaptchaToken: recaptchaToken,
-          );
+      await ref.read(authControllerProvider.notifier).login(mobile: _mobileCtrl.text.trim(), password: _passwordCtrl.text, recaptchaToken: recaptchaToken);
     } on ApiException catch (e) {
       // reCAPTCHA tokens are single-use and expire quickly — a failed login
       // (wrong password, etc.) still consumes it server-side, so force a
@@ -547,7 +582,10 @@ class _SignInFormState extends ConsumerState<_SignInForm> {
           ),
           if (_error != null) _ErrorText(_error!),
           const SizedBox(height: 16),
-          FadeSlideIn(index: 4, child: GradientButton(loading: _loading, onPressed: _submit, label: 'Sign In to Dashboard')),
+          FadeSlideIn(
+            index: 4,
+            child: GradientButton(loading: _loading, onPressed: _submit, label: 'Sign In to Dashboard'),
+          ),
           const SizedBox(height: 16),
           _FootLink(question: 'New to Loot Hat?', action: 'Create account', onTap: widget.onSwitch),
         ],
@@ -609,16 +647,8 @@ class _CreateAccountFormState extends ConsumerState<_CreateAccountForm> {
     });
     try {
       final repo = ref.read(authRepositoryProvider);
-      await repo.signup(
-        name: _nameCtrl.text.trim(),
-        mobile: _mobileCtrl.text.trim(),
-        email: _emailCtrl.text.trim(),
-        password: _passwordCtrl.text,
-        recaptchaToken: recaptchaToken,
-      );
-      await ref
-          .read(authControllerProvider.notifier)
-          .login(mobile: _mobileCtrl.text.trim(), password: _passwordCtrl.text);
+      await repo.signup(name: _nameCtrl.text.trim(), mobile: _mobileCtrl.text.trim(), email: _emailCtrl.text.trim(), password: _passwordCtrl.text, recaptchaToken: recaptchaToken);
+      await ref.read(authControllerProvider.notifier).login(mobile: _mobileCtrl.text.trim(), password: _passwordCtrl.text);
     } on ApiException catch (e) {
       setState(() {
         _error = e.message;
@@ -643,9 +673,8 @@ class _CreateAccountFormState extends ConsumerState<_CreateAccountForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _FormHeading('Join Loot Hat', 'Create your account and start earning today'),
-          const SizedBox(height: 14),
           _AuthField(
+            dense: true,
             index: 1,
             label: 'Full Name',
             hint: 'Enter full name',
@@ -653,8 +682,9 @@ class _CreateAccountFormState extends ConsumerState<_CreateAccountForm> {
             controller: _nameCtrl,
             validator: (v) => (v == null || v.trim().isEmpty) ? 'Full name is required' : null,
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           _AuthField(
+            dense: true,
             index: 2,
             label: 'Mobile Number',
             hint: 'Enter mobile number',
@@ -664,8 +694,9 @@ class _CreateAccountFormState extends ConsumerState<_CreateAccountForm> {
             inputFormatters: _mobileFormatters,
             validator: _mobileValidator,
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           _AuthField(
+            dense: true,
             index: 3,
             label: 'Email Address',
             hint: 'Enter email address',
@@ -679,8 +710,9 @@ class _CreateAccountFormState extends ConsumerState<_CreateAccountForm> {
               return null;
             },
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           _AuthField(
+            dense: true,
             index: 4,
             label: 'Password',
             hint: 'Create password',
@@ -694,8 +726,9 @@ class _CreateAccountFormState extends ConsumerState<_CreateAccountForm> {
               return null;
             },
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           _AuthField(
+            dense: true,
             index: 5,
             label: 'Confirm Password',
             hint: 'Confirm password',
@@ -710,7 +743,7 @@ class _CreateAccountFormState extends ConsumerState<_CreateAccountForm> {
             },
             onSubmitted: (_) => _submit(),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           FadeSlideIn(
             index: 6,
             child: GestureDetector(
@@ -737,7 +770,10 @@ class _CreateAccountFormState extends ConsumerState<_CreateAccountForm> {
                         style: AffText.jakarta(12.5, FontWeight.w500, color: AffColors.inkLabel),
                         children: [
                           const TextSpan(text: 'I agree to the '),
-                          TextSpan(text: 'Terms & Conditions', style: AffText.jakarta(12.5, FontWeight.w700, color: AffColors.purpleEnd)),
+                          TextSpan(
+                            text: 'Terms & Conditions',
+                            style: AffText.jakarta(12.5, FontWeight.w700, color: AffColors.purpleEnd),
+                          ),
                         ],
                       ),
                     ),
@@ -746,15 +782,18 @@ class _CreateAccountFormState extends ConsumerState<_CreateAccountForm> {
               ),
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           FadeSlideIn(
             index: 7,
             child: _RecaptchaCheckbox(key: ValueKey(_recaptchaAttempt), onVerified: (token) => setState(() => _recaptchaToken = token)),
           ),
           if (_error != null) _ErrorText(_error!),
-          const SizedBox(height: 14),
-          FadeSlideIn(index: 8, child: GradientButton(loading: _loading, onPressed: _submit, label: 'Create Account')),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
+          FadeSlideIn(
+            index: 8,
+            child: GradientButton(loading: _loading, onPressed: _submit, label: 'Create Account'),
+          ),
+          const SizedBox(height: 10),
           _FootLink(question: 'Already have an account?', action: 'Sign in', onTap: widget.onSwitch),
         ],
       ),
@@ -798,10 +837,10 @@ class _RecaptchaCheckboxState extends State<_RecaptchaCheckbox> {
   }
 
   BoxDecoration get _box => BoxDecoration(
-        color: AffColors.fieldBg,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: AffColors.fieldBorder, width: 1.5),
-      );
+    color: AffColors.fieldBg,
+    borderRadius: BorderRadius.circular(15),
+    border: Border.all(color: AffColors.fieldBorder, width: 1.5),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -836,7 +875,9 @@ class _RecaptchaCheckboxState extends State<_RecaptchaCheckbox> {
                   : (_verified ? const Icon(Icons.check_rounded, size: 16, color: Colors.white) : null),
             ),
             const SizedBox(width: 12),
-            Expanded(child: Text("I'm not a robot", style: AffText.jakarta(13.5, FontWeight.w600), overflow: TextOverflow.ellipsis)),
+            Expanded(
+              child: Text("I'm not a robot", style: AffText.jakarta(13.5, FontWeight.w600), overflow: TextOverflow.ellipsis),
+            ),
             const SizedBox(width: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
