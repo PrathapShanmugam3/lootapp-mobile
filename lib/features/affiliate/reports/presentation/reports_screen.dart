@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/widgets/common.dart';
-import '../../presentation/sample_data.dart';
+import '../../presentation/widgets/aff_user_avatar.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'detailed_report_screen.dart';
 import 'reports_providers.dart';
@@ -58,8 +58,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   @override
   Widget build(BuildContext context) {
     final rawAsync = ref.watch(reportsProvider(_filter));
-    final sample = isSample(rawAsync);
-    final reportsAsync = withSample(rawAsync, SampleData.reports);
+    final reportsAsync = rawAsync;
 
     return Scaffold(
       backgroundColor: AffColors.pageBg,
@@ -68,14 +67,14 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         subtitle: 'Clicks, conversions and earnings',
         actions: [
           AffHeaderIcon(icon: Icons.refresh_rounded, onTap: () => ref.invalidate(reportsProvider)),
+          const AffUserAvatar(),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(reportsProvider),
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 110),
           children: [
-            if (sample) SampleDataBanner(onRetry: () => ref.invalidate(reportsProvider)),
             _FilterBar(
               dateOption: _dateOption,
               startDate: _startDate,

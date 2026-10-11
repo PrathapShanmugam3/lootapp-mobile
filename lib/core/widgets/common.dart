@@ -157,52 +157,6 @@ class AnimatedCount extends StatelessWidget {
   }
 }
 
-/// Visible flag that the content below is offline sample data, not the
-/// user's real account — shown whenever the server couldn't be reached.
-class SampleDataBanner extends StatelessWidget {
-  const SampleDataBanner({super.key, this.onRetry});
-
-  final VoidCallback? onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeSlideIn(
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 14),
-        padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
-        decoration: BoxDecoration(
-          color: AppColors.goldMuted,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.gold.withValues(alpha: 0.5)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.cloud_off_rounded, size: 18, color: AppColors.warning),
-            const SizedBox(width: 10),
-            const Expanded(
-              child: Text(
-                'Sample data — couldn\'t reach the server',
-                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.warning),
-              ),
-            ),
-            if (onRetry != null)
-              TextButton(
-                onPressed: onRetry,
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.warning,
-                  visualDensity: VisualDensity.compact,
-                  textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12.5),
-                ),
-                child: const Text('Retry'),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Compact stat tile for KPI rows — icon, label, value, optional trend chip.
 class StatTile extends StatelessWidget {
   const StatTile({
     super.key,

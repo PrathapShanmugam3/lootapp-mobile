@@ -172,7 +172,11 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
     final logo = offer['logo']?.toString();
     final logoUrl = (logo != null && logo.isNotEmpty) ? (logo.startsWith('http') ? logo : '${ApiConfig.baseUrl}$logo') : null;
     final category = offer['category']?.toString() ?? '';
-    final offerTitle = offer['offerTitle']?.toString() ?? '';
+    // "{amount}" in admin-written titles = this affiliate's total user split,
+    // as their leads page shows it (the API fills it too; this covers older
+    // deployments).
+    final userTotal = userPo.values.fold<double>(0, (sum, v) => sum + v);
+    final offerTitle = (offer['offerTitle']?.toString() ?? '').replaceAll('{amount}', _fmtAmount(userTotal));
     final name = offer['offerName']?.toString() ?? '';
     final eventCount = ((offer['events'] as List?) ?? []).length;
     final themeLabel = availableThemes.firstWhere((t) => t['key'] == selectedTheme, orElse: () => const {})['label']?.toString();
@@ -473,7 +477,7 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Split each event\'s payout between you and the people you refer.', style: AffText.jakarta(11.5, FontWeight.w500, color: AffColors.inkMuted, height: 1.4)),
+              Text('Set what the user and the referrer get for each event — whatever is left is your profit.', style: AffText.jakarta(11.5, FontWeight.w500, color: AffColors.inkMuted, height: 1.4)),
               const SizedBox(height: 12),
               for (final e in events) _eventTile(context, e),
               const SizedBox(height: 2),
@@ -493,23 +497,23 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
     final userCtrl = _userCtrl.putIfAbsent(index, () => TextEditingController(text: _fmtAmount(userPo[index] ?? (e['userPayout'] as num?)?.toDouble() ?? 0)));
     final referCtrl = _referCtrl.putIfAbsent(index, () => TextEditingController(text: _fmtAmount(referPo[index] ?? (e['referPayout'] as num?)?.toDouble() ?? 0)));
 
-    // Editing one box auto-fills the other so the two always add up to the
-    // event total; anything above the total is capped to it.
+    // Same rules as the web/PHP offer page: User and Refer are independent,
+    // each 0..total, and together they can't exceed the total — whatever's
+    // left is the affiliate's profit.
     void onEdit(String raw, {required bool isUser}) {
-      var v = double.tryParse(raw) ?? 0;
       final mine = isUser ? userCtrl : referCtrl;
-      final other = isUser ? referCtrl : userCtrl;
-      if (v > total) {
-        v = total;
+      final otherValue = (isUser ? referPo[index] : userPo[index]) ?? 0;
+      var v = double.tryParse(raw) ?? 0;
+      final max = double.parse((total - otherValue).toStringAsFixed(2));
+      if (v > max) {
+        v = max < 0 ? 0 : max;
         mine.value = TextEditingValue(text: _fmtAmount(v), selection: TextSelection.collapsed(offset: _fmtAmount(v).length));
+        showWarningToast(context, 'User + Refer cannot exceed ₹${_fmtAmount(total)}');
       }
-      final rest = double.parse((total - v).toStringAsFixed(2));
-      other.text = _fmtAmount(rest);
-      setState(() {
-        userPo[index] = isUser ? v : rest;
-        referPo[index] = isUser ? rest : v;
-      });
+      setState(() => isUser ? userPo[index] = v : referPo[index] = v);
     }
+
+    final profit = double.parse((total - (userPo[index] ?? 0) - (referPo[index] ?? 0)).toStringAsFixed(2));
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -539,10 +543,27 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
             const SizedBox(height: 10),
             Row(
               children: [
-                Expanded(child: _amountField('You get', userCtrl, AffColors.purpleEnd, enabled: total > 0, onChanged: (v) => onEdit(v, isUser: true))),
+                Expanded(child: _amountField('User', userCtrl, AffColors.purpleEnd, enabled: total > 0, onChanged: (v) => onEdit(v, isUser: true))),
                 const SizedBox(width: 10),
-                Expanded(child: _amountField('Referral gets', referCtrl, AffColors.pink, enabled: total > 0, onChanged: (v) => onEdit(v, isUser: false))),
+                Expanded(child: _amountField('Refer', referCtrl, AffColors.pink, enabled: total > 0, onChanged: (v) => onEdit(v, isUser: false))),
               ],
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+              decoration: BoxDecoration(
+                color: (profit >= 0 ? AffColors.success : AffColors.danger).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: (profit >= 0 ? AffColors.success : AffColors.danger).withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.savings_rounded, size: 16, color: profit >= 0 ? AffColors.success : AffColors.danger),
+                  const SizedBox(width: 7),
+                  Expanded(child: Text('YOUR PROFIT', style: AffText.jakarta(10.5, FontWeight.w800, color: profit >= 0 ? AffColors.success : AffColors.danger, letterSpacing: 0.6))),
+                  Text('₹${_fmtAmount(profit)}', style: AffText.number(16, FontWeight.w700, color: profit >= 0 ? AffColors.success : AffColors.danger)),
+                ],
+              ),
             ),
             const SizedBox(height: 6),
           ],

@@ -6,7 +6,6 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/widgets/common.dart';
 import '../../../auth/presentation/auth_providers.dart';
 import '../../notifications/presentation/notifications_screen.dart';
-import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/aff_user_avatar.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'wallet_providers.dart';
@@ -22,10 +21,8 @@ class WalletScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final rawSummary = ref.watch(walletSummaryProvider);
     final rawTxns = ref.watch(transactionsProvider);
-    final summarySample = isSample(rawSummary);
-    final txnsSample = isSample(rawTxns);
-    final summaryAsync = withSample(rawSummary, SampleData.walletSummary);
-    final txnsAsync = withSample(rawTxns, SampleData.transactions);
+    final summaryAsync = rawSummary;
+    final txnsAsync = rawTxns;
 
     return Scaffold(
       backgroundColor: AffColors.pageBg,
@@ -49,11 +46,6 @@ class WalletScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 18, 16, 110),
           children: [
-            if (summarySample || txnsSample)
-              SampleDataBanner(onRetry: () {
-                ref.invalidate(walletSummaryProvider);
-                ref.invalidate(transactionsProvider);
-              }),
             FadeSlideIn(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,7 +76,7 @@ class WalletScreen extends ConsumerWidget {
                           AnimatedCount(value: summary.balance, format: _currency.format, style: AffText.number(38, FontWeight.w700, color: Colors.white, height: 1.1)),
                           const SizedBox(height: 14),
                           PressableScale(
-                            onTap: () => _openWithdrawSheet(context, ref, sample: summarySample),
+                            onTap: () => _openWithdrawSheet(context, ref),
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
@@ -95,7 +87,7 @@ class WalletScreen extends ConsumerWidget {
                                 color: Colors.transparent,
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(99),
-                                  onTap: () => _openWithdrawSheet(context, ref, sample: summarySample),
+                                  onTap: () => _openWithdrawSheet(context, ref),
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 13),
                                     child: Row(
@@ -159,7 +151,7 @@ class WalletScreen extends ConsumerWidget {
                           if (i > 0) const SizedBox(height: 12),
                           _TransactionRow(txn: txns[i]),
                         ],
-                        if (!txnsSample && ref.read(transactionsProvider.notifier).hasMore)
+                        if (ref.read(transactionsProvider.notifier).hasMore)
                           Padding(
                             padding: const EdgeInsets.only(top: 14),
                             child: Center(
@@ -181,11 +173,7 @@ class WalletScreen extends ConsumerWidget {
     );
   }
 
-  void _openWithdrawSheet(BuildContext context, WidgetRef ref, {bool sample = false}) {
-    if (sample) {
-      showWarningToast(context, 'Reconnect to the server to withdraw');
-      return;
-    }
+  void _openWithdrawSheet(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

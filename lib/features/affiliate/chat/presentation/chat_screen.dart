@@ -13,7 +13,6 @@ import '../../../../core/widgets/chat_message.dart';
 import '../../../../core/widgets/common.dart';
 import '../../notifications/presentation/notifications_screen.dart';
 import '../../presentation/widgets/aff_user_avatar.dart';
-import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'chat_providers.dart';
 import '../../../../core/widgets/app_toast.dart';
@@ -110,13 +109,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  Future<void> _send({bool sample = false}) async {
+  Future<void> _send() async {
     final value = _controller.text.trim();
     if ((value.isEmpty && _attachment == null) || _sending) return;
-    if (sample) {
-      _toast('Reconnect to the server to send messages', ToastType.warning);
-      return;
-    }
     setState(() => _sending = true);
     try {
       await ref.read(chatProvider.notifier).send(value, image: _attachment);
@@ -136,8 +131,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final rawAsync = ref.watch(chatProvider);
-    final sample = isSample(rawAsync);
-    final chatAsync = withSample(rawAsync, SampleData.chat);
+    final chatAsync = rawAsync;
 
     return Scaffold(
       backgroundColor: AffColors.pageBg,
@@ -163,7 +157,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
             child: Column(
               children: [
-                if (sample) SampleDataBanner(onRetry: () => ref.invalidate(chatProvider)),
                 Expanded(
                   child: FadeSlideIn(
                     child: Container(
@@ -224,7 +217,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       _attachment = null;
                       _attachmentBytes = null;
                     }),
-                    onSend: () => _send(sample: sample),
+                    onSend: _send,
                   ),
                 // Space for the floating tab bar.
                 const SizedBox(height: 100),

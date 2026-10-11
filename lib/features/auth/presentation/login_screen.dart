@@ -803,9 +803,9 @@ class _CreateAccountFormState extends ConsumerState<_CreateAccountForm> {
 
 /// "I'm not a robot" row from the design (26px box, reCAPTCHA caption).
 ///
-/// On web ([kRecaptchaInline]) the real captcha renders in this row; on
-/// mobile, tapping opens the real reCAPTCHA in a dialog. [onVerified] fires
-/// with the token, or null if cancelled/expired.
+/// With [kRecaptchaInline] (web and mobile) the real reCAPTCHA checkbox
+/// renders inside this box; otherwise tapping opens it in a dialog.
+/// [onVerified] fires with the token, or null if cancelled/expired.
 class _RecaptchaCheckbox extends StatefulWidget {
   const _RecaptchaCheckbox({super.key, required this.onVerified});
 

@@ -13,10 +13,8 @@ import '../../../legal/presentation/privacy_policy_screen.dart';
 import '../../../legal/presentation/terms_screen.dart';
 import '../../custom_domains/presentation/custom_domains_screen.dart';
 import '../../notifications/presentation/notifications_screen.dart';
-import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import '../../presentation/widgets/community_join.dart';
-import '../../reports/presentation/reports_screen.dart';
 import 'edit_account_screen.dart';
 import 'profile_providers.dart';
 import '../../../../core/widgets/app_toast.dart';
@@ -27,8 +25,7 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final rawAsync = ref.watch(profileProvider);
-    final sample = isSample(rawAsync);
-    final profileAsync = withSample(rawAsync, SampleData.profile);
+    final profileAsync = rawAsync;
 
     return Scaffold(
       backgroundColor: AffColors.pageBg,
@@ -48,7 +45,7 @@ class ProfileScreen extends ConsumerWidget {
         child: profileAsync.when(
           loading: () => const LoadingState(),
           error: (e, _) => ErrorState(message: 'Failed to load profile.\n$e', onRetry: () => ref.invalidate(profileProvider)),
-          data: (profile) => _ProfileBody(profile: profile, sample: sample, onRetry: () => ref.invalidate(profileProvider)),
+          data: (profile) => _ProfileBody(profile: profile),
         ),
       ),
     );
@@ -56,11 +53,9 @@ class ProfileScreen extends ConsumerWidget {
 }
 
 class _ProfileBody extends ConsumerStatefulWidget {
-  const _ProfileBody({required this.profile, this.sample = false, this.onRetry});
+  const _ProfileBody({required this.profile});
 
   final Map<String, dynamic> profile;
-  final bool sample;
-  final VoidCallback? onRetry;
 
   @override
   ConsumerState<_ProfileBody> createState() => _ProfileBodyState();
@@ -68,10 +63,6 @@ class _ProfileBody extends ConsumerStatefulWidget {
 
 class _ProfileBodyState extends ConsumerState<_ProfileBody> {
   void _openEdit() {
-    if (widget.sample) {
-      showWarningToast(context, 'Reconnect to the server to edit your account');
-      return;
-    }
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditAccountScreen(profile: widget.profile)));
   }
 
@@ -96,7 +87,6 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 110),
       children: [
-        if (widget.sample) SampleDataBanner(onRetry: widget.onRetry),
         // --- Hero ---
         FadeSlideIn(
           child: AffHeroCard(
@@ -172,12 +162,37 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
             children: [
               _RowTile(label: 'Edit account', icon: Icons.manage_accounts_rounded, tint: AffColors.purpleEnd, value: 'Payout & password', onTap: _openEdit),
               const SizedBox(height: 9),
-              _RowTile(label: 'Reports', icon: Icons.insights_rounded, tint: const Color(0xFF0284C7), onTap: () => _push(const ReportsScreen())),
-              const SizedBox(height: 9),
               _RowTile(label: 'Custom domains', icon: Icons.public_rounded, tint: const Color(0xFFDB2777), onTap: () => _push(const CustomDomainsScreen())),
               const SizedBox(height: 9),
               const _AppearanceTile(),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+        const FadeSlideIn(index: 3, child: AffSectionHeader(title: 'About & support')),
+        FadeSlideIn(
+          index: 3,
+          child: Column(
+            children: [
+              _RowTile(
+                label: 'Rate us',
+                icon: Icons.star_rounded,
+                tint: AffColors.amber,
+                value: 'Play Store',
+                onTap: () => _openExternal('https://play.google.com/store/apps/details?id=com.camp.loothat'),
+              ),
               const SizedBox(height: 9),
+              _RowTile(label: 'Privacy policy', icon: Icons.privacy_tip_rounded, tint: const Color(0xFF0284C7), onTap: () => _push(const PrivacyPolicyScreen())),
+              const SizedBox(height: 9),
+              _RowTile(label: 'Terms & conditions', icon: Icons.gavel_rounded, tint: const Color(0xFF4F46E5), onTap: () => _push(const TermsScreen())),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+        FadeSlideIn(
+          index: 4,
+          child: Column(
+            children: [
               _RowTile(
                 label: 'Log out',
                 icon: Icons.logout_rounded,
@@ -189,28 +204,19 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                   ref.read(authControllerProvider.notifier).logout();
                 },
               ),
+              const SizedBox(height: 9),
+              _RowTile(
+                label: 'Delete account',
+                icon: Icons.delete_forever_rounded,
+                tint: AffColors.danger,
+                color: AffColors.danger,
+                onTap: () => _push(const AccountDeleteScreen()),
+              ),
             ],
           ),
         ),
         const SizedBox(height: 14),
-        const FadeSlideIn(index: 3, child: CommunityJoinCard()),
-        const SizedBox(height: 18),
-        FadeSlideIn(
-          index: 4,
-          child: Wrap(
-            alignment: WrapAlignment.center,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              _FooterLink(label: 'Rate us', onTap: () => _openExternal('https://play.google.com/store/apps/details?id=com.camp.loothat')),
-              const _FooterDot(),
-              _FooterLink(label: 'Privacy', onTap: () => _push(const PrivacyPolicyScreen())),
-              const _FooterDot(),
-              _FooterLink(label: 'Terms', onTap: () => _push(const TermsScreen())),
-              const _FooterDot(),
-              _FooterLink(label: 'Delete account', danger: true, onTap: () => _push(const AccountDeleteScreen())),
-            ],
-          ),
-        ),
+        const FadeSlideIn(index: 5, child: CommunityJoinCard()),
       ],
     );
   }
@@ -508,28 +514,3 @@ class _Dot extends StatelessWidget {
   Widget build(BuildContext context) => Container(width: size, height: size, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle));
 }
 
-class _FooterLink extends StatelessWidget {
-  const _FooterLink({required this.label, required this.onTap, this.danger = false});
-  final String label;
-  final VoidCallback onTap;
-  final bool danger;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-        child: Text(label, style: AffText.jakarta(12, FontWeight.w600, color: danger ? AffColors.danger : AffColors.inkMuted)),
-      ),
-    );
-  }
-}
-
-class _FooterDot extends StatelessWidget {
-  const _FooterDot();
-
-  @override
-  Widget build(BuildContext context) => Text('·', style: AffText.jakarta(12, FontWeight.w800, color: AffColors.inkHint));
-}

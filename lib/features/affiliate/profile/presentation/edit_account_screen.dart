@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/input_formatters.dart';
+import '../../../../core/utils/payout_validators.dart';
 import '../../../../core/widgets/common.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'profile_providers.dart';
@@ -43,9 +44,13 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
 
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (_upiCtrl.text.trim().isEmpty && _accNoCtrl.text.trim().isEmpty) {
+      showWarningToast(context, 'Add a UPI ID or a bank account to receive payouts');
+      return;
+    }
     setState(() => _saving = true);
     try {
-      final result = await ref.read(profileRepositoryProvider).updatePayoutDetails(upi: _upiCtrl.text, accNo: _accNoCtrl.text, ifsc: _ifscCtrl.text);
+      final result = await ref.read(profileRepositoryProvider).updatePayoutDetails(upi: _upiCtrl.text.trim(), accNo: _accNoCtrl.text.trim(), ifsc: _ifscCtrl.text.trim().toUpperCase());
       if (!mounted) return;
       ref.invalidate(profileProvider);
       showSuccessToast(context, result['message']?.toString() ?? 'Payout details updated');
@@ -115,7 +120,7 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
                       controller: _upiCtrl,
                       inputFormatters: InputRules.noSpaces(50),
                       decoration: const InputDecoration(hintText: 'name@bank', prefixIcon: Icon(Icons.qr_code_rounded)),
-                      validator: (v) => (v == null || v.trim().isEmpty || RegExp(r'^[a-zA-Z0-9.\-_]+@[a-zA-Z0-9]+$').hasMatch(v.trim())) ? null : 'Enter a valid UPI ID',
+                      validator: PayoutValidators.upi,
                     ),
                     const SizedBox(height: 16),
                     _label('Bank account number'),
@@ -124,7 +129,7 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
                       keyboardType: TextInputType.number,
                       inputFormatters: InputRules.digits(18),
                       decoration: const InputDecoration(hintText: 'Account number', prefixIcon: Icon(Icons.account_balance_rounded)),
-                      validator: (v) => (v == null || v.trim().isEmpty || RegExp(r'^[0-9]{9,18}$').hasMatch(v.trim())) ? null : 'Enter a valid account number',
+                      validator: (v) => PayoutValidators.account(v, ifsc: _ifscCtrl.text),
                     ),
                     const SizedBox(height: 16),
                     _label('IFSC code'),
@@ -133,7 +138,7 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
                       textCapitalization: TextCapitalization.characters,
                       inputFormatters: InputRules.alphanumericUpper(11),
                       decoration: const InputDecoration(hintText: 'e.g. HDFC0001234', prefixIcon: Icon(Icons.pin_rounded)),
-                      validator: (v) => (v == null || v.trim().isEmpty || RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$').hasMatch(v.trim().toUpperCase())) ? null : 'Enter a valid IFSC code',
+                      validator: (v) => PayoutValidators.ifsc(v, account: _accNoCtrl.text),
                     ),
                     const SizedBox(height: 20),
                     GradientButton(label: 'Save payout details', icon: Icons.check_rounded, loading: _saving, onPressed: _save),

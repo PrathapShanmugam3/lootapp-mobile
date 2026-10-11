@@ -4,12 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/widgets/common.dart';
 import '../../notifications/presentation/notifications_screen.dart';
-import '../../presentation/sample_data.dart';
 import '../../presentation/widgets/aff_user_avatar.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'offer_detail_screen.dart';
 import 'offers_providers.dart';
-import '../../../../core/widgets/app_toast.dart';
 
 class OffersListScreen extends ConsumerStatefulWidget {
   const OffersListScreen({super.key});
@@ -34,8 +32,7 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
   @override
   Widget build(BuildContext context) {
     final rawAsync = ref.watch(offersListProvider);
-    final sample = isSample(rawAsync);
-    final offersAsync = withSample(rawAsync, SampleData.offers);
+    final offersAsync = rawAsync;
 
     return Scaffold(
       backgroundColor: AffColors.pageBg,
@@ -69,7 +66,6 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 18, 16, 110),
               children: [
-                if (sample) SampleDataBanner(onRetry: () => ref.invalidate(offersListProvider)),
                 FadeSlideIn(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,7 +146,7 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
                       index: 3 + i,
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 14),
-                        child: _OfferCard(offer: filtered[i], sample: sample),
+                        child: _OfferCard(offer: filtered[i]),
                       ),
                     ),
               ],
@@ -209,9 +205,8 @@ class _FilterPill extends StatelessWidget {
 }
 
 class _OfferCard extends StatelessWidget {
-  const _OfferCard({required this.offer, this.sample = false});
+  const _OfferCard({required this.offer});
   final Map<String, dynamic> offer;
-  final bool sample;
 
   @override
   Widget build(BuildContext context) {
@@ -229,13 +224,7 @@ class _OfferCard extends StatelessWidget {
       radius: 22,
       wash: accent,
       padding: const EdgeInsets.all(15),
-      onTap: () {
-        if (sample) {
-          showInfoToast(context, 'Sample offer — reconnect to open real campaigns');
-          return;
-        }
-        Navigator.of(context).push(MaterialPageRoute(builder: (_) => OfferDetailScreen(offId: offId)));
-      },
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => OfferDetailScreen(offId: offId))),
       child: Column(
         children: [
           Row(

@@ -8,11 +8,10 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/announcement_dialog.dart';
 import '../../../../core/widgets/common.dart';
 import '../../notifications/presentation/notifications_screen.dart';
-import '../../presentation/sample_data.dart';
+import '../../presentation/affiliate_shell.dart';
 import '../../presentation/widgets/aff_user_avatar.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import '../../presentation/widgets/community_join.dart';
-import '../../reports/presentation/reports_screen.dart';
 import 'dashboard_providers.dart';
 
 final _currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
@@ -65,8 +64,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final rawAsync = ref.watch(dashboardProvider);
-    final sample = isSample(rawAsync);
-    final dashboardAsync = withSample(rawAsync, SampleData.dashboard);
+    final dashboardAsync = rawAsync;
     return Scaffold(
       backgroundColor: AffColors.pageBg,
       appBar: AffHeader(
@@ -89,7 +87,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             message: 'Could not load dashboard.\n$err',
             onRetry: () => ref.invalidate(dashboardProvider),
           ),
-          data: (data) => _DashboardBody(data: data, sample: sample, onRetry: () => ref.invalidate(dashboardProvider)),
+          data: (data) => _DashboardBody(data: data),
         ),
       ),
     );
@@ -99,11 +97,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 num _num(dynamic v) => v is num ? v : num.tryParse(v?.toString() ?? '') ?? 0;
 
 class _DashboardBody extends ConsumerWidget {
-  const _DashboardBody({required this.data, this.sample = false, this.onRetry});
+  const _DashboardBody({required this.data});
 
   final Map<String, dynamic> data;
-  final bool sample;
-  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -121,7 +117,6 @@ class _DashboardBody extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 110),
       children: [
-        if (sample) SampleDataBanner(onRetry: onRetry),
         // --- Welcome hero ---
         FadeSlideIn(
           child: AffHeroCard(
@@ -242,7 +237,7 @@ class _DashboardBody extends ConsumerWidget {
                   children: [
                     Text('7-Day Performance', style: AffText.jakarta(15, FontWeight.w800)),
                     GestureDetector(
-                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ReportsScreen())),
+                      onTap: () => AffiliateShell.selectTab(context, 'reports'),
                       child: Text('View report →', style: AffText.jakarta(11, FontWeight.w600, color: AffColors.purpleEnd)),
                     ),
                   ],
