@@ -44,7 +44,7 @@ class WalletScreen extends ConsumerWidget {
           ref.invalidate(transactionsProvider);
         },
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 18, 16, 110),
+          padding: EdgeInsets.fromLTRB(16, 18, 16, AffNavBar.clearance(context)),
           children: [
             FadeSlideIn(
               child: Column(
@@ -106,9 +106,9 @@ class WalletScreen extends ConsumerWidget {
                           const SizedBox(height: 16),
                           Row(
                             children: [
-                              _HeroMini(label: 'TOTAL EARNED', value: _currency.format(summary.totalEarned)),
+                              Expanded(child: _HeroMini(label: 'TOTAL EARNED', value: _currency.format(summary.totalEarned))),
                               const SizedBox(width: 26),
-                              _HeroMini(label: 'WITHDRAWN', value: _currency.format(summary.totalWithdrawn)),
+                              Expanded(child: _HeroMini(label: 'WITHDRAWN', value: _currency.format(summary.totalWithdrawn))),
                             ],
                           ),
                         ],
@@ -196,9 +196,9 @@ class _HeroMini extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AffText.jakarta(9.5, FontWeight.w700, color: Colors.white.withValues(alpha: 0.8), letterSpacing: 0.85)),
+        Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(9.5, FontWeight.w700, color: Colors.white.withValues(alpha: 0.8), letterSpacing: 0.85)),
         const SizedBox(height: 2),
-        Text(value, style: AffText.number(18, FontWeight.w700, color: Colors.white)),
+        FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(value, style: AffText.number(18, FontWeight.w700, color: Colors.white))),
       ],
     );
   }
@@ -326,6 +326,53 @@ class _RedeemCardState extends ConsumerState<_RedeemCard> {
   }
 }
 
+/// Masks a UPI ID/account number down to its first few and last 4 chars,
+/// e.g. "testaffiliate@okhdfc" -> "test*********hdfc".
+String _maskTail(String value, {int head = 4, int tail = 4}) {
+  if (value.length <= head + tail) return value;
+  return '${value.substring(0, head)}${'*' * (value.length - head - tail)}${value.substring(value.length - tail)}';
+}
+
+class _TxnDisplay {
+  const _TxnDisplay({required this.title, required this.subtitle, required this.icon});
+  final String title;
+  final String subtitle;
+  final IconData icon;
+
+  /// Reads the backend's raw transaction fields and turns them into a
+  /// payment-method title ("UPI Payment" / "Bank Payment") and a masked
+  /// destination subtitle, instead of showing the raw stored comment
+  /// (a bare UPI string, or literal JSON like {"acc_no":...,"ifsc":...}
+  /// for bank withdrawals).
+  factory _TxnDisplay.from(dynamic txn) {
+    final isDebit = txn.type == 'debit';
+    final comment = (txn.comment ?? '').toString().trim();
+    final offerName = (txn.offerName as String?)?.trim();
+
+    if (!isDebit) {
+      if (offerName != null && offerName.isNotEmpty) {
+        // Backend comment is "<offerName> - <event>"; keep just the event part.
+        final event = comment.startsWith(offerName) ? comment.substring(offerName.length).replaceFirst(RegExp(r'^\s*-\s*'), '') : comment;
+        return _TxnDisplay(title: offerName, subtitle: event.isEmpty ? 'Conversion payout' : event, icon: Icons.south_west_rounded);
+      }
+      return _TxnDisplay(title: comment.isEmpty ? 'Wallet credit' : comment, subtitle: '', icon: Icons.south_west_rounded);
+    }
+
+    if (comment.startsWith('{')) {
+      try {
+        final accNo = RegExp(r'"acc_no"\s*:\s*"([^"]*)"').firstMatch(comment)?.group(1) ?? '';
+        if (accNo.isNotEmpty) return _TxnDisplay(title: 'Bank Payment', subtitle: 'Account ···${accNo.length > 4 ? accNo.substring(accNo.length - 4) : accNo}', icon: Icons.account_balance_rounded);
+      } catch (_) {
+        // Fall through to the raw comment below.
+      }
+    }
+    if (comment.contains('@') && !comment.contains(' ')) {
+      return _TxnDisplay(title: 'UPI Payment', subtitle: _maskTail(comment), icon: Icons.qr_code_rounded);
+    }
+    return _TxnDisplay(title: comment.isEmpty ? 'Withdrawal' : comment, subtitle: '', icon: Icons.north_east_rounded);
+  }
+}
+
 class _TransactionRow extends StatelessWidget {
   const _TransactionRow({required this.txn});
 
@@ -336,34 +383,43 @@ class _TransactionRow extends StatelessWidget {
     final isDebit = txn.type == 'debit';
     final color = isDebit ? AffColors.danger : AffColors.success;
     final status = (txn.status ?? '').toString();
-    final settled = status.toLowerCase() == 'success';
+    final display = _TxnDisplay.from(txn);
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(11)),
-          child: Icon(isDebit ? Icons.north_east_rounded : Icons.south_west_rounded, size: 15, color: color),
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
+          child: Icon(display.icon, size: 16, color: color),
         ),
         const SizedBox(width: 11),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text((txn.comment ?? txn.type).toString(), maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(12.5, FontWeight.w700)),
-              Text('${txn.date ?? ''} ${txn.time ?? ''}'.trim(), style: AffText.jakarta(10.5, FontWeight.w500, color: AffColors.inkFaint)),
+              Text(display.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(13, FontWeight.w700)),
+              if (display.subtitle.isNotEmpty) ...[
+                const SizedBox(height: 1),
+                Text(display.subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(11, FontWeight.w500, color: AffColors.inkFaint)),
+              ],
+              const SizedBox(height: 2),
+              Text('${txn.date ?? ''} ${txn.time ?? ''}'.trim(), style: AffText.jakarta(10, FontWeight.w500, color: AffColors.inkHint)),
             ],
           ),
         ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text('${isDebit ? '-' : '+'}${_currency.format(txn.amount)}', style: AffText.number(13, FontWeight.w700, color: color)),
-            if (!settled && status.isNotEmpty) ...[
-              const SizedBox(height: 3),
-              StatusChip(text: status, color: statusColor(status)),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text('${isDebit ? '-' : '+'}${_currency.format(txn.amount)}', maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.number(13, FontWeight.w700, color: color)),
+              if (status.isNotEmpty) ...[
+                const SizedBox(height: 3),
+                StatusChip(text: status, color: statusColor(status)),
+              ],
             ],
-          ],
+          ),
         ),
       ],
     );
