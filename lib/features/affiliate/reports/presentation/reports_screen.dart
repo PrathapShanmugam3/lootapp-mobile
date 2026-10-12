@@ -73,7 +73,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(reportsProvider),
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 110),
+          padding: EdgeInsets.fromLTRB(16, 20, 16, AffNavBar.clearance(context)),
           children: [
             _FilterBar(
               dateOption: _dateOption,

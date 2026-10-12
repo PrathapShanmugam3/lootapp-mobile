@@ -196,7 +196,7 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
               SafeArea(
                 bottom: false,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 6, 16, 14),
+                  padding: const EdgeInsets.fromLTRB(10, 6, 16, 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -213,52 +213,72 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
                           ),
                           const SizedBox(width: 10),
                           Container(
-                            width: 42,
-                            height: 42,
+                            width: 44,
+                            height: 44,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(13),
-                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4))],
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.22), blurRadius: 12, offset: const Offset(0, 5))],
                             ),
                             clipBehavior: Clip.antiAlias,
                             alignment: Alignment.center,
                             child: logoUrl != null
-                                ? Image.network(logoUrl, fit: BoxFit.cover, width: 42, height: 42, errorBuilder: (_, __, ___) => _initials(name))
+                                ? Image.network(logoUrl, fit: BoxFit.cover, width: 44, height: 44, errorBuilder: (_, __, ___) => _initials(name))
                                 : _initials(name),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(16, FontWeight.w800, color: Colors.white, letterSpacing: -0.3)),
-                                const SizedBox(height: 2),
+                                Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(17, FontWeight.w800, color: Colors.white, letterSpacing: -0.3)),
+                                const SizedBox(height: 3),
                                 Text(
-                                  [if (category.isNotEmpty) category.toUpperCase(), '$eventCount ${eventCount == 1 ? 'event' : 'events'}', if (themeLabel != null) themeLabel].join(' · '),
+                                  [if (category.isNotEmpty) category.toUpperCase(), '$eventCount ${eventCount == 1 ? 'event' : 'events'}', if (themeLabel != null) themeLabel].join('  ·  '),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: AffText.jakarta(10.5, FontWeight.w700, color: Colors.white.withValues(alpha: 0.75), letterSpacing: 0.3),
+                                  style: AffText.jakarta(10.5, FontWeight.w700, color: Colors.white.withValues(alpha: 0.72), letterSpacing: 0.3),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text('PAYOUT', style: AffText.jakarta(9, FontWeight.w800, color: Colors.white.withValues(alpha: 0.72), letterSpacing: 1)),
-                              Text('₹${offer['totalPayout'] ?? 0}', style: AffText.number(20, FontWeight.w700, color: AffColors.gold, letterSpacing: -0.5)),
-                            ],
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (offerTitle.isNotEmpty)
+                            Expanded(
+                              child: Text(
+                                offerTitle,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: AffText.jakarta(12, FontWeight.w500, color: Colors.white.withValues(alpha: 0.82), height: 1.4),
+                              ),
+                            )
+                          else
+                            const Spacer(),
+                          const SizedBox(width: 12),
+                          Container(
+                            padding: const EdgeInsets.fromLTRB(14, 8, 14, 9),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('PAYOUT', style: AffText.jakarta(9, FontWeight.w800, color: Colors.white.withValues(alpha: 0.72), letterSpacing: 1)),
+                                const SizedBox(height: 1),
+                                Text('₹${offer['totalPayout'] ?? 0}', style: AffText.number(21, FontWeight.w800, color: AffColors.gold, letterSpacing: -0.5)),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                      if (offerTitle.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 4),
-                          child: Text(offerTitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: AffText.jakarta(12, FontWeight.w500, color: Colors.white.withValues(alpha: 0.82), height: 1.4)),
-                        ),
-                      ],
                     ],
                   ),
                 ),
@@ -818,6 +838,15 @@ class _TemplateCard extends StatelessWidget {
   final bool saving;
   final VoidCallback? onSelect;
 
+  void _openPreview(BuildContext context) {
+    HapticFeedback.selectionClick();
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      builder: (_) => _TemplatePreviewDialog(themeKey: themeKey, label: label, description: description, selected: selected, onUse: onSelect),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -837,22 +866,35 @@ class _TemplateCard extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           child: Row(
             children: [
-              // Thumbnail: the full-size mockup scaled down.
-              SizedBox(
-                width: 84,
-                height: 62,
-                child: Stack(
-                  children: [
-                    Positioned.fill(child: FittedBox(fit: BoxFit.fill, child: SizedBox(width: 172, height: 128, child: _TemplateMockup(themeKey: themeKey)))),
-                    if (saving)
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(color: AffColors.surface.withValues(alpha: 0.7), borderRadius: BorderRadius.circular(8)),
-                          alignment: Alignment.center,
-                          child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2.2, color: AffColors.purpleEnd)),
+              // Thumbnail: the full-size mockup scaled down. Tap to preview.
+              GestureDetector(
+                onTap: () => _openPreview(context),
+                child: SizedBox(
+                  width: 84,
+                  height: 62,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(child: FittedBox(fit: BoxFit.fill, child: SizedBox(width: 172, height: 128, child: _TemplateMockup(themeKey: themeKey)))),
+                      if (saving)
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(color: AffColors.surface.withValues(alpha: 0.7), borderRadius: BorderRadius.circular(8)),
+                            alignment: Alignment.center,
+                            child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2.2, color: AffColors.purpleEnd)),
+                          ),
+                        )
+                      else
+                        Positioned(
+                          right: 3,
+                          bottom: 3,
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.45), borderRadius: BorderRadius.circular(6)),
+                            child: const Icon(Icons.visibility_rounded, size: 10, color: Colors.white),
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -871,11 +913,18 @@ class _TemplateCard extends StatelessWidget {
               const SizedBox(width: 8),
               SizedBox(
                 width: 76,
-                child: _cardButton(
-                  label: selected ? 'In use' : 'Use',
-                  icon: selected ? Icons.check_circle_rounded : Icons.touch_app_rounded,
-                  onTap: onSelect,
-                  dim: selected,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _cardButton(label: 'Preview', icon: Icons.visibility_rounded, onTap: () => _openPreview(context), outline: true),
+                    const SizedBox(height: 6),
+                    _cardButton(
+                      label: selected ? 'In use' : 'Use',
+                      icon: selected ? Icons.check_circle_rounded : Icons.touch_app_rounded,
+                      onTap: onSelect,
+                      dim: selected,
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -885,26 +934,104 @@ class _TemplateCard extends StatelessWidget {
     );
   }
 
-  Widget _cardButton({required String label, required IconData icon, required VoidCallback? onTap, bool dim = false}) {
-    final fg = dim ? AffColors.purpleEnd : Colors.white;
+  Widget _cardButton({required String label, required IconData icon, required VoidCallback? onTap, bool dim = false, bool outline = false}) {
+    final fg = outline ? AffColors.purpleEnd : (dim ? AffColors.purpleEnd : Colors.white);
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(11),
         child: Ink(
-          height: 32,
+          height: 28,
           decoration: BoxDecoration(
-            gradient: dim ? null : AffColors.gradient,
-            color: dim ? AffColors.chipLilac : null,
+            gradient: outline || dim ? null : AffColors.gradient,
+            color: outline ? Colors.transparent : (dim ? AffColors.chipLilac : null),
+            border: outline ? Border.all(color: AffColors.purpleEnd.withValues(alpha: 0.4)) : null,
             borderRadius: BorderRadius.circular(11),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 13, color: fg),
+              Icon(icon, size: 12, color: fg),
               const SizedBox(width: 4),
-              Text(label, style: AffText.jakarta(11, FontWeight.w800, color: fg)),
+              Text(label, style: AffText.jakarta(10.5, FontWeight.w800, color: fg)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Full-screen look at a landing-page theme before committing to it.
+class _TemplatePreviewDialog extends StatelessWidget {
+  const _TemplatePreviewDialog({required this.themeKey, required this.label, required this.description, required this.selected, required this.onUse});
+
+  final String themeKey;
+  final String label;
+  final String description;
+  final bool selected;
+  final VoidCallback? onUse;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          color: AffColors.surface,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(label, style: AffText.jakarta(15, FontWeight.w800, color: AffColors.ink)),
+                          if (description.isNotEmpty) Text(description, style: AffText.jakarta(11, FontWeight.w500, color: AffColors.inkFaint)),
+                        ],
+                      ),
+                    ),
+                    IconButton(onPressed: () => Navigator.of(context).pop(), icon: Icon(Icons.close_rounded, color: AffColors.inkFaint)),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: _TemplateMockup(themeKey: themeKey, height: 320),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: selected
+                        ? null
+                        : () {
+                            Navigator.of(context).pop();
+                            onUse?.call();
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AffColors.purpleEnd,
+                      disabledBackgroundColor: AffColors.chipLilac,
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)),
+                    ),
+                    icon: Icon(selected ? Icons.check_circle_rounded : Icons.touch_app_rounded, size: 16, color: selected ? AffColors.purpleEnd : Colors.white),
+                    label: Text(selected ? 'Already in use' : 'Use this template', style: AffText.jakarta(13, FontWeight.w800, color: selected ? AffColors.purpleEnd : Colors.white)),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -917,9 +1044,10 @@ class _TemplateCard extends StatelessWidget {
 /// at a glance: Classic (purple gradient + stat cards), Minimal (white, big
 /// CTA), Bold (dark, heavy type). Unknown keys fall back to Classic.
 class _TemplateMockup extends StatelessWidget {
-  const _TemplateMockup({required this.themeKey});
+  const _TemplateMockup({required this.themeKey, this.height = 128});
 
   final String themeKey;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
@@ -990,7 +1118,7 @@ class _TemplateMockup extends StatelessWidget {
     }
 
     return Container(
-      height: 128,
+      height: height,
       width: double.infinity,
       clipBehavior: Clip.antiAlias,
       decoration: (bg as BoxDecoration).copyWith(borderRadius: BorderRadius.circular(14)),

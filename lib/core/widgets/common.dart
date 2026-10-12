@@ -205,6 +205,8 @@ class StatTile extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontWeight: FontWeight.w800,
               fontSize: 22,
@@ -215,12 +217,16 @@ class StatTile extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12.5),
           ),
           if (subtitle != null) ...[
             const SizedBox(height: 2),
             Text(
               subtitle!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 11),
             ),
           ],

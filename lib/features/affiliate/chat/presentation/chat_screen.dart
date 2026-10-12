@@ -220,7 +220,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     onSend: _send,
                   ),
                 // Space for the floating tab bar.
-                const SizedBox(height: 100),
+                SizedBox(height: AffNavBar.clearance(context)),
               ],
             ),
           );

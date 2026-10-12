@@ -98,6 +98,13 @@ class _LootHatAppState extends ConsumerState<LootHatApp> with WidgetsBindingObse
       theme: AppTheme.current(),
       themeMode: ThemeMode.light,
       routerConfig: router,
+      // Custom chrome (nav bar, headers, stat tiles) is sized for a narrow
+      // text-scale range; clamp so OS accessibility font sizes don't blow
+      // past what the fixed-height pieces of the design can absorb.
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(textScaler: MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.3)),
+        child: child!,
+      ),
     );
   }
 }

@@ -60,8 +60,10 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
 
   /// Saved details exist for the chosen method and pass the same checks as
   /// Edit account (older accounts may have invalid values saved).
-  bool get _hasDetailsForType =>
-      _type == 'upi' ? PayoutValidators.isValidUpi(_upi) : (PayoutValidators.isValidAccount(_accNo) && PayoutValidators.isValidIfsc(_ifsc));
+  bool get _hasDetailsForType => _hasDetails(_type);
+
+  bool _hasDetails(String type) =>
+      type == 'upi' ? PayoutValidators.isValidUpi(_upi) : (PayoutValidators.isValidAccount(_accNo) && PayoutValidators.isValidIfsc(_ifsc));
 
   Future<void> _openEditAccount() async {
     final profile = _profile;
@@ -115,13 +117,15 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
                     if (activeTypes.isEmpty)
                       const EmptyState(message: 'Withdrawals are currently unavailable', icon: Icons.block)
                     else ...[
-                      SegmentedButton<String>(
-                        segments: [
-                          if (activeTypes.contains('upi')) const ButtonSegment(value: 'upi', label: Text('UPI'), icon: Icon(Icons.qr_code)),
-                          if (activeTypes.contains('bank')) const ButtonSegment(value: 'bank', label: Text('Bank'), icon: Icon(Icons.account_balance)),
-                        ],
-                        selected: {_type},
-                        onSelectionChanged: (s) => setState(() => _type = s.first),
+                      _PayoutTypeToggle(
+                        activeTypes: activeTypes,
+                        selected: _type,
+                        // Only gray out an unset-up method once the other one
+                        // actually has saved details — a brand-new account
+                        // with nothing saved yet should still show both as
+                        // tappable so the warning card below can guide setup.
+                        enabledTypes: _profileLoading || !activeTypes.any(_hasDetails) ? activeTypes : activeTypes.where(_hasDetails).toList(),
+                        onSelect: (t) => setState(() => _type = t),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -186,6 +190,65 @@ class _WithdrawSheetState extends ConsumerState<WithdrawSheet> {
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+}
+
+/// UPI/Bank toggle where a method the user hasn't saved details for shows
+/// greyed-out and ignores taps, instead of looking selectable like the rest.
+class _PayoutTypeToggle extends StatelessWidget {
+  const _PayoutTypeToggle({required this.activeTypes, required this.selected, required this.enabledTypes, required this.onSelect});
+
+  final List<String> activeTypes;
+  final String selected;
+  final List<String> enabledTypes;
+  final ValueChanged<String> onSelect;
+
+  static const _labels = {'upi': ('UPI', Icons.qr_code_rounded), 'bank': ('Bank', Icons.account_balance_rounded)};
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(color: AffColors.fieldBg, borderRadius: BorderRadius.circular(14), border: Border.all(color: AffColors.fieldBorder)),
+      child: Row(
+        children: [
+          for (final type in activeTypes) ...[
+            if (type != activeTypes.first) const SizedBox(width: 4),
+            Expanded(child: _segment(type)),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _segment(String type) {
+    final isSelected = type == selected;
+    final isEnabled = enabledTypes.contains(type);
+    final (label, icon) = _labels[type] ?? (type, Icons.payment_rounded);
+    final fg = !isEnabled ? AffColors.inkHint : (isSelected ? Colors.white : AffColors.inkLabel);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isEnabled ? () => onSelect(type) : null,
+        borderRadius: BorderRadius.circular(11),
+        child: Ink(
+          height: 42,
+          decoration: BoxDecoration(
+            color: isSelected && isEnabled ? AffColors.purpleEnd : null,
+            borderRadius: BorderRadius.circular(11),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 17, color: fg),
+              const SizedBox(width: 6),
+              Text(label, style: AffText.jakarta(13.5, FontWeight.w700, color: fg)),
+              if (!isEnabled) ...[const SizedBox(width: 5), Icon(Icons.lock_rounded, size: 12, color: fg)],
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

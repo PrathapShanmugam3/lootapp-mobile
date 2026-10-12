@@ -64,7 +64,7 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
             final poolTotal = offers.fold<num>(0, (sum, o) => sum + _numOf(o['payout'] ?? o['maxPayout'] ?? o['payoutAmount']));
 
             return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 18, 16, 110),
+              padding: EdgeInsets.fromLTRB(16, 18, 16, AffNavBar.clearance(context)),
               children: [
                 FadeSlideIn(
                   child: Column(
@@ -278,15 +278,19 @@ class _OfferCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               if (payout != null)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('PAYOUT', style: AffText.jakarta(9.5, FontWeight.w700, color: AffColors.inkFaint, letterSpacing: 0.76)),
-                    Text('₹$payout', style: AffText.number(19, FontWeight.w700, color: accent)),
-                  ],
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('PAYOUT', maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(9.5, FontWeight.w700, color: AffColors.inkFaint, letterSpacing: 0.76)),
+                      Text('₹$payout', maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.number(19, FontWeight.w700, color: accent)),
+                    ],
+                  ),
                 )
               else
                 const SizedBox.shrink(),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
                 decoration: BoxDecoration(
@@ -294,7 +298,7 @@ class _OfferCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(99),
                   boxShadow: [BoxShadow(color: accent.withValues(alpha: 0.38), blurRadius: 16, offset: const Offset(0, 6))],
                 ),
-                child: Text('View Offer ↗', style: AffText.jakarta(12.5, FontWeight.w700, color: Colors.white)),
+                child: Text('View Offer ↗', maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(12.5, FontWeight.w700, color: Colors.white)),
               ),
             ],
           ),

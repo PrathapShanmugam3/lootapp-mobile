@@ -119,7 +119,7 @@ class _Body extends StatelessWidget {
     final pageRows = rows.skip(clampedPage * _pageSize).take(_pageSize).toList();
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+      padding: EdgeInsets.fromLTRB(16, 20, 16, 32 + MediaQuery.of(context).padding.bottom),
       children: [
         Row(
           children: [

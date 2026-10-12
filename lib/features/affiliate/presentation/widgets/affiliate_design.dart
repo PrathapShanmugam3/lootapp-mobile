@@ -487,6 +487,12 @@ class AffNavBar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
 
+  /// Bar height (68) + top/bottom padding (12 each) + the device's bottom
+  /// safe-area inset. Screens under the floating [AffiliateShell] nav bar
+  /// should reserve at least this much space at the bottom of their
+  /// scrollable content so it never overlaps the nav bar.
+  static double clearance(BuildContext context) => 68 + 24 + MediaQuery.of(context).padding.bottom;
+
   @override
   Widget build(BuildContext context) {
     const pillW = 60.0;

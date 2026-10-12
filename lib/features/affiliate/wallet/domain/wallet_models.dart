@@ -22,6 +22,7 @@ class WalletTransaction {
     this.date,
     this.time,
     this.trxId,
+    this.offerName,
   });
 
   final int id;
@@ -32,6 +33,7 @@ class WalletTransaction {
   final String? date;
   final String? time;
   final String? trxId;
+  final String? offerName;
 
   factory WalletTransaction.fromJson(Map<String, dynamic> json) => WalletTransaction(
         id: json['id'] as int,
@@ -42,5 +44,6 @@ class WalletTransaction {
         date: json['date']?.toString(),
         time: json['time']?.toString(),
         trxId: json['trxId']?.toString(),
+        offerName: json['offerName']?.toString(),
       );
 }

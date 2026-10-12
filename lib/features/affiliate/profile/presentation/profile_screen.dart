@@ -85,7 +85,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
     final payoutMethod = hasUpi ? 'UPI' : (hasBank ? 'Bank' : '—');
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 110),
+      padding: EdgeInsets.fromLTRB(16, 18, 16, AffNavBar.clearance(context)),
       children: [
         // --- Hero ---
         FadeSlideIn(
@@ -304,9 +304,11 @@ class _RowTile extends StatelessWidget {
             AffIconChip(icon: icon!, color: tint, size: 32, solid: true),
             const SizedBox(width: 12),
           ],
-          Expanded(child: Text(label, style: AffText.jakarta(13, FontWeight.w700, color: color ?? AffColors.ink))),
-          if (value != null) Text('$value ›', style: AffText.jakarta(13, FontWeight.w700, color: AffColors.inkFaint))
-          else if (color == null) Text('›', style: AffText.jakarta(13, FontWeight.w700, color: AffColors.inkFaint)),
+          Expanded(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(13, FontWeight.w700, color: color ?? AffColors.ink))),
+          if (value != null)
+            Flexible(child: Text('$value ›', maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(13, FontWeight.w700, color: AffColors.inkFaint)))
+          else if (color == null)
+            Text('›', style: AffText.jakarta(13, FontWeight.w700, color: AffColors.inkFaint)),
         ],
       ),
     );

@@ -115,7 +115,7 @@ class _DashboardBody extends ConsumerWidget {
     final earnings = (kpis['earnings'] as Map?)?.cast<String, dynamic>() ?? {};
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 110),
+      padding: EdgeInsets.fromLTRB(16, 18, 16, AffNavBar.clearance(context)),
       children: [
         // --- Welcome hero ---
         FadeSlideIn(
@@ -397,7 +397,7 @@ class _CampaignRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Text(_currency.format(earnings), style: AffText.number(14, FontWeight.w700)),
+        Flexible(child: Text(_currency.format(earnings), maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.number(14, FontWeight.w700))),
       ],
     );
   }
