@@ -253,70 +253,103 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
         )['label']
         ?.toString();
 
+    Widget chip(String text, {IconData? icon}) => Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.13),
+        borderRadius: BorderRadius.circular(99),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 11, color: Colors.white.withValues(alpha: 0.9)),
+            const SizedBox(width: 5),
+          ],
+          Text(
+            text,
+            style: AffText.jakarta(
+              10.5,
+              FontWeight.w700,
+              color: Colors.white.withValues(alpha: 0.92),
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
         boxShadow: [
           BoxShadow(
-            color: AffColors.midnightSoft.withValues(alpha: 0.3),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
+            color: const Color(0xFF2E1065).withValues(alpha: 0.38),
+            blurRadius: 30,
+            offset: const Offset(0, 14),
           ),
         ],
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
         child: DecoratedBox(
-          decoration: const BoxDecoration(gradient: AffColors.heroGradient),
+          // Deep violet fading to a restrained purple — richer and calmer than
+          // the neon magenta of the app header.
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF2E1065), Color(0xFF5B21B6), Color(0xFF8B3FE0)],
+              stops: [0, 0.6, 1],
+            ),
+          ),
           child: Stack(
             children: [
               const Positioned.fill(child: DecorativeOrbs()),
               SafeArea(
                 bottom: false,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 6, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 22),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Material(
-                            color: Colors.white.withValues(alpha: 0.14),
-                            shape: CircleBorder(
-                              side: BorderSide(
-                                color: Colors.white.withValues(alpha: 0.22),
-                              ),
-                            ),
-                            child: InkWell(
-                              customBorder: const CircleBorder(),
-                              onTap: () => Navigator.of(context).maybePop(),
-                              child: const SizedBox(
-                                width: 34,
-                                height: 34,
-                                child: Icon(
-                                  Icons.arrow_back_ios_new_rounded,
-                                  color: Colors.white,
-                                  size: 15,
-                                ),
-                              ),
+                      Material(
+                        color: Colors.white.withValues(alpha: 0.14),
+                        shape: CircleBorder(
+                          side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.22),
+                          ),
+                        ),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: () => Navigator.of(context).maybePop(),
+                          child: const SizedBox(
+                            width: 38,
+                            height: 38,
+                            child: Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              color: Colors.white,
+                              size: 16,
                             ),
                           ),
-                          const SizedBox(width: 10),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
                           Container(
-                            width: 48,
-                            height: 48,
+                            width: 66,
+                            height: 66,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(15),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.5),
-                                width: 1,
-                              ),
+                              borderRadius: BorderRadius.circular(21),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.25),
-                                  blurRadius: 14,
-                                  offset: const Offset(0, 6),
+                                  color: Colors.black.withValues(alpha: 0.28),
+                                  blurRadius: 18,
+                                  offset: const Offset(0, 8),
                                 ),
                               ],
                             ),
@@ -326,115 +359,152 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
                                 ? Image.network(
                                     logoUrl,
                                     fit: BoxFit.cover,
-                                    width: 48,
-                                    height: 48,
+                                    width: 66,
+                                    height: 66,
                                     errorBuilder: (_, __, ___) =>
                                         _initials(name),
                                   )
                                 : _initials(name),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 14),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   name,
-                                  maxLines: 1,
+                                  maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: AffText.jakarta(
-                                    17,
+                                    22,
                                     FontWeight.w800,
                                     color: Colors.white,
-                                    letterSpacing: -0.3,
+                                    letterSpacing: -0.5,
+                                    height: 1.15,
                                   ),
                                 ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  [
+                                const SizedBox(height: 8),
+                                Wrap(
+                                  spacing: 6,
+                                  runSpacing: 6,
+                                  children: [
                                     if (category.isNotEmpty)
-                                      category.toUpperCase(),
-                                    '$eventCount ${eventCount == 1 ? 'event' : 'events'}',
-                                    if (themeLabel != null) themeLabel,
-                                  ].join('  ·  '),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AffText.jakarta(
-                                    10.5,
-                                    FontWeight.w700,
-                                    color: Colors.white.withValues(alpha: 0.72),
-                                    letterSpacing: 0.3,
-                                  ),
+                                      chip(category.toUpperCase()),
+                                    chip(
+                                      '$eventCount ${eventCount == 1 ? 'event' : 'events'}',
+                                      icon: Icons.bolt_rounded,
+                                    ),
+                                    if (themeLabel != null)
+                                      chip(themeLabel, icon: Icons.web_rounded),
+                                  ],
                                 ),
                               ],
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 14),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (offerTitle.isNotEmpty)
-                            Expanded(
-                              child: Text(
-                                offerTitle,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: AffText.jakarta(
-                                  12,
-                                  FontWeight.w500,
-                                  color: Colors.white.withValues(alpha: 0.82),
-                                  height: 1.4,
-                                ),
-                              ),
-                            )
-                          else
-                            const Spacer(),
-                          const SizedBox(width: 12),
-                          Container(
-                            padding: const EdgeInsets.fromLTRB(14, 8, 14, 9),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: AffColors.gold.withValues(alpha: 0.35),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AffColors.gold.withValues(alpha: 0.18),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'PAYOUT',
-                                  style: AffText.jakarta(
-                                    9,
-                                    FontWeight.w800,
-                                    color: Colors.white.withValues(alpha: 0.72),
-                                    letterSpacing: 1,
-                                  ),
-                                ),
-                                const SizedBox(height: 1),
-                                Text(
-                                  '₹${offer['totalPayout'] ?? 0}',
-                                  style: AffText.number(
-                                    21,
-                                    FontWeight.w800,
-                                    color: AffColors.gold,
-                                    letterSpacing: -0.5,
-                                  ),
-                                ),
-                              ],
-                            ),
+                      if (offerTitle.isNotEmpty) ...[
+                        const SizedBox(height: 14),
+                        Text(
+                          offerTitle,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: AffText.jakarta(
+                            13,
+                            FontWeight.w500,
+                            color: Colors.white.withValues(alpha: 0.86),
+                            height: 1.45,
                           ),
-                        ],
+                        ),
+                      ],
+                      const SizedBox(height: 18),
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(14, 13, 16, 13),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.white.withValues(alpha: 0.17),
+                              Colors.white.withValues(alpha: 0.07),
+                            ],
+                          ),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.20),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 46,
+                              height: 46,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFFFDE68A),
+                                    Color(0xFFF59E0B),
+                                  ],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFFF59E0B,
+                                    ).withValues(alpha: 0.35),
+                                    blurRadius: 14,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                '₹',
+                                style: AffText.jakarta(
+                                  22,
+                                  FontWeight.w800,
+                                  color: const Color(0xFF5B3A00),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'TOTAL PAYOUT',
+                                    style: AffText.jakarta(
+                                      9.5,
+                                      FontWeight.w800,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.72,
+                                      ),
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      '₹${offer['totalPayout'] ?? 0}',
+                                      style: AffText.number(
+                                        34,
+                                        FontWeight.w800,
+                                        color: Colors.white,
+                                        letterSpacing: -1,
+                                        height: 1.05,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -496,7 +566,8 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
     final code = Uri.encodeComponent(_referCode);
     final current = selectedDomain ?? _defaultDomain(domains);
     return AffCard(
-      wash: AffColors.purpleStart,
+      radius: 24,
+      padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -585,18 +656,21 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
           ],
           const SizedBox(height: 14),
           _LinkTile(
+            accentColor: AffColors.purpleEnd,
             label: 'Offer URL',
             link: '$origin/leads?o=$code',
             shareTitle: offer['offerName']?.toString() ?? '',
           ),
           const SizedBox(height: 10),
           _LinkTile(
+            accentColor: const Color(0xFFDB2777),
             label: 'Sub refer URL',
             link: '$origin/referral?o=$code',
             shareTitle: offer['offerName']?.toString() ?? '',
           ),
           const SizedBox(height: 10),
           _LinkTile(
+            accentColor: const Color(0xFF0284C7),
             label: 'Direct offer link',
             badge: 'No landing page',
             link: '$origin/api/public/direct/$code',
@@ -1174,8 +1248,9 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
   }
 }
 
-/// One tracking link: label (+ optional badge), the URL, and copy / WhatsApp /
-/// Telegram share actions.
+/// One tracking link: label (+ optional badge), the URL in a soft field, and
+/// copy / WhatsApp / Telegram share actions. A slim coloured bar on the left
+/// edge tells the three links apart at a glance.
 class _LinkTile extends StatelessWidget {
   const _LinkTile({
     required this.label,
@@ -1183,6 +1258,7 @@ class _LinkTile extends StatelessWidget {
     required this.shareTitle,
     this.badge,
     this.hint,
+    this.accentColor,
   });
 
   final String label;
@@ -1190,14 +1266,17 @@ class _LinkTile extends StatelessWidget {
   final String shareTitle;
   final String? badge;
   final String? hint;
+  final Color? accentColor;
+  Color get accent => accentColor ?? AffColors.purpleEnd;
 
   Future<void> _open(BuildContext context, String url) async {
     if (!await launchUrl(
       Uri.parse(url),
       mode: LaunchMode.externalApplication,
     )) {
-      if (context.mounted)
+      if (context.mounted) {
         showErrorToast(context, 'That app isn\'t available on this device');
+      }
     }
   }
 
@@ -1205,136 +1284,187 @@ class _LinkTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = shareTitle.isEmpty ? link : '$shareTitle — $link';
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 11, 8, 10),
       decoration: BoxDecoration(
-        color: AffColors.fieldBg,
-        borderRadius: BorderRadius.circular(16),
+        color: AffColors.surface,
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AffColors.fieldBorder),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3C1478).withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: const Color(0xFF3C1478).withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                label.toUpperCase(),
-                style: AffText.jakarta(
-                  10,
-                  FontWeight.w800,
-                  color: AffColors.inkFaint,
-                  letterSpacing: 0.8,
+      clipBehavior: Clip.antiAlias,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              width: 4,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color.lerp(accent, Colors.white, 0.3)!, accent],
                 ),
               ),
-              if (badge != null) ...[
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AffColors.chipLilac,
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                  child: Text(
-                    badge!,
-                    style: AffText.jakarta(
-                      9,
-                      FontWeight.w700,
-                      color: AffColors.purpleEnd,
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            label.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AffText.jakarta(
+                              10,
+                              FontWeight.w800,
+                              color: accent,
+                              letterSpacing: 0.9,
+                            ),
+                          ),
+                        ),
+                        if (badge != null) ...[
+                          const SizedBox(width: 7),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 2.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: accent.withValues(alpha: 0.10),
+                              borderRadius: BorderRadius.circular(99),
+                            ),
+                            child: Text(
+                              badge!,
+                              style: AffText.jakarta(
+                                9,
+                                FontWeight.w700,
+                                color: accent,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 11,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AffColors.fieldBg,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              link,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AffText.number(
+                                12,
+                                FontWeight.w500,
+                                color: AffColors.inkLabel,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _ActionDot(
+                          tooltip: 'Copy',
+                          primary: true,
+                          accentColor: accent,
+                          child: const Icon(
+                            Icons.copy_rounded,
+                            size: 17,
+                            color: Colors.white,
+                          ),
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Clipboard.setData(ClipboardData(text: link));
+                            showSuccessToast(
+                              context,
+                              link,
+                              title: '$label copied',
+                            );
+                          },
+                        ),
+                        _ActionDot(
+                          tooltip: 'Share on WhatsApp',
+                          child: const WhatsAppGlyph(
+                            color: Color(0xFF128C7E),
+                            size: 19,
+                          ),
+                          onTap: () => _open(
+                            context,
+                            'https://wa.me/?text=${Uri.encodeComponent(text)}',
+                          ),
+                        ),
+                        _ActionDot(
+                          tooltip: 'Share on Telegram',
+                          child: const Icon(
+                            Icons.telegram,
+                            size: 21,
+                            color: Color(0xFF0088CC),
+                          ),
+                          onTap: () => _open(
+                            context,
+                            'https://t.me/share/url?url=${Uri.encodeComponent(link)}&text=${Uri.encodeComponent(shareTitle)}',
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (hint != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        hint!,
+                        style: AffText.jakarta(
+                          10.5,
+                          FontWeight.w500,
+                          color: AffColors.inkFaint,
+                          height: 1.45,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  link,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AffText.number(12.5, FontWeight.w500),
-                ),
-              ),
-              const SizedBox(width: 6),
-              _ActionDot(
-                tooltip: 'Copy',
-                color: AffColors.purpleEnd,
-                child: Icon(
-                  Icons.copy_rounded,
-                  size: 20,
-                  color: AffColors.purpleEnd,
-                ),
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  Clipboard.setData(ClipboardData(text: link));
-                  showSuccessToast(context, link, title: '$label copied');
-                },
-              ),
-              _ActionDot(
-                tooltip: 'Share on WhatsApp',
-                color: const Color(0xFF128C7E),
-                child: const WhatsAppGlyph(color: Color(0xFF128C7E), size: 21),
-                onTap: () => _open(
-                  context,
-                  'https://wa.me/?text=${Uri.encodeComponent(text)}',
-                ),
-              ),
-              _ActionDot(
-                tooltip: 'Share on Telegram',
-                color: const Color(0xFF0088CC),
-                child: const Icon(
-                  Icons.telegram,
-                  size: 23,
-                  color: Color(0xFF0088CC),
-                ),
-                onTap: () => _open(
-                  context,
-                  'https://t.me/share/url?url=${Uri.encodeComponent(link)}&text=${Uri.encodeComponent(shareTitle)}',
-                ),
-              ),
-            ],
-          ),
-          if (hint != null) ...[
-            const SizedBox(height: 6),
-            Text(
-              hint!,
-              style: AffText.jakarta(
-                10.5,
-                FontWeight.w500,
-                color: AffColors.inkFaint,
-                height: 1.4,
               ),
             ),
           ],
-        ],
+        ),
       ),
     );
   }
 }
 
+/// Round 38dp action button. [primary] = filled with the tile's accent (copy);
+/// otherwise a white button with a hairline ring (share targets).
 class _ActionDot extends StatelessWidget {
   const _ActionDot({
     required this.tooltip,
-    required this.color,
     required this.child,
     required this.onTap,
+    this.primary = false,
+    this.accentColor,
   });
 
   final String tooltip;
-  final Color color;
   final Widget child;
   final VoidCallback onTap;
+  final bool primary;
+  final Color? accentColor;
+  Color get accent => accentColor ?? AffColors.purpleEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -1342,13 +1472,38 @@ class _ActionDot extends StatelessWidget {
       padding: const EdgeInsets.only(left: 6),
       child: Tooltip(
         message: tooltip,
-        child: Material(
-          color: color.withValues(alpha: 0.10),
-          shape: const CircleBorder(),
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: onTap,
-            child: SizedBox(width: 40, height: 40, child: Center(child: child)),
+        child: Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: primary
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color.lerp(accent, Colors.white, 0.22)!, accent],
+                  )
+                : null,
+            color: primary ? null : AffColors.surface,
+            border: primary ? null : Border.all(color: AffColors.fieldBorder),
+            boxShadow: primary
+                ? [
+                    BoxShadow(
+                      color: accent.withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: onTap,
+              child: Center(child: child),
+            ),
           ),
         ),
       ),
@@ -1403,11 +1558,7 @@ class _TemplateCard extends StatelessWidget {
               ? LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    AffColors.purpleEnd,
-                    AffColors.magenta,
-                    AffColors.pink,
-                  ],
+                  colors: [AffColors.purpleEnd, AffColors.purpleStart],
                 )
               : null,
           color: selected ? null : AffColors.fieldBorder,
@@ -1415,9 +1566,9 @@ class _TemplateCard extends StatelessWidget {
           boxShadow: selected
               ? [
                   BoxShadow(
-                    color: AffColors.purpleEnd.withValues(alpha: 0.22),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
+                    color: AffColors.purpleEnd.withValues(alpha: 0.20),
+                    blurRadius: 18,
+                    offset: const Offset(0, 6),
                   ),
                 ]
               : AffColors.cardShadow,
@@ -1557,7 +1708,7 @@ class _TemplateCard extends StatelessWidget {
   }) {
     final fg = outline
         ? AffColors.purpleEnd
-        : (dim ? AffColors.purpleEnd : Colors.white);
+        : (dim ? AffColors.live : Colors.white);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1569,7 +1720,7 @@ class _TemplateCard extends StatelessWidget {
             gradient: outline || dim ? null : AffColors.gradient,
             color: outline
                 ? Colors.transparent
-                : (dim ? AffColors.chipLilac : null),
+                : (dim ? AffColors.liveBg : null),
             border: outline
                 ? Border.all(color: AffColors.purpleEnd.withValues(alpha: 0.4))
                 : null,
