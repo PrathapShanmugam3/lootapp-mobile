@@ -27,7 +27,7 @@ class ChatMessageModel {
   bool get isMine => from != 'admin'; // overridden per-screen via fromSelf
 
   factory ChatMessageModel.fromJson(Map<String, dynamic> json) => ChatMessageModel(
-        id: json['id'] as int,
+        id: json['id'] is int ? json['id'] as int : int.tryParse(json['id']?.toString() ?? '') ?? 0,
         from: json['from']?.toString() ?? '',
         text: json['text']?.toString() ?? '',
         imagePath: json['imagePath']?.toString(),

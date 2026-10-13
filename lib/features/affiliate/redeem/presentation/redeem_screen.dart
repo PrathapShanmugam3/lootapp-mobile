@@ -36,7 +36,9 @@ class _RedeemScreenState extends ConsumerState<RedeemScreen> {
       final success = res.isSuccess;
       showToast(
         context,
-        res.message.isNotEmpty ? res.message : (success ? 'Code redeemed!' : 'Redemption failed'),
+        res.message.isNotEmpty
+            ? res.message
+            : (success ? 'Code redeemed!' : 'Redemption failed'),
         type: success ? ToastType.success : ToastType.error,
         title: success ? 'Code redeemed' : null,
       );
@@ -55,33 +57,55 @@ class _RedeemScreenState extends ConsumerState<RedeemScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AffColors.pageBg,
-      appBar: const AffHeader(title: 'Redeem code', subtitle: 'Credit a reward code to your wallet'),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AffHeroCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Icon(Icons.redeem_rounded, color: AffColors.gold, size: 34),
-                  SizedBox(height: 10),
-                  Text('Have a reward code?', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.4)),
-                  SizedBox(height: 4),
-                  Text('Redeem it below to instantly credit your wallet.', style: TextStyle(color: Colors.white70)),
-                ],
+      appBar: const AffHeader(
+        title: 'Redeem code',
+        subtitle: 'Credit a reward code to your wallet',
+      ),
+      body: ResponsiveBody(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              AffHeroCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Icon(Icons.redeem_rounded, color: AffColors.gold, size: 34),
+                    SizedBox(height: 10),
+                    Text(
+                      'Have a reward code?',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Redeem it below to instantly credit your wallet.',
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            TextField(
-              controller: _codeCtrl,
-              textCapitalization: TextCapitalization.characters,
-              decoration: const InputDecoration(labelText: 'Redeem code', prefixIcon: Icon(Icons.confirmation_number_outlined)),
-            ),
-            const SizedBox(height: 16),
-            GradientButton(label: 'Redeem', loading: _submitting, onPressed: _redeem),
-          ],
+              const SizedBox(height: 24),
+              TextField(
+                controller: _codeCtrl,
+                textCapitalization: TextCapitalization.characters,
+                decoration: const InputDecoration(
+                  labelText: 'Redeem code',
+                  prefixIcon: Icon(Icons.confirmation_number_outlined),
+                ),
+              ),
+              const SizedBox(height: 16),
+              GradientButton(
+                label: 'Redeem',
+                loading: _submitting,
+                onPressed: _redeem,
+              ),
+            ],
+          ),
         ),
       ),
     );

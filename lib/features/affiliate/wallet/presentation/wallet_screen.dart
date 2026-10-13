@@ -12,7 +12,11 @@ import 'wallet_providers.dart';
 import 'withdraw_sheet.dart';
 import '../../../../core/widgets/app_toast.dart';
 
-final _currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+final _currency = NumberFormat.currency(
+  locale: 'en_IN',
+  symbol: '₹',
+  decimalDigits: 0,
+);
 
 class WalletScreen extends ConsumerWidget {
   const WalletScreen({super.key});
@@ -33,7 +37,9 @@ class WalletScreen extends ConsumerWidget {
           AffHeaderIcon(
             icon: Icons.notifications_none_rounded,
             showDot: true,
-            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NotificationsScreen())),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+            ),
           ),
           const AffUserAvatar(),
         ],
@@ -43,131 +49,248 @@ class WalletScreen extends ConsumerWidget {
           ref.invalidate(walletSummaryProvider);
           ref.invalidate(transactionsProvider);
         },
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(16, 18, 16, AffNavBar.clearance(context)),
-          children: [
-            FadeSlideIn(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Wallet & Payouts', style: AffText.jakarta(21, FontWeight.w800, letterSpacing: -0.4, height: 1.2)),
-                  const SizedBox(height: 4),
-                  Text('Manage available earnings and withdraw directly to your account', style: AffText.jakarta(12.5, FontWeight.w500, color: AffColors.inkMuted, height: 1.45)),
-                ],
-              ),
+        child: ResponsiveBody(
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(
+              16,
+              18,
+              16,
+              AffNavBar.clearance(context),
             ),
-            const SizedBox(height: 14),
-            summaryAsync.when(
-              loading: () => const SizedBox(height: 220, child: LoadingState(compact: true)),
-              error: (e, _) => ErrorState(message: 'Failed to load wallet.\n$e', onRetry: () => ref.invalidate(walletSummaryProvider)),
-              data: (summary) => Column(
-                children: [
-                  FadeSlideIn(
-                    index: 1,
-                    child: AffHeroCard(
-                      radius: 24,
-                      gradient: AffColors.walletGradient,
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('AVAILABLE BALANCE', style: AffText.jakarta(10.5, FontWeight.w700, color: Colors.white.withValues(alpha: 0.85), letterSpacing: 1.05)),
-                          const SizedBox(height: 4),
-                          AnimatedCount(value: summary.balance, format: _currency.format, style: AffText.number(38, FontWeight.w700, color: Colors.white, height: 1.1)),
-                          const SizedBox(height: 14),
-                          PressableScale(
-                            onTap: () => _openWithdrawSheet(context, ref),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(99),
-                                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.18), blurRadius: 20, offset: const Offset(0, 8))],
+            children: [
+              FadeSlideIn(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Wallet & Payouts',
+                      style: AffText.jakarta(
+                        21,
+                        FontWeight.w800,
+                        letterSpacing: -0.4,
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Manage available earnings and withdraw directly to your account',
+                      style: AffText.jakarta(
+                        12.5,
+                        FontWeight.w500,
+                        color: AffColors.inkMuted,
+                        height: 1.45,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              summaryAsync.when(
+                loading: () => const SizedBox(
+                  height: 220,
+                  child: LoadingState(compact: true),
+                ),
+                error: (e, _) => ErrorState(
+                  message: 'Failed to load wallet.\n$e',
+                  onRetry: () => ref.invalidate(walletSummaryProvider),
+                ),
+                data: (summary) => Column(
+                  children: [
+                    FadeSlideIn(
+                      index: 1,
+                      child: AffHeroCard(
+                        radius: 24,
+                        gradient: AffColors.walletGradient,
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'AVAILABLE BALANCE',
+                              style: AffText.jakarta(
+                                10.5,
+                                FontWeight.w700,
+                                color: Colors.white.withValues(alpha: 0.85),
+                                letterSpacing: 1.05,
                               ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
+                            ),
+                            const SizedBox(height: 4),
+                            AnimatedCount(
+                              value: summary.balance,
+                              format: _currency.format,
+                              style: AffText.number(
+                                38,
+                                FontWeight.w700,
+                                color: Colors.white,
+                                height: 1.1,
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            PressableScale(
+                              onTap: () => _openWithdrawSheet(context, ref),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
                                   borderRadius: BorderRadius.circular(99),
-                                  onTap: () => _openWithdrawSheet(context, ref),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 13),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        const Icon(Icons.bolt_rounded, size: 18, color: AffColors.purple),
-                                        const SizedBox(width: 6),
-                                        Text('Withdraw Funds', style: AffText.jakarta(14, FontWeight.w800, color: AffColors.purple)),
-                                      ],
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.18,
+                                      ),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(99),
+                                    onTap: () =>
+                                        _openWithdrawSheet(context, ref),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 13,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(
+                                            Icons.bolt_rounded,
+                                            size: 18,
+                                            color: AffColors.purple,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            'Withdraw Funds',
+                                            style: AffText.jakarta(
+                                              14,
+                                              FontWeight.w800,
+                                              color: AffColors.purple,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(child: _HeroMini(label: 'TOTAL EARNED', value: _currency.format(summary.totalEarned))),
-                              const SizedBox(width: 26),
-                              Expanded(child: _HeroMini(label: 'WITHDRAWN', value: _currency.format(summary.totalWithdrawn))),
-                            ],
-                          ),
-                        ],
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _HeroMini(
+                                    label: 'TOTAL EARNED',
+                                    value: _currency.format(
+                                      summary.totalEarned,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 26),
+                                Expanded(
+                                  child: _HeroMini(
+                                    label: 'WITHDRAWN',
+                                    value: _currency.format(
+                                      summary.totalWithdrawn,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  FadeSlideIn(index: 2, child: _RedeemCard(ref: ref)),
-                ],
+                    const SizedBox(height: 14),
+                    FadeSlideIn(index: 2, child: _RedeemCard(ref: ref)),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 14),
-            txnsAsync.when(
-              loading: () => const SizedBox(height: 120, child: LoadingState(compact: true)),
-              error: (e, _) => ErrorState(message: 'Failed to load transactions.\n$e', onRetry: () => ref.invalidate(transactionsProvider)),
-              data: (txns) => FadeSlideIn(
-                index: 3,
-                child: AffCard(
-                  radius: 22,
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Transaction History', style: AffText.jakarta(14.5, FontWeight.w800)),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(color: AffColors.chipLilac, borderRadius: BorderRadius.circular(99)),
-                            child: Text('${txns.length} records', style: AffText.jakarta(10.5, FontWeight.w700, color: AffColors.purpleEnd)),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      if (txns.isEmpty)
-                        const EmptyState(message: 'No transactions yet', icon: Icons.receipt_long_outlined)
-                      else ...[
-                        for (var i = 0; i < txns.length; i++) ...[
-                          if (i > 0) const SizedBox(height: 12),
-                          _TransactionRow(txn: txns[i]),
-                        ],
-                        if (ref.read(transactionsProvider.notifier).hasMore)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 14),
-                            child: Center(
-                              child: GestureDetector(
-                                onTap: () => ref.read(transactionsProvider.notifier).loadMore(),
-                                child: Text('Load more ↓', style: AffText.jakarta(12, FontWeight.w700, color: AffColors.purpleEnd)),
+              const SizedBox(height: 14),
+              txnsAsync.when(
+                loading: () => const SizedBox(
+                  height: 120,
+                  child: LoadingState(compact: true),
+                ),
+                error: (e, _) => ErrorState(
+                  message: 'Failed to load transactions.\n$e',
+                  onRetry: () => ref.invalidate(transactionsProvider),
+                ),
+                data: (txns) => FadeSlideIn(
+                  index: 3,
+                  child: AffCard(
+                    radius: 22,
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Transaction History',
+                              style: AffText.jakarta(14.5, FontWeight.w800),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AffColors.chipLilac,
+                                borderRadius: BorderRadius.circular(99),
+                              ),
+                              child: Text(
+                                '${txns.length} records',
+                                style: AffText.jakarta(
+                                  10.5,
+                                  FontWeight.w700,
+                                  color: AffColors.purpleEnd,
+                                ),
                               ),
                             ),
-                          ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        if (txns.isEmpty)
+                          const EmptyState(
+                            message: 'No transactions yet',
+                            icon: Icons.receipt_long_outlined,
+                          )
+                        else ...[
+                          for (var i = 0; i < txns.length; i++) ...[
+                            if (i > 0) const SizedBox(height: 12),
+                            _TransactionRow(txn: txns[i]),
+                          ],
+                          if (ref.read(transactionsProvider.notifier).hasMore)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 14),
+                              child: Center(
+                                child: GestureDetector(
+                                  onTap: () => ref
+                                      .read(transactionsProvider.notifier)
+                                      .loadMore(),
+                                  child: Text(
+                                    'Load more ↓',
+                                    style: AffText.jakarta(
+                                      12,
+                                      FontWeight.w700,
+                                      color: AffColors.purpleEnd,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -177,7 +300,9 @@ class WalletScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
       builder: (_) => const WithdrawSheet(),
     ).then((_) {
       ref.invalidate(walletSummaryProvider);
@@ -196,9 +321,26 @@ class _HeroMini extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(9.5, FontWeight.w700, color: Colors.white.withValues(alpha: 0.8), letterSpacing: 0.85)),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AffText.jakarta(
+            9.5,
+            FontWeight.w700,
+            color: Colors.white.withValues(alpha: 0.8),
+            letterSpacing: 0.85,
+          ),
+        ),
         const SizedBox(height: 2),
-        FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(value, style: AffText.number(18, FontWeight.w700, color: Colors.white))),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            value,
+            style: AffText.number(18, FontWeight.w700, color: Colors.white),
+          ),
+        ),
       ],
     );
   }
@@ -212,7 +354,10 @@ class _DashedBorderPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final path = Path()..addRRect(RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(radius)));
+    final path = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(radius)),
+      );
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
@@ -227,7 +372,8 @@ class _DashedBorderPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _DashedBorderPainter old) => old.color != color || old.radius != radius;
+  bool shouldRepaint(covariant _DashedBorderPainter old) =>
+      old.color != color || old.radius != radius;
 }
 
 class _RedeemCard extends ConsumerStatefulWidget {
@@ -259,7 +405,9 @@ class _RedeemCardState extends ConsumerState<_RedeemCard> {
       final success = res.isSuccess;
       showToast(
         context,
-        res.message.isNotEmpty ? res.message : (success ? 'Code redeemed!' : 'Redemption failed'),
+        res.message.isNotEmpty
+            ? res.message
+            : (success ? 'Code redeemed!' : 'Redemption failed'),
         type: success ? ToastType.success : ToastType.error,
         title: success ? 'Code redeemed' : null,
       );
@@ -283,12 +431,21 @@ class _RedeemCardState extends ConsumerState<_RedeemCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Redeem promo code', style: AffText.jakarta(14.5, FontWeight.w800)),
+          Text(
+            'Redeem promo code',
+            style: AffText.jakarta(14.5, FontWeight.w800),
+          ),
           const SizedBox(height: 10),
           CustomPaint(
-            painter: _DashedBorderPainter(color: const Color(0xFFDDD2F7), radius: 14),
+            painter: _DashedBorderPainter(
+              color: const Color(0xFFDDD2F7),
+              radius: 14,
+            ),
             child: Container(
-              decoration: BoxDecoration(color: AffColors.pageBg, borderRadius: BorderRadius.circular(14)),
+              decoration: BoxDecoration(
+                color: AffColors.pageBg,
+                borderRadius: BorderRadius.circular(14),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 15),
               child: TextField(
                 controller: _codeCtrl,
@@ -298,7 +455,12 @@ class _RedeemCardState extends ConsumerState<_RedeemCard> {
                 decoration: InputDecoration(
                   filled: false,
                   hintText: 'ENTER GIFT CODE',
-                  hintStyle: AffText.number(13, FontWeight.w600, color: AffColors.inkHint, letterSpacing: 1.56),
+                  hintStyle: AffText.number(
+                    13,
+                    FontWeight.w600,
+                    color: AffColors.inkHint,
+                    letterSpacing: 1.56,
+                  ),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
@@ -314,10 +476,27 @@ class _RedeemCardState extends ConsumerState<_RedeemCard> {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
               alignment: Alignment.center,
-              decoration: BoxDecoration(gradient: AffColors.gradient, borderRadius: BorderRadius.circular(14)),
+              decoration: BoxDecoration(
+                gradient: AffColors.gradient,
+                borderRadius: BorderRadius.circular(14),
+              ),
               child: _submitting
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text('Redeem', style: AffText.jakarta(13.5, FontWeight.w700, color: Colors.white)),
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      'Redeem',
+                      style: AffText.jakarta(
+                        13.5,
+                        FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -334,7 +513,11 @@ String _maskTail(String value, {int head = 4, int tail = 4}) {
 }
 
 class _TxnDisplay {
-  const _TxnDisplay({required this.title, required this.subtitle, required this.icon});
+  const _TxnDisplay({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
   final String title;
   final String subtitle;
   final IconData icon;
@@ -352,24 +535,52 @@ class _TxnDisplay {
     if (!isDebit) {
       if (offerName != null && offerName.isNotEmpty) {
         // Backend comment is "<offerName> - <event>"; keep just the event part.
-        final event = comment.startsWith(offerName) ? comment.substring(offerName.length).replaceFirst(RegExp(r'^\s*-\s*'), '') : comment;
-        return _TxnDisplay(title: offerName, subtitle: event.isEmpty ? 'Conversion payout' : event, icon: Icons.south_west_rounded);
+        final event = comment.startsWith(offerName)
+            ? comment
+                  .substring(offerName.length)
+                  .replaceFirst(RegExp(r'^\s*-\s*'), '')
+            : comment;
+        return _TxnDisplay(
+          title: offerName,
+          subtitle: event.isEmpty ? 'Conversion payout' : event,
+          icon: Icons.south_west_rounded,
+        );
       }
-      return _TxnDisplay(title: comment.isEmpty ? 'Wallet credit' : comment, subtitle: '', icon: Icons.south_west_rounded);
+      return _TxnDisplay(
+        title: comment.isEmpty ? 'Wallet credit' : comment,
+        subtitle: '',
+        icon: Icons.south_west_rounded,
+      );
     }
 
     if (comment.startsWith('{')) {
       try {
-        final accNo = RegExp(r'"acc_no"\s*:\s*"([^"]*)"').firstMatch(comment)?.group(1) ?? '';
-        if (accNo.isNotEmpty) return _TxnDisplay(title: 'Bank Payment', subtitle: 'Account ···${accNo.length > 4 ? accNo.substring(accNo.length - 4) : accNo}', icon: Icons.account_balance_rounded);
+        final accNo =
+            RegExp(r'"acc_no"\s*:\s*"([^"]*)"').firstMatch(comment)?.group(1) ??
+            '';
+        if (accNo.isNotEmpty)
+          return _TxnDisplay(
+            title: 'Bank Payment',
+            subtitle:
+                'Account ···${accNo.length > 4 ? accNo.substring(accNo.length - 4) : accNo}',
+            icon: Icons.account_balance_rounded,
+          );
       } catch (_) {
         // Fall through to the raw comment below.
       }
     }
     if (comment.contains('@') && !comment.contains(' ')) {
-      return _TxnDisplay(title: 'UPI Payment', subtitle: _maskTail(comment), icon: Icons.qr_code_rounded);
+      return _TxnDisplay(
+        title: 'UPI Payment',
+        subtitle: _maskTail(comment),
+        icon: Icons.qr_code_rounded,
+      );
     }
-    return _TxnDisplay(title: comment.isEmpty ? 'Withdrawal' : comment, subtitle: '', icon: Icons.north_east_rounded);
+    return _TxnDisplay(
+      title: comment.isEmpty ? 'Withdrawal' : comment,
+      subtitle: '',
+      icon: Icons.north_east_rounded,
+    );
   }
 }
 
@@ -385,37 +596,70 @@ class _TransactionRow extends StatelessWidget {
     final status = (txn.status ?? '').toString();
     final display = _TxnDisplay.from(txn);
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
           width: 36,
           height: 36,
-          decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Icon(display.icon, size: 16, color: color),
         ),
         const SizedBox(width: 11),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(display.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(13, FontWeight.w700)),
+              Text(
+                display.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AffText.jakarta(13, FontWeight.w700),
+              ),
               if (display.subtitle.isNotEmpty) ...[
-                const SizedBox(height: 1),
-                Text(display.subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(11, FontWeight.w500, color: AffColors.inkFaint)),
+                const SizedBox(height: 2),
+                Text(
+                  display.subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AffText.jakarta(
+                    11,
+                    FontWeight.w500,
+                    color: AffColors.inkFaint,
+                  ),
+                ),
               ],
-              const SizedBox(height: 2),
-              Text('${txn.date ?? ''} ${txn.time ?? ''}'.trim(), style: AffText.jakarta(10, FontWeight.w500, color: AffColors.inkHint)),
+              const SizedBox(height: 4),
+              Text(
+                '${txn.date ?? ''} ${txn.time ?? ''}'.trim(),
+                style: AffText.jakarta(
+                  10,
+                  FontWeight.w500,
+                  color: AffColors.inkHint,
+                ),
+              ),
             ],
           ),
         ),
         const SizedBox(width: 8),
-        Flexible(
+        SizedBox(
+          width: 92,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text('${isDebit ? '-' : '+'}${_currency.format(txn.amount)}', maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.number(13, FontWeight.w700, color: color)),
+              Text(
+                '${isDebit ? '-' : '+'}${_currency.format(txn.amount)}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.right,
+                style: AffText.number(13, FontWeight.w700, color: color),
+              ),
               if (status.isNotEmpty) ...[
-                const SizedBox(height: 3),
+                const SizedBox(height: 8),
                 StatusChip(text: status, color: statusColor(status)),
               ],
             ],

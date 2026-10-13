@@ -7,7 +7,11 @@ import '../../../../core/widgets/common.dart';
 import '../../presentation/widgets/affiliate_design.dart';
 import 'reports_providers.dart';
 
-final _currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+final _currency = NumberFormat.currency(
+  locale: 'en_IN',
+  symbol: '₹',
+  decimalDigits: 0,
+);
 const _pageSize = 8;
 
 class DetailedReportScreen extends ConsumerStatefulWidget {
@@ -25,7 +29,8 @@ class DetailedReportScreen extends ConsumerStatefulWidget {
   final String? endDate;
 
   @override
-  ConsumerState<DetailedReportScreen> createState() => _DetailedReportScreenState();
+  ConsumerState<DetailedReportScreen> createState() =>
+      _DetailedReportScreenState();
 }
 
 class _DetailedReportScreenState extends ConsumerState<DetailedReportScreen> {
@@ -35,34 +40,43 @@ class _DetailedReportScreenState extends ConsumerState<DetailedReportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filter = DetailedReportFilter(offId: widget.offId, startDate: widget.startDate, endDate: widget.endDate);
+    final filter = DetailedReportFilter(
+      offId: widget.offId,
+      startDate: widget.startDate,
+      endDate: widget.endDate,
+    );
     final rawAsync = ref.watch(detailedReportProvider(filter));
     final reportAsync = rawAsync;
 
     return Scaffold(
       backgroundColor: AffColors.pageBg,
-      appBar: AffHeader(title: widget.offerName, subtitle: 'Click-level report'),
+      appBar: AffHeader(
+        title: widget.offerName,
+        subtitle: 'Click-level report',
+      ),
       body: reportAsync.when(
         loading: () => const LoadingState(),
         error: (e, _) => ErrorState(
           message: 'Failed to load report.\n$e',
           onRetry: () => ref.invalidate(detailedReportProvider(filter)),
         ),
-        data: (data) => _Body(
-          onRetry: () => ref.invalidate(detailedReportProvider(filter)),
-          data: data,
-          statusFilter: _statusFilter,
-          search: _search,
-          page: _page,
-          onStatusChanged: (s) => setState(() {
-            _statusFilter = s;
-            _page = 0;
-          }),
-          onSearchChanged: (s) => setState(() {
-            _search = s;
-            _page = 0;
-          }),
-          onPageChanged: (p) => setState(() => _page = p),
+        data: (data) => ResponsiveBody(
+          child: _Body(
+            onRetry: () => ref.invalidate(detailedReportProvider(filter)),
+            data: data,
+            statusFilter: _statusFilter,
+            search: _search,
+            page: _page,
+            onStatusChanged: (s) => setState(() {
+              _statusFilter = s;
+              _page = 0;
+            }),
+            onSearchChanged: (s) => setState(() {
+              _search = s;
+              _page = 0;
+            }),
+            onPageChanged: (p) => setState(() => _page = p),
+          ),
         ),
       ),
     );
@@ -103,31 +117,70 @@ class _Body extends StatelessWidget {
       statusCounts[s] = (statusCounts[s] ?? 0) + 1;
     }
 
-    var rows = statusFilter == 'All' ? allRows : allRows.where((r) => (r['status'] ?? '').toString() == statusFilter).toList();
+    var rows = statusFilter == 'All'
+        ? allRows
+        : allRows
+              .where((r) => (r['status'] ?? '').toString() == statusFilter)
+              .toList();
     if (search.trim().isNotEmpty) {
       final q = search.trim().toLowerCase();
       rows = rows.where((r) {
-        final userVal = ((r['userIdentity'] as Map?)?['value'] ?? '').toString().toLowerCase();
-        final referVal = ((r['referIdentity'] as Map?)?['value'] ?? '').toString().toLowerCase();
+        final userVal = ((r['userIdentity'] as Map?)?['value'] ?? '')
+            .toString()
+            .toLowerCase();
+        final referVal = ((r['referIdentity'] as Map?)?['value'] ?? '')
+            .toString()
+            .toLowerCase();
         final clickId = (r['clickId'] ?? '').toString().toLowerCase();
-        return userVal.contains(q) || referVal.contains(q) || clickId.contains(q);
+        return userVal.contains(q) ||
+            referVal.contains(q) ||
+            clickId.contains(q);
       }).toList();
     }
 
     final totalPages = (rows.length / _pageSize).ceil().clamp(1, 999999);
     final clampedPage = page.clamp(0, totalPages - 1);
-    final pageRows = rows.skip(clampedPage * _pageSize).take(_pageSize).toList();
+    final pageRows = rows
+        .skip(clampedPage * _pageSize)
+        .take(_pageSize)
+        .toList();
 
     return ListView(
-      padding: EdgeInsets.fromLTRB(16, 20, 16, 32 + MediaQuery.of(context).padding.bottom),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        20,
+        16,
+        32 + MediaQuery.of(context).padding.bottom,
+      ),
       children: [
         Row(
           children: [
-            Expanded(child: StatTile(label: 'Clicks', value: (stats['totalClicks'] ?? 0).toString(), icon: Icons.ads_click, color: AffColors.purpleEnd)),
+            Expanded(
+              child: StatTile(
+                label: 'Clicks',
+                value: (stats['totalClicks'] ?? 0).toString(),
+                icon: Icons.ads_click,
+                color: AffColors.purpleEnd,
+              ),
+            ),
             const SizedBox(width: 10),
-            Expanded(child: StatTile(label: 'Conversions', value: (stats['totalConversions'] ?? 0).toString(), icon: Icons.check_circle_outline, color: AffColors.pink)),
+            Expanded(
+              child: StatTile(
+                label: 'Conversions',
+                value: (stats['totalConversions'] ?? 0).toString(),
+                icon: Icons.check_circle_outline,
+                color: AffColors.pink,
+              ),
+            ),
             const SizedBox(width: 10),
-            Expanded(child: StatTile(label: 'Earnings', value: _currency.format((stats['totalEarnings'] as num?) ?? 0), icon: Icons.payments_outlined, color: AffColors.amber)),
+            Expanded(
+              child: StatTile(
+                label: 'Earnings',
+                value: _currency.format((stats['totalEarnings'] as num?) ?? 0),
+                icon: Icons.payments_outlined,
+                color: AffColors.amber,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 20),
@@ -136,7 +189,11 @@ class _Body extends StatelessWidget {
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: [
-              _StatusPill(label: 'All (${allRows.length})', selected: statusFilter == 'All', onTap: () => onStatusChanged('All')),
+              _StatusPill(
+                label: 'All (${allRows.length})',
+                selected: statusFilter == 'All',
+                onTap: () => onStatusChanged('All'),
+              ),
               for (final entry in statusCounts.entries) ...[
                 const SizedBox(width: 8),
                 _StatusPill(
@@ -158,9 +215,13 @@ class _Body extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         if (rows.isEmpty)
-          const EmptyState(message: 'No clicks match this filter', icon: Icons.inbox_outlined)
+          const EmptyState(
+            message: 'No clicks match this filter',
+            icon: Icons.inbox_outlined,
+          )
         else ...[
-          for (var i = 0; i < pageRows.length; i++) _ClickRow(index: clampedPage * _pageSize + i + 1, row: pageRows[i]),
+          for (var i = 0; i < pageRows.length; i++)
+            _ClickRow(index: clampedPage * _pageSize + i + 1, row: pageRows[i]),
           if (totalPages > 1) ...[
             const SizedBox(height: 12),
             Center(
@@ -170,8 +231,12 @@ class _Body extends StatelessWidget {
                   for (var p = 0; p < totalPages; p++)
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        backgroundColor: p == clampedPage ? AppColors.primary : null,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        backgroundColor: p == clampedPage
+                            ? AppColors.primary
+                            : null,
                         foregroundColor: p == clampedPage ? Colors.white : null,
                         minimumSize: const Size(36, 36),
                         padding: EdgeInsets.zero,
@@ -190,7 +255,11 @@ class _Body extends StatelessWidget {
 }
 
 class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.label, required this.selected, required this.onTap});
+  const _StatusPill({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   final String label;
   final bool selected;
@@ -204,7 +273,10 @@ class _StatusPill extends StatelessWidget {
       onSelected: (_) => onTap(),
       selectedColor: AppColors.primary,
       showCheckmark: false,
-      labelStyle: TextStyle(color: selected ? Colors.white : AffColors.inkMuted, fontWeight: FontWeight.w700),
+      labelStyle: TextStyle(
+        color: selected ? Colors.white : AffColors.inkMuted,
+        fontWeight: FontWeight.w700,
+      ),
     );
   }
 }
@@ -217,8 +289,10 @@ class _ClickRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userIdentity = (row['userIdentity'] as Map?)?.cast<String, dynamic>() ?? {};
-    final referIdentity = (row['referIdentity'] as Map?)?.cast<String, dynamic>() ?? {};
+    final userIdentity =
+        (row['userIdentity'] as Map?)?.cast<String, dynamic>() ?? {};
+    final referIdentity =
+        (row['referIdentity'] as Map?)?.cast<String, dynamic>() ?? {};
     final status = (row['status'] ?? '').toString();
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -229,12 +303,22 @@ class _ClickRow extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text('#$index', style: TextStyle(color: AffColors.inkFaint, fontSize: 12, fontWeight: FontWeight.w700)),
+                Text(
+                  '#$index',
+                  style: TextStyle(
+                    color: AffColors.inkFaint,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     (row['clickId'] ?? '').toString(),
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12.5,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -244,9 +328,15 @@ class _ClickRow extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             if (userIdentity['value'] != null)
-              Text('${userIdentity['label'] ?? 'User'}: ${userIdentity['value']}', style: const TextStyle(fontSize: 13)),
+              Text(
+                '${userIdentity['label'] ?? 'User'}: ${userIdentity['value']}',
+                style: const TextStyle(fontSize: 13),
+              ),
             if (referIdentity['value'] != null)
-              Text('${referIdentity['label'] ?? 'Refer'}: ${referIdentity['value']}', style: const TextStyle(fontSize: 13)),
+              Text(
+                '${referIdentity['label'] ?? 'Refer'}: ${referIdentity['value']}',
+                style: const TextStyle(fontSize: 13),
+              ),
             const SizedBox(height: 4),
             Text(
               '${row['date'] ?? ''} ${row['time'] ?? ''}'.trim(),

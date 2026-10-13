@@ -10,7 +10,12 @@ import '../wallet/presentation/wallet_screen.dart';
 import 'widgets/affiliate_design.dart';
 
 class AffiliateShell extends StatefulWidget {
-  const AffiliateShell({super.key, this.deepLinkOfferId, this.initialTab, this.openNotifications = false});
+  const AffiliateShell({
+    super.key,
+    this.deepLinkOfferId,
+    this.initialTab,
+    this.openNotifications = false,
+  });
 
   final String? deepLinkOfferId;
 
@@ -27,16 +32,22 @@ class AffiliateShell extends StatefulWidget {
   /// "View report" → Reports tab). No-op outside the shell.
   static void selectTab(BuildContext context, String name) {
     final i = tabNames.indexOf(name);
-    if (i >= 0) context.findAncestorStateOfType<_AffiliateShellState>()?._select(i);
+    if (i >= 0)
+      context.findAncestorStateOfType<_AffiliateShellState>()?._select(i);
   }
 
   @override
   State<AffiliateShell> createState() => _AffiliateShellState();
 }
 
-class _AffiliateShellState extends State<AffiliateShell> with SingleTickerProviderStateMixin {
+class _AffiliateShellState extends State<AffiliateShell>
+    with SingleTickerProviderStateMixin {
   int _index = 0;
-  late final AnimationController _tabAnim = AnimationController(vsync: this, duration: const Duration(milliseconds: 320), value: 1);
+  late final AnimationController _tabAnim = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 320),
+    value: 1,
+  );
 
   @override
   void dispose() {
@@ -71,7 +82,9 @@ class _AffiliateShellState extends State<AffiliateShell> with SingleTickerProvid
         if (!mounted) return;
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => widget.deepLinkOfferId != null ? OfferDetailScreen(offId: widget.deepLinkOfferId!) : const NotificationsScreen(),
+            builder: (_) => widget.deepLinkOfferId != null
+                ? OfferDetailScreen(offId: widget.deepLinkOfferId!)
+                : const NotificationsScreen(),
           ),
         );
       });
@@ -94,7 +107,13 @@ class _AffiliateShellState extends State<AffiliateShell> with SingleTickerProvid
         animation: _tabAnim,
         builder: (context, child) {
           final t = Curves.easeOutCubic.transform(_tabAnim.value);
-          return Opacity(opacity: 0.35 + 0.65 * t, child: Transform.translate(offset: Offset(0, (1 - t) * 14), child: child));
+          return Opacity(
+            opacity: 0.35 + 0.65 * t,
+            child: Transform.translate(
+              offset: Offset(0, (1 - t) * 14),
+              child: child,
+            ),
+          );
         },
         child: IndexedStack(index: _index, children: _tabs),
       ),
@@ -102,11 +121,41 @@ class _AffiliateShellState extends State<AffiliateShell> with SingleTickerProvid
         selectedIndex: _index,
         onSelected: _select,
         items: [
-          AffNavItem(icon: Icons.grid_view_rounded, selectedIcon: Icons.grid_view_rounded, label: 'Dash', from: AffColors.purpleEnd, to: AffColors.magenta),
-          AffNavItem(icon: Icons.diamond_outlined, selectedIcon: Icons.diamond, label: 'Campaigns', from: Color(0xFFF472B6), to: Color(0xFFE11D74)),
-          AffNavItem(icon: Icons.currency_rupee_rounded, selectedIcon: Icons.currency_rupee_rounded, label: 'Payouts', from: Color(0xFFFBBF24), to: Color(0xFFF97316)),
-          AffNavItem(icon: Icons.insights_outlined, selectedIcon: Icons.insights_rounded, label: 'Reports', from: Color(0xFF34D399), to: Color(0xFF059669)),
-          AffNavItem(icon: Icons.mail_outline_rounded, selectedIcon: Icons.mail_rounded, label: 'Chat', from: Color(0xFF38BDF8), to: Color(0xFF2563EB)),
+          AffNavItem(
+            icon: Icons.grid_view_rounded,
+            selectedIcon: Icons.grid_view_rounded,
+            label: 'Dash',
+            from: AffColors.purpleEnd,
+            to: AffColors.magenta,
+          ),
+          AffNavItem(
+            icon: Icons.diamond_outlined,
+            selectedIcon: Icons.diamond,
+            label: 'Campaigns',
+            from: Color(0xFFF472B6),
+            to: Color(0xFFE11D74),
+          ),
+          AffNavItem(
+            icon: Icons.currency_rupee_rounded,
+            selectedIcon: Icons.currency_rupee_rounded,
+            label: 'Payouts',
+            from: Color(0xFFFBBF24),
+            to: Color(0xFFF97316),
+          ),
+          AffNavItem(
+            icon: Icons.insights_outlined,
+            selectedIcon: Icons.insights_rounded,
+            label: 'Reports',
+            from: Color(0xFF34D399),
+            to: Color(0xFF059669),
+          ),
+          AffNavItem(
+            icon: Icons.mail_outline_rounded,
+            selectedIcon: Icons.mail_rounded,
+            label: 'Chat',
+            from: Color(0xFF38BDF8),
+            to: Color(0xFF2563EB),
+          ),
         ],
       ),
     );

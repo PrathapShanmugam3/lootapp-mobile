@@ -17,7 +17,8 @@ class CustomDomainsScreen extends ConsumerStatefulWidget {
   const CustomDomainsScreen({super.key});
 
   @override
-  ConsumerState<CustomDomainsScreen> createState() => _CustomDomainsScreenState();
+  ConsumerState<CustomDomainsScreen> createState() =>
+      _CustomDomainsScreenState();
 }
 
 class _CustomDomainsScreenState extends ConsumerState<CustomDomainsScreen> {
@@ -36,7 +37,9 @@ class _CustomDomainsScreenState extends ConsumerState<CustomDomainsScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _adding = true);
     try {
-      final result = await ref.read(customDomainsRepositoryProvider).addDomain(_domainCtrl.text.trim());
+      final result = await ref
+          .read(customDomainsRepositoryProvider)
+          .addDomain(_domainCtrl.text.trim());
       if (!mounted) return;
       setState(() => _pendingInstructions = result);
       _domainCtrl.clear();
@@ -50,12 +53,16 @@ class _CustomDomainsScreenState extends ConsumerState<CustomDomainsScreen> {
 
   Future<void> _verify(String id) async {
     try {
-      final result = await ref.read(customDomainsRepositoryProvider).verifyDomain(id);
+      final result = await ref
+          .read(customDomainsRepositoryProvider)
+          .verifyDomain(id);
       if (!mounted) return;
-      final verified = result['alreadyVerified'] == true || result['success'] == true;
+      final verified =
+          result['alreadyVerified'] == true || result['success'] == true;
       showToast(
         context,
-        result['message']?.toString() ?? (verified ? 'Domain verified' : 'Verification pending'),
+        result['message']?.toString() ??
+            (verified ? 'Domain verified' : 'Verification pending'),
         type: verified ? ToastType.success : ToastType.warning,
       );
       ref.invalidate(customDomainsProvider);
@@ -71,10 +78,16 @@ class _CustomDomainsScreenState extends ConsumerState<CustomDomainsScreen> {
         title: const Text('Remove domain?'),
         content: const Text('This cannot be undone.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Remove', style: TextStyle(color: AffColors.danger)),
+            child: const Text(
+              'Remove',
+              style: TextStyle(color: AffColors.danger),
+            ),
           ),
         ],
       ),
@@ -94,75 +107,109 @@ class _CustomDomainsScreenState extends ConsumerState<CustomDomainsScreen> {
 
     return Scaffold(
       backgroundColor: AffColors.pageBg,
-      appBar: const AffHeader(title: 'Custom domains', subtitle: 'Use your own link domain'),
+      appBar: const AffHeader(
+        title: 'Custom domains',
+        subtitle: 'Use your own link domain',
+      ),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(customDomainsProvider),
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-          children: [
-            AffCard(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Connect a domain', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.5, color: AffColors.ink)),
-                  const SizedBox(height: 12),
-                  Form(
-              key: _formKey,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _domainCtrl,
-                      decoration: const InputDecoration(hintText: 'yourdomain.com'),
-                      validator: (v) {
-                        final value = v?.trim() ?? '';
-                        if (value.isEmpty) return 'Required';
-                        if (!_domainRegex.hasMatch(value)) return 'Enter a valid domain';
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  FilledButton(
-                    onPressed: _adding ? null : _addDomain,
-                    child: _adding
-                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Text('Add'),
-                  ),
-                ],
-              ),
-            ),
-                ],
-              ),
-            ),
-            if (_pendingInstructions != null) ...[
-              const SizedBox(height: 16),
-              _DnsInstructionsCard(instructions: _pendingInstructions!, onDismiss: () => setState(() => _pendingInstructions = null)),
-            ],
-            const SizedBox(height: 24),
-            const AffSectionHeader(title: 'Your domains'),
-            domainsAsync.when(
-              loading: () => const SizedBox(height: 120, child: LoadingState(compact: true)),
-              error: (e, _) => ErrorState(message: 'Failed to load domains.\n$e', onRetry: () => ref.invalidate(customDomainsProvider)),
-              data: (domains) {
-                if (domains.isEmpty) {
-                  return const EmptyState(message: 'No custom domains yet', icon: Icons.public_off_outlined);
-                }
-                return Column(
+        child: ResponsiveBody(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+            children: [
+              AffCard(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    for (final d in domains)
-                      _DomainTile(
-                        domain: d,
-                        onVerify: () => _verify(d['id'].toString()),
-                        onRemove: () => _remove(d['id'].toString()),
+                    Text(
+                      'Connect a domain',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15.5,
+                        color: AffColors.ink,
                       ),
+                    ),
+                    const SizedBox(height: 12),
+                    Form(
+                      key: _formKey,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _domainCtrl,
+                              decoration: const InputDecoration(
+                                hintText: 'yourdomain.com',
+                              ),
+                              validator: (v) {
+                                final value = v?.trim() ?? '';
+                                if (value.isEmpty) return 'Required';
+                                if (!_domainRegex.hasMatch(value))
+                                  return 'Enter a valid domain';
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          FilledButton(
+                            onPressed: _adding ? null : _addDomain,
+                            child: _adding
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text('Add'),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
-                );
-              },
-            ),
-          ],
+                ),
+              ),
+              if (_pendingInstructions != null) ...[
+                const SizedBox(height: 16),
+                _DnsInstructionsCard(
+                  instructions: _pendingInstructions!,
+                  onDismiss: () => setState(() => _pendingInstructions = null),
+                ),
+              ],
+              const SizedBox(height: 24),
+              const AffSectionHeader(title: 'Your domains'),
+              domainsAsync.when(
+                loading: () => const SizedBox(
+                  height: 120,
+                  child: LoadingState(compact: true),
+                ),
+                error: (e, _) => ErrorState(
+                  message: 'Failed to load domains.\n$e',
+                  onRetry: () => ref.invalidate(customDomainsProvider),
+                ),
+                data: (domains) {
+                  if (domains.isEmpty) {
+                    return const EmptyState(
+                      message: 'No custom domains yet',
+                      icon: Icons.public_off_outlined,
+                    );
+                  }
+                  return Column(
+                    children: [
+                      for (final d in domains)
+                        _DomainTile(
+                          domain: d,
+                          onVerify: () => _verify(d['id'].toString()),
+                          onRemove: () => _remove(d['id'].toString()),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -170,7 +217,10 @@ class _CustomDomainsScreenState extends ConsumerState<CustomDomainsScreen> {
 }
 
 class _DnsInstructionsCard extends StatelessWidget {
-  const _DnsInstructionsCard({required this.instructions, required this.onDismiss});
+  const _DnsInstructionsCard({
+    required this.instructions,
+    required this.onDismiss,
+  });
 
   final Map<String, dynamic> instructions;
   final VoidCallback onDismiss;
@@ -188,10 +238,22 @@ class _DnsInstructionsCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const AffIconChip(icon: Icons.dns_rounded, size: 36, solid: true),
+                const AffIconChip(
+                  icon: Icons.dns_rounded,
+                  size: 36,
+                  solid: true,
+                ),
                 const SizedBox(width: 10),
-                const Expanded(child: Text('Add this DNS TXT record', style: TextStyle(fontWeight: FontWeight.w700))),
-                IconButton(icon: const Icon(Icons.close, size: 18), onPressed: onDismiss),
+                const Expanded(
+                  child: Text(
+                    'Add this DNS TXT record',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, size: 18),
+                  onPressed: onDismiss,
+                ),
               ],
             ),
             const SizedBox(height: 10),
@@ -216,9 +278,22 @@ class _DnsRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(width: 50, child: Text(label, style: TextStyle(color: AffColors.inkMuted, fontSize: 12, fontWeight: FontWeight.w600))),
+        SizedBox(
+          width: 50,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: AffColors.inkMuted,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
         Expanded(
-          child: SelectableText(value, style: const TextStyle(fontFamily: 'monospace', fontSize: 12.5)),
+          child: SelectableText(
+            value,
+            style: const TextStyle(fontFamily: 'monospace', fontSize: 12.5),
+          ),
         ),
       ],
     );
@@ -226,7 +301,11 @@ class _DnsRow extends StatelessWidget {
 }
 
 class _DomainTile extends StatelessWidget {
-  const _DomainTile({required this.domain, required this.onVerify, required this.onRemove});
+  const _DomainTile({
+    required this.domain,
+    required this.onVerify,
+    required this.onRemove,
+  });
 
   final Map<String, dynamic> domain;
   final VoidCallback onVerify;
@@ -241,20 +320,47 @@ class _DomainTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
           children: [
-            AffIconChip(icon: Icons.language_rounded, color: verified ? AffColors.success : AffColors.warning, size: 42),
+            AffIconChip(
+              icon: Icons.language_rounded,
+              color: verified ? AffColors.success : AffColors.warning,
+              size: 42,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(domain['domain']?.toString() ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5, color: AffColors.ink)),
+                  Text(
+                    domain['domain']?.toString() ?? '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14.5,
+                      color: AffColors.ink,
+                    ),
+                  ),
                   const SizedBox(height: 5),
-                  StatusChip(text: verified ? 'Verified' : 'Pending', color: verified ? AffColors.success : AffColors.warning),
+                  StatusChip(
+                    text: verified ? 'Verified' : 'Pending',
+                    color: verified ? AffColors.success : AffColors.warning,
+                  ),
                 ],
               ),
             ),
-            if (!verified) IconButton(icon: Icon(Icons.refresh_rounded, color: AffColors.purpleEnd), tooltip: 'Check DNS', onPressed: onVerify),
-            IconButton(icon: const Icon(Icons.delete_outline_rounded, color: AffColors.danger), onPressed: onRemove),
+            if (!verified)
+              IconButton(
+                icon: Icon(Icons.refresh_rounded, color: AffColors.purpleEnd),
+                tooltip: 'Check DNS',
+                onPressed: onVerify,
+              ),
+            IconButton(
+              icon: const Icon(
+                Icons.delete_outline_rounded,
+                color: AffColors.danger,
+              ),
+              onPressed: onRemove,
+            ),
           ],
         ),
       ),

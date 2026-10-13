@@ -29,9 +29,15 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
   @override
   void initState() {
     super.initState();
-    _upiCtrl = TextEditingController(text: widget.profile['upi']?.toString() ?? '');
-    _accNoCtrl = TextEditingController(text: widget.profile['accNo']?.toString() ?? '');
-    _ifscCtrl = TextEditingController(text: widget.profile['ifsc']?.toString() ?? '');
+    _upiCtrl = TextEditingController(
+      text: widget.profile['upi']?.toString() ?? '',
+    );
+    _accNoCtrl = TextEditingController(
+      text: widget.profile['accNo']?.toString() ?? '',
+    );
+    _ifscCtrl = TextEditingController(
+      text: widget.profile['ifsc']?.toString() ?? '',
+    );
   }
 
   @override
@@ -45,15 +51,27 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_upiCtrl.text.trim().isEmpty && _accNoCtrl.text.trim().isEmpty) {
-      showWarningToast(context, 'Add a UPI ID or a bank account to receive payouts');
+      showWarningToast(
+        context,
+        'Add a UPI ID or a bank account to receive payouts',
+      );
       return;
     }
     setState(() => _saving = true);
     try {
-      final result = await ref.read(profileRepositoryProvider).updatePayoutDetails(upi: _upiCtrl.text.trim(), accNo: _accNoCtrl.text.trim(), ifsc: _ifscCtrl.text.trim().toUpperCase());
+      final result = await ref
+          .read(profileRepositoryProvider)
+          .updatePayoutDetails(
+            upi: _upiCtrl.text.trim(),
+            accNo: _accNoCtrl.text.trim(),
+            ifsc: _ifscCtrl.text.trim().toUpperCase(),
+          );
       if (!mounted) return;
       ref.invalidate(profileProvider);
-      showSuccessToast(context, result['message']?.toString() ?? 'Payout details updated');
+      showSuccessToast(
+        context,
+        result['message']?.toString() ?? 'Payout details updated',
+      );
     } catch (e) {
       if (mounted) showErrorToast(context, e);
     } finally {
@@ -66,132 +84,233 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
     final p = widget.profile;
     final name = p['name']?.toString() ?? '';
     final mobile = p['mobile']?.toString() ?? '';
-    final initials = name.trim().isNotEmpty ? name.trim().substring(0, name.trim().length >= 2 ? 2 : 1).toUpperCase() : '?';
+    final initials = name.trim().isNotEmpty
+        ? name
+              .trim()
+              .substring(0, name.trim().length >= 2 ? 2 : 1)
+              .toUpperCase()
+        : '?';
 
     return Scaffold(
       backgroundColor: AffColors.pageBg,
-      appBar: const AffHeader(title: 'Edit account', subtitle: 'Payout details and security'),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
-        children: [
-          FadeSlideIn(
-            child: AffCard(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    alignment: Alignment.center,
-                    decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AffColors.gradient),
-                    child: Text(initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18)),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(name.isNotEmpty ? name : 'Affiliate', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AffColors.ink)),
-                        const SizedBox(height: 2),
-                        Text(p['email']?.toString() ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12.5, color: AffColors.inkMuted)),
-                        if (mobile.isNotEmpty) Text(mobile, style: TextStyle(fontSize: 12.5, color: AffColors.inkMuted)),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.lock_outline_rounded, size: 18, color: AffColors.inkFaint),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 22),
-          const FadeSlideIn(index: 1, child: AffSectionHeader(title: 'Payout details')),
-          FadeSlideIn(
-            index: 2,
-            child: AffCard(
-              padding: const EdgeInsets.all(18),
-              child: Form(
-                key: _formKey,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _label('UPI ID'),
-                    TextFormField(
-                      controller: _upiCtrl,
-                      inputFormatters: InputRules.noSpaces(50),
-                      decoration: const InputDecoration(hintText: 'name@bank', prefixIcon: Icon(Icons.qr_code_rounded)),
-                      validator: PayoutValidators.upi,
-                    ),
-                    const SizedBox(height: 16),
-                    _label('Bank account number'),
-                    TextFormField(
-                      controller: _accNoCtrl,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: InputRules.digits(18),
-                      decoration: const InputDecoration(hintText: 'Account number', prefixIcon: Icon(Icons.account_balance_rounded)),
-                      validator: (v) => PayoutValidators.account(v, ifsc: _ifscCtrl.text),
-                    ),
-                    const SizedBox(height: 16),
-                    _label('IFSC code'),
-                    TextFormField(
-                      controller: _ifscCtrl,
-                      textCapitalization: TextCapitalization.characters,
-                      inputFormatters: InputRules.alphanumericUpper(11),
-                      decoration: const InputDecoration(hintText: 'e.g. HDFC0001234', prefixIcon: Icon(Icons.pin_rounded)),
-                      validator: (v) => PayoutValidators.ifsc(v, account: _accNoCtrl.text),
-                    ),
-                    const SizedBox(height: 20),
-                    GradientButton(label: 'Save payout details', icon: Icons.check_rounded, loading: _saving, onPressed: _save),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 22),
-          const FadeSlideIn(index: 3, child: AffSectionHeader(title: 'Security')),
-          FadeSlideIn(
-            index: 4,
-            child: AffCard(
-              padding: EdgeInsets.zero,
-              onTap: () => showChangePasswordSheet(context),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      appBar: const AffHeader(
+        title: 'Edit account',
+        subtitle: 'Payout details and security',
+      ),
+      body: ResponsiveBody(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
+          children: [
+            FadeSlideIn(
+              child: AffCard(
+                padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    const AffIconChip(icon: Icons.lock_outline_rounded, size: 40),
+                    Container(
+                      width: 52,
+                      height: 52,
+                      alignment: Alignment.center,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: AffColors.gradient,
+                      ),
+                      child: Text(
+                        initials,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Change password', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5, color: AffColors.ink)),
-                          SizedBox(height: 2),
-                          Text('Keep your account secure', style: TextStyle(fontSize: 11.5, color: AffColors.inkFaint)),
+                          Text(
+                            name.isNotEmpty ? name : 'Affiliate',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 16,
+                              color: AffColors.ink,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            p['email']?.toString() ?? '',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: AffColors.inkMuted,
+                            ),
+                          ),
+                          if (mobile.isNotEmpty)
+                            Text(
+                              mobile,
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                color: AffColors.inkMuted,
+                              ),
+                            ),
                         ],
                       ),
                     ),
-                    Icon(Icons.chevron_right_rounded, color: AffColors.inkFaint),
+                    Icon(
+                      Icons.lock_outline_rounded,
+                      size: 18,
+                      color: AffColors.inkFaint,
+                    ),
                   ],
                 ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 22),
+            const FadeSlideIn(
+              index: 1,
+              child: AffSectionHeader(title: 'Payout details'),
+            ),
+            FadeSlideIn(
+              index: 2,
+              child: AffCard(
+                padding: const EdgeInsets.all(18),
+                child: Form(
+                  key: _formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _label('UPI ID'),
+                      TextFormField(
+                        controller: _upiCtrl,
+                        inputFormatters: InputRules.noSpaces(50),
+                        decoration: const InputDecoration(
+                          hintText: 'name@bank',
+                          prefixIcon: Icon(Icons.qr_code_rounded),
+                        ),
+                        validator: PayoutValidators.upi,
+                      ),
+                      const SizedBox(height: 16),
+                      _label('Bank account number'),
+                      TextFormField(
+                        controller: _accNoCtrl,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: InputRules.digits(18),
+                        decoration: const InputDecoration(
+                          hintText: 'Account number',
+                          prefixIcon: Icon(Icons.account_balance_rounded),
+                        ),
+                        validator: (v) =>
+                            PayoutValidators.account(v, ifsc: _ifscCtrl.text),
+                      ),
+                      const SizedBox(height: 16),
+                      _label('IFSC code'),
+                      TextFormField(
+                        controller: _ifscCtrl,
+                        textCapitalization: TextCapitalization.characters,
+                        inputFormatters: InputRules.alphanumericUpper(11),
+                        decoration: const InputDecoration(
+                          hintText: 'e.g. HDFC0001234',
+                          prefixIcon: Icon(Icons.pin_rounded),
+                        ),
+                        validator: (v) =>
+                            PayoutValidators.ifsc(v, account: _accNoCtrl.text),
+                      ),
+                      const SizedBox(height: 20),
+                      GradientButton(
+                        label: 'Save payout details',
+                        icon: Icons.check_rounded,
+                        loading: _saving,
+                        onPressed: _save,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 22),
+            const FadeSlideIn(
+              index: 3,
+              child: AffSectionHeader(title: 'Security'),
+            ),
+            FadeSlideIn(
+              index: 4,
+              child: AffCard(
+                padding: EdgeInsets.zero,
+                onTap: () => showChangePasswordSheet(context),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  child: Row(
+                    children: [
+                      const AffIconChip(
+                        icon: Icons.lock_outline_rounded,
+                        size: 40,
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Change password',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14.5,
+                                color: AffColors.ink,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Keep your account secure',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                color: AffColors.inkFaint,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        color: AffColors.inkFaint,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _label(String text) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(text, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AffColors.ink)),
-      );
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Text(
+      text,
+      style: TextStyle(
+        fontWeight: FontWeight.w700,
+        fontSize: 13,
+        color: AffColors.ink,
+      ),
+    ),
+  );
 }
 
 void showChangePasswordSheet(BuildContext context) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+    ),
     builder: (_) => const _ChangePasswordSheet(),
   );
 }
@@ -200,7 +319,8 @@ class _ChangePasswordSheet extends ConsumerStatefulWidget {
   const _ChangePasswordSheet();
 
   @override
-  ConsumerState<_ChangePasswordSheet> createState() => _ChangePasswordSheetState();
+  ConsumerState<_ChangePasswordSheet> createState() =>
+      _ChangePasswordSheetState();
 }
 
 class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
@@ -219,7 +339,9 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -229,20 +351,30 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Change password', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+                Text(
+                  'Change password',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _currentCtrl,
                   obscureText: true,
-                  decoration: const InputDecoration(labelText: 'Current password'),
-                  validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                  decoration: const InputDecoration(
+                    labelText: 'Current password',
+                  ),
+                  validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Required' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _newCtrl,
                   obscureText: true,
                   decoration: const InputDecoration(labelText: 'New password'),
-                  validator: (v) => (v == null || v.length < 6) ? 'At least 6 characters' : null,
+                  validator: (v) => (v == null || v.length < 6)
+                      ? 'At least 6 characters'
+                      : null,
                 ),
                 const SizedBox(height: 20),
                 SizedBox(
@@ -250,7 +382,14 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
                   child: FilledButton(
                     onPressed: _submitting ? null : _submit,
                     child: _submitting
-                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
                         : const Text('Update password'),
                   ),
                 ),
@@ -266,13 +405,19 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _submitting = true);
     try {
-      final result = await ref.read(profileRepositoryProvider).changePassword(currentPassword: _currentCtrl.text, newPassword: _newCtrl.text);
+      final result = await ref
+          .read(profileRepositoryProvider)
+          .changePassword(
+            currentPassword: _currentCtrl.text,
+            newPassword: _newCtrl.text,
+          );
       if (!mounted) return;
       final success = result['success'] == true;
       Navigator.pop(context);
       showToast(
         context,
-        result['message']?.toString() ?? (success ? 'Password changed' : 'Failed to change password'),
+        result['message']?.toString() ??
+            (success ? 'Password changed' : 'Failed to change password'),
         type: success ? ToastType.success : ToastType.error,
       );
     } catch (e) {

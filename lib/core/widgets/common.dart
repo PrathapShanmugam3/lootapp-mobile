@@ -6,6 +6,36 @@ import 'package:shimmer/shimmer.dart';
 
 import '../theme/app_theme.dart';
 
+/// Centers a screen's scrollable body and caps its width on tablet/web/
+/// desktop viewports, so phone layouts don't stretch edge-to-edge on large
+/// screens. Phones (< [breakpoint]) pass through unconstrained. Wrap each
+/// screen's `ListView`/scroll content with this inside `Scaffold.body`.
+class ResponsiveBody extends StatelessWidget {
+  const ResponsiveBody({
+    super.key,
+    required this.child,
+    this.maxWidth = 560,
+    this.breakpoint = 600,
+  });
+
+  final Widget child;
+  final double maxWidth;
+  final double breakpoint;
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    if (width < breakpoint) return child;
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: child,
+      ),
+    );
+  }
+}
+
 /// Headline surface — wallet balance, greetings, key totals. The design's
 /// violet → magenta gradient with two slowly floating glows. Keep this (not a
 /// plain [Card]) as the go-to headline surface.
@@ -28,7 +58,13 @@ class GradientHeroCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: gradient ?? AppColors.midnightGradient,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.32), blurRadius: 28, offset: const Offset(0, 12))],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.32),
+            blurRadius: 28,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
@@ -61,8 +97,12 @@ class DecorativeOrbs extends StatefulWidget {
   State<DecorativeOrbs> createState() => _DecorativeOrbsState();
 }
 
-class _DecorativeOrbsState extends State<DecorativeOrbs> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(seconds: 60));
+class _DecorativeOrbsState extends State<DecorativeOrbs>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 60),
+  );
 
   @override
   void didChangeDependencies() {
@@ -81,19 +121,24 @@ class _DecorativeOrbsState extends State<DecorativeOrbs> with SingleTickerProvid
   }
 
   // 0 → 1 → 0 over one drift cycle, eased like the design's ease-in-out.
-  double _phase(double t, int cycles) => Curves.easeInOut.transform(0.5 - 0.5 * math.cos(2 * math.pi * cycles * t));
+  double _phase(double t, int cycles) => Curves.easeInOut.transform(
+    0.5 - 0.5 * math.cos(2 * math.pi * cycles * t),
+  );
 
   @override
   Widget build(BuildContext context) {
     final k = widget.scale;
     Widget glow(double size, Color color) => Container(
-          width: size * k,
-          height: size * k,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)], stops: const [0, 0.7]),
-          ),
-        );
+      width: size * k,
+      height: size * k,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [color, color.withValues(alpha: 0)],
+          stops: const [0, 0.7],
+        ),
+      ),
+    );
     return IgnorePointer(
       child: AnimatedBuilder(
         animation: _c,
@@ -108,7 +153,10 @@ class _DecorativeOrbsState extends State<DecorativeOrbs> with SingleTickerProvid
                 right: -60 * k,
                 child: Transform.translate(
                   offset: Offset(26 * p1 * k, -22 * p1 * k),
-                  child: Transform.scale(scale: 1 + 0.14 * p1, child: glow(220, Colors.white.withValues(alpha: 0.28))),
+                  child: Transform.scale(
+                    scale: 1 + 0.14 * p1,
+                    child: glow(220, Colors.white.withValues(alpha: 0.28)),
+                  ),
                 ),
               ),
               Positioned(
@@ -116,7 +164,13 @@ class _DecorativeOrbsState extends State<DecorativeOrbs> with SingleTickerProvid
                 left: -40 * k,
                 child: Transform.translate(
                   offset: Offset(-30 * p2 * k, 18 * p2 * k),
-                  child: Transform.scale(scale: 1 + 0.09 * p2, child: glow(180, const Color(0xFFFACC15).withValues(alpha: 0.25))),
+                  child: Transform.scale(
+                    scale: 1 + 0.09 * p2,
+                    child: glow(
+                      180,
+                      const Color(0xFFFACC15).withValues(alpha: 0.25),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -191,9 +245,19 @@ class StatTile extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color.lerp(color, Colors.white, 0.22)!, color]),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color.lerp(color, Colors.white, 0.22)!, color],
+                    ),
                     borderRadius: BorderRadius.circular(12),
-                    boxShadow: [BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 10, offset: const Offset(0, 4))],
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Icon(icon, size: 17, color: Colors.white),
                 ),
@@ -344,9 +408,18 @@ class LoadingState extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(compact ? 14 : 18),
-              boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.15), blurRadius: 20, offset: const Offset(0, 6))],
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  blurRadius: 20,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
-            child: BrandSpinner(size: compact ? 22 : 30, strokeWidth: compact ? 2.6 : 3),
+            child: BrandSpinner(
+              size: compact ? 22 : 30,
+              strokeWidth: compact ? 2.6 : 3,
+            ),
           ),
         ),
       ],
@@ -356,7 +429,9 @@ class LoadingState extends StatelessWidget {
   Widget _skeleton() {
     return Shimmer.fromColors(
       baseColor: AppColors.hairline,
-      highlightColor: Palette.dark ? const Color(0xFF2E2645) : const Color(0xFFF7F5FD),
+      highlightColor: Palette.dark
+          ? const Color(0xFF2E2645)
+          : const Color(0xFFF7F5FD),
       child: ListView(
         padding: const EdgeInsets.all(16),
         physics: const NeverScrollableScrollPhysics(),
@@ -845,7 +920,12 @@ class BentoCard extends StatelessWidget {
         color: wash == null ? AppColors.surface : null,
         gradient: wash == null
             ? null
-            : RadialGradient(center: Alignment.topRight, radius: 0.95, colors: [wash!.withValues(alpha: 0.13), AppColors.surface], stops: const [0, 1]),
+            : RadialGradient(
+                center: Alignment.topRight,
+                radius: 0.95,
+                colors: [wash!.withValues(alpha: 0.13), AppColors.surface],
+                stops: const [0, 1],
+              ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.07)),
         boxShadow: AppColors.softShadow(1),
@@ -937,10 +1017,7 @@ class SettingsRow extends StatelessWidget {
                 ),
               ),
               trailing ??
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    color: AppColors.inkFaint,
-                  ),
+                  Icon(Icons.chevron_right_rounded, color: AppColors.inkFaint),
             ],
           ),
         ),
@@ -954,12 +1031,8 @@ class RowDivider extends StatelessWidget {
   const RowDivider({super.key});
 
   @override
-  Widget build(BuildContext context) => Divider(
-    height: 1,
-    indent: 16,
-    endIndent: 16,
-    color: AppColors.hairline,
-  );
+  Widget build(BuildContext context) =>
+      Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.hairline);
 }
 
 /// Maps common status strings to a semantic color; falls back to primary.
@@ -988,7 +1061,11 @@ Color statusColor(String? status) {
 /// The design's shimmer: a soft diagonal highlight that glides across its
 /// parent forever (3.2 s per pass). Static under reduce-motion.
 class ShineSweep extends StatefulWidget {
-  const ShineSweep({super.key, this.duration = const Duration(milliseconds: 3200), this.strength = 0.30});
+  const ShineSweep({
+    super.key,
+    this.duration = const Duration(milliseconds: 3200),
+    this.strength = 0.30,
+  });
 
   final Duration duration;
   final double strength;
@@ -997,8 +1074,12 @@ class ShineSweep extends StatefulWidget {
   State<ShineSweep> createState() => _ShineSweepState();
 }
 
-class _ShineSweepState extends State<ShineSweep> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: widget.duration);
+class _ShineSweepState extends State<ShineSweep>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: widget.duration,
+  );
 
   @override
   void didChangeDependencies() {
@@ -1038,7 +1119,11 @@ class _ShineSweepState extends State<ShineSweep> with SingleTickerProviderStateM
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.white.withValues(alpha: 0), Colors.white.withValues(alpha: widget.strength), Colors.white.withValues(alpha: 0)],
+                          colors: [
+                            Colors.white.withValues(alpha: 0),
+                            Colors.white.withValues(alpha: widget.strength),
+                            Colors.white.withValues(alpha: 0),
+                          ],
                         ),
                       ),
                     ),
@@ -1088,62 +1173,76 @@ class GradientButton extends StatelessWidget {
             gradient: AppColors.ctaGradient,
             borderRadius: radius,
             boxShadow: enabled
-                ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.38), blurRadius: 26, offset: const Offset(0, 12))]
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.38),
+                      blurRadius: 26,
+                      offset: const Offset(0, 12),
+                    ),
+                  ]
                 : null,
           ),
           child: Stack(
             children: [
-              if (enabled) Positioned.fill(child: ClipRRect(borderRadius: BorderRadius.circular(99), child: const ShineSweep())),
+              if (enabled)
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(99),
+                    child: const ShineSweep(),
+                  ),
+                ),
               Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: radius,
-              onTap: enabled ? onPressed : null,
-              child: Center(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  child: loading
-                      ? const SizedBox(
-                          key: ValueKey('spin'),
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.4,
-                            color: Colors.white,
-                            strokeCap: StrokeCap.round,
-                          ),
-                        )
-                      : Padding(
-                          key: const ValueKey('label'),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (icon != null) ...[
-                                Icon(icon, size: 18, color: Colors.white),
-                                const SizedBox(width: 8),
-                              ],
-                              Flexible(
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(
-                                    label,
-                                    maxLines: 1,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 14.5,
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: radius,
+                  onTap: enabled ? onPressed : null,
+                  child: Center(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: loading
+                          ? const SizedBox(
+                              key: ValueKey('spin'),
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.4,
+                                color: Colors.white,
+                                strokeCap: StrokeCap.round,
+                              ),
+                            )
+                          : Padding(
+                              key: const ValueKey('label'),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (icon != null) ...[
+                                    Icon(icon, size: 18, color: Colors.white),
+                                    const SizedBox(width: 8),
+                                  ],
+                                  Flexible(
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        label,
+                                        maxLines: 1,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 14.5,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ),
+                            ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
             ],
           ),
         ),

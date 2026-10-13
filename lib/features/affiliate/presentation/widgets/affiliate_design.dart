@@ -39,25 +39,38 @@ class AffColors {
   static const midnightSoft = Color(0xFF3D3456);
 
   // --- Surfaces & ink ---
-  static Color get pageBg => Palette.dark ? const Color(0xFF0F0B1A) : const Color(0xFFF6F4FF);
-  static Color get ink => Palette.dark ? const Color(0xFFF3F0FF) : const Color(0xFF1C1235);
-  static Color get inkLabel => Palette.dark ? const Color(0xFFD9D3EE) : const Color(0xFF3D3456);
-  static Color get inkMuted => Palette.dark ? const Color(0xFFA9A0C6) : const Color(0xFF6B6285);
-  static Color get inkFaint => Palette.dark ? const Color(0xFF8C84AA) : const Color(0xFF8B82A8);
-  static Color get inkHint => Palette.dark ? const Color(0xFF7A7298) : const Color(0xFF9A92B4);
-  static Color get hairline => Palette.dark ? const Color(0xFF261F3A) : const Color(0xFFF1EDFA);
-  static Color get fieldBorder => Palette.dark ? const Color(0xFF2E2645) : const Color(0xFFE6E0F5);
-  static Color get fieldBg => Palette.dark ? const Color(0xFF211A33) : const Color(0xFFFAF9FF);
-  static Color get chipLilac => Palette.dark ? const Color(0xFF2D2150) : const Color(0xFFEDE9FE);
-  static Color get chipPink => Palette.dark ? const Color(0xFF3A1A30) : const Color(0xFFFCE7F3);
+  static Color get pageBg =>
+      Palette.dark ? const Color(0xFF0F0B1A) : const Color(0xFFF6F4FF);
+  static Color get ink =>
+      Palette.dark ? const Color(0xFFF3F0FF) : const Color(0xFF1C1235);
+  static Color get inkLabel =>
+      Palette.dark ? const Color(0xFFD9D3EE) : const Color(0xFF3D3456);
+  static Color get inkMuted =>
+      Palette.dark ? const Color(0xFFA9A0C6) : const Color(0xFF6B6285);
+  static Color get inkFaint =>
+      Palette.dark ? const Color(0xFF8C84AA) : const Color(0xFF8B82A8);
+  static Color get inkHint =>
+      Palette.dark ? const Color(0xFF7A7298) : const Color(0xFF9A92B4);
+  static Color get hairline =>
+      Palette.dark ? const Color(0xFF261F3A) : const Color(0xFFF1EDFA);
+  static Color get fieldBorder =>
+      Palette.dark ? const Color(0xFF2E2645) : const Color(0xFFE6E0F5);
+  static Color get fieldBg =>
+      Palette.dark ? const Color(0xFF211A33) : const Color(0xFFFAF9FF);
+  static Color get chipLilac =>
+      Palette.dark ? const Color(0xFF2D2150) : const Color(0xFFEDE9FE);
+  static Color get chipPink =>
+      Palette.dark ? const Color(0xFF3A1A30) : const Color(0xFFFCE7F3);
 
   /// Card / sheet background (white in light mode).
-  static Color get surface => Palette.dark ? const Color(0xFF1A1428) : Colors.white;
+  static Color get surface =>
+      Palette.dark ? const Color(0xFF1A1428) : Colors.white;
 
   // --- Semantic ---
   static const success = Color(0xFF16A34A);
   static const live = Color(0xFF059669);
-  static Color get liveBg => Palette.dark ? const Color(0xFF0F2A22) : const Color(0xFFECFDF5);
+  static Color get liveBg =>
+      Palette.dark ? const Color(0xFF0F2A22) : const Color(0xFFECFDF5);
   static const danger = Color(0xFFE11D48);
   static const warning = Color(0xFFD97706);
 
@@ -66,40 +79,112 @@ class AffColors {
   static const _tiltEnd = Alignment(1, 0.6);
 
   /// Violet → lilac: buttons, avatars, icon chips.
-  static const gradient = LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight, colors: [violet, purpleStart]);
+  static const gradient = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [violet, purpleStart],
+  );
 
   /// Header: 6d28d9 → 9333ea (55%) → c026d3.
-  static const heroGradient = LinearGradient(begin: _tiltStart, end: _tiltEnd, colors: [violetDeep, purple, magenta], stops: [0, 0.55, 1]);
+  static const heroGradient = LinearGradient(
+    begin: _tiltStart,
+    end: _tiltEnd,
+    colors: [violetDeep, purple, magenta],
+    stops: [0, 0.55, 1],
+  );
 
   /// Welcome / profile hero: 7c3aed → a855f7 (60%) → d946ef.
-  static const welcomeGradient = LinearGradient(begin: _tiltStart, end: _tiltEnd, colors: [violet, purpleStart, fuchsia], stops: [0, 0.6, 1]);
+  static const welcomeGradient = LinearGradient(
+    begin: _tiltStart,
+    end: _tiltEnd,
+    colors: [violet, purpleStart, fuchsia],
+    stops: [0, 0.6, 1],
+  );
 
   /// Wallet balance card: db2777 → 9333ea (55%) → 6d28d9.
-  static const walletGradient = LinearGradient(begin: _tiltStart, end: _tiltEnd, colors: [Color(0xFFDB2777), purple, violetDeep], stops: [0, 0.55, 1]);
+  static const walletGradient = LinearGradient(
+    begin: _tiltStart,
+    end: _tiltEnd,
+    colors: [Color(0xFFDB2777), purple, violetDeep],
+    stops: [0, 0.55, 1],
+  );
 
   /// Primary call-to-action: 7c3aed → 9333ea (55%) → c026d3.
-  static const ctaGradient = LinearGradient(begin: _tiltStart, end: _tiltEnd, colors: [violet, purple, magenta], stops: [0, 0.55, 1]);
+  static const ctaGradient = LinearGradient(
+    begin: _tiltStart,
+    end: _tiltEnd,
+    colors: [violet, purple, magenta],
+    stops: [0, 0.55, 1],
+  );
 
   /// Nav pill: 135deg 7c3aed → c026d3.
-  static const pillGradient = LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [violet, magenta]);
+  static const pillGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [violet, magenta],
+  );
 
   /// Card elevation: 0 4px 16px rgba(60,20,120,.08).
   static List<BoxShadow> get cardShadow => Palette.dark
-      ? [BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 18, offset: const Offset(0, 6))]
+      ? [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ]
       : [
-          BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.05), blurRadius: 2, offset: const Offset(0, 1)),
-          BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.08), blurRadius: 18, offset: const Offset(0, 6)),
+          BoxShadow(
+            color: const Color(0xFF3C1478).withValues(alpha: 0.05),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+          BoxShadow(
+            color: const Color(0xFF3C1478).withValues(alpha: 0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
         ];
 
   // --- Vivid per-item palette (offer / campaign avatars, buttons, chips) ---
   // Each entry: [light, strong, tint-bg, tint-fg]
   static const _palette = [
-    (a: Color(0xFFA855F7), b: Color(0xFF7C3AED), bg: Color(0xFFEDE9FE), fg: Color(0xFF7C3AED)), // violet
-    (a: Color(0xFFF472B6), b: Color(0xFFE11D74), bg: Color(0xFFFCE7F3), fg: Color(0xFFDB2777)), // pink
-    (a: Color(0xFFFBBF24), b: Color(0xFFF97316), bg: Color(0xFFFEF3C7), fg: Color(0xFFD97706)), // amber → orange
-    (a: Color(0xFF34D399), b: Color(0xFF059669), bg: Color(0xFFD1FAE5), fg: Color(0xFF059669)), // emerald
-    (a: Color(0xFF38BDF8), b: Color(0xFF2563EB), bg: Color(0xFFE0F2FE), fg: Color(0xFF0284C7)), // sky → blue
-    (a: Color(0xFF818CF8), b: Color(0xFF4F46E5), bg: Color(0xFFE0E7FF), fg: Color(0xFF4F46E5)), // indigo
+    (
+      a: Color(0xFFA855F7),
+      b: Color(0xFF7C3AED),
+      bg: Color(0xFFEDE9FE),
+      fg: Color(0xFF7C3AED),
+    ), // violet
+    (
+      a: Color(0xFFF472B6),
+      b: Color(0xFFE11D74),
+      bg: Color(0xFFFCE7F3),
+      fg: Color(0xFFDB2777),
+    ), // pink
+    (
+      a: Color(0xFFFBBF24),
+      b: Color(0xFFF97316),
+      bg: Color(0xFFFEF3C7),
+      fg: Color(0xFFD97706),
+    ), // amber → orange
+    (
+      a: Color(0xFF34D399),
+      b: Color(0xFF059669),
+      bg: Color(0xFFD1FAE5),
+      fg: Color(0xFF059669),
+    ), // emerald
+    (
+      a: Color(0xFF38BDF8),
+      b: Color(0xFF2563EB),
+      bg: Color(0xFFE0F2FE),
+      fg: Color(0xFF0284C7),
+    ), // sky → blue
+    (
+      a: Color(0xFF818CF8),
+      b: Color(0xFF4F46E5),
+      bg: Color(0xFFE0E7FF),
+      fg: Color(0xFF4F46E5),
+    ), // indigo
   ];
 
   static int _hash(String seed) {
@@ -110,12 +195,16 @@ class AffColors {
     return h;
   }
 
-  static ({Color a, Color b, Color bg, Color fg}) _pick(String seed) => _palette[_hash(seed) % _palette.length];
+  static ({Color a, Color b, Color bg, Color fg}) _pick(String seed) =>
+      _palette[_hash(seed) % _palette.length];
 
   /// Stable pale chip colours for [seed] (tinted bg + strong text).
   static ({Color bg, Color fg}) tintFor(String seed) {
     final c = _pick(seed);
-    return (bg: Palette.dark ? c.fg.withValues(alpha: 0.18) : c.bg, fg: Palette.dark ? c.a : c.fg);
+    return (
+      bg: Palette.dark ? c.fg.withValues(alpha: 0.18) : c.bg,
+      fg: Palette.dark ? c.a : c.fg,
+    );
   }
 
   /// Stable accent colour for [seed].
@@ -124,7 +213,11 @@ class AffColors {
   /// Stable vivid gradient for [seed] — avatars and per-item buttons.
   static LinearGradient gradientFor(String seed) {
     final c = _pick(seed);
-    return LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [c.a, c.b]);
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [c.a, c.b],
+    );
   }
 }
 
@@ -133,11 +226,35 @@ class AffColors {
 class AffText {
   AffText._();
 
-  static TextStyle jakarta(double size, FontWeight weight, {Color? color, double? letterSpacing, double? height}) =>
-      TextStyle(fontFamily: 'PlusJakartaSans', fontSize: size, fontWeight: weight, color: color ?? AffColors.ink, letterSpacing: letterSpacing, height: height);
+  static TextStyle jakarta(
+    double size,
+    FontWeight weight, {
+    Color? color,
+    double? letterSpacing,
+    double? height,
+  }) => TextStyle(
+    fontFamily: 'PlusJakartaSans',
+    fontSize: size,
+    fontWeight: weight,
+    color: color ?? AffColors.ink,
+    letterSpacing: letterSpacing,
+    height: height,
+  );
 
-  static TextStyle number(double size, FontWeight weight, {Color? color, double? letterSpacing, double? height}) =>
-      TextStyle(fontFamily: 'SpaceGrotesk', fontSize: size, fontWeight: weight, color: color ?? AffColors.ink, letterSpacing: letterSpacing, height: height);
+  static TextStyle number(
+    double size,
+    FontWeight weight, {
+    Color? color,
+    double? letterSpacing,
+    double? height,
+  }) => TextStyle(
+    fontFamily: 'SpaceGrotesk',
+    fontSize: size,
+    fontWeight: weight,
+    color: color ?? AffColors.ink,
+    letterSpacing: letterSpacing,
+    height: height,
+  );
 }
 
 /// Flat gradient app header shared by every affiliate screen: title,
@@ -165,7 +282,13 @@ class AffHeader extends StatelessWidget implements PreferredSizeWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: AffColors.heroGradient,
-        boxShadow: [BoxShadow(color: AffColors.violetDeep.withValues(alpha: 0.35), blurRadius: 22, offset: const Offset(0, 6))],
+        boxShadow: [
+          BoxShadow(
+            color: AffColors.violetDeep.withValues(alpha: 0.35),
+            blurRadius: 22,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Stack(
         children: [
@@ -179,63 +302,95 @@ class AffHeader extends StatelessWidget implements PreferredSizeWidget {
                 height: 200,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: RadialGradient(colors: [Colors.white.withValues(alpha: 0.22), Colors.white.withValues(alpha: 0)], stops: const [0, 0.7]),
+                  gradient: RadialGradient(
+                    colors: [
+                      Colors.white.withValues(alpha: 0.22),
+                      Colors.white.withValues(alpha: 0),
+                    ],
+                    stops: const [0, 0.7],
+                  ),
                 ),
               ),
             ),
           ),
           // 1px highlight along the bottom edge.
-          Positioned(left: 0, right: 0, bottom: 0, child: Container(height: 1, color: Colors.white.withValues(alpha: 0.18))),
-          SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: 74,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-            child: Row(
-              children: [
-                if (automaticallyImplyLeading && canPop)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Container(
-                        width: 38,
-                        height: 38,
-                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(13)),
-                        child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 16),
-                      ),
-                    ),
-                  ),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AffText.jakarta(21, FontWeight.w800, color: Colors.white, letterSpacing: -0.4, height: 1.05),
-                      ),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: 3),
-                        Text(
-                          subtitle!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AffText.jakarta(11, FontWeight.w500, color: Colors.white.withValues(alpha: 0.75), height: 1),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                if (actions != null) ...actions!,
-              ],
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              height: 1,
+              color: Colors.white.withValues(alpha: 0.18),
             ),
           ),
-        ),
-      ),
+          SafeArea(
+            bottom: false,
+            child: SizedBox(
+              height: 74,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                child: Row(
+                  children: [
+                    if (automaticallyImplyLeading && canPop)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(13),
+                            ),
+                            child: const Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AffText.jakarta(
+                              21,
+                              FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: -0.4,
+                              height: 1.05,
+                            ),
+                          ),
+                          if (subtitle != null) ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              subtitle!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AffText.jakarta(
+                                11,
+                                FontWeight.w500,
+                                color: Colors.white.withValues(alpha: 0.75),
+                                height: 1,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (actions != null) ...actions!,
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -245,7 +400,12 @@ class AffHeader extends StatelessWidget implements PreferredSizeWidget {
 /// 38×38 rounded-13 glass icon button for the header (notification bell…),
 /// with an optional pulsing yellow dot.
 class AffHeaderIcon extends StatelessWidget {
-  const AffHeaderIcon({super.key, required this.icon, required this.onTap, this.showDot = false});
+  const AffHeaderIcon({
+    super.key,
+    required this.icon,
+    required this.onTap,
+    this.showDot = false,
+  });
 
   final IconData icon;
   final VoidCallback onTap;
@@ -260,12 +420,20 @@ class AffHeaderIcon extends StatelessWidget {
         child: Container(
           width: 38,
           height: 38,
-          decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(13)),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.18),
+            borderRadius: BorderRadius.circular(13),
+          ),
           child: Stack(
             alignment: Alignment.center,
             children: [
               Icon(icon, color: Colors.white, size: 19),
-              if (showDot) const Positioned(top: 8, right: 9, child: PulseDot(color: AffColors.gold, size: 7)),
+              if (showDot)
+                const Positioned(
+                  top: 8,
+                  right: 9,
+                  child: PulseDot(color: AffColors.gold, size: 7),
+                ),
             ],
           ),
         ),
@@ -291,8 +459,18 @@ class AffHeaderAvatar extends StatelessWidget {
           width: 38,
           height: 38,
           alignment: Alignment.center,
-          decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
-          child: Text(initials, style: AffText.number(14, FontWeight.w800, color: AffColors.purpleEnd)),
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+          ),
+          child: Text(
+            initials,
+            style: AffText.number(
+              14,
+              FontWeight.w800,
+              color: AffColors.purpleEnd,
+            ),
+          ),
         ),
       ),
     );
@@ -310,8 +488,12 @@ class PulseDot extends StatefulWidget {
   State<PulseDot> createState() => _PulseDotState();
 }
 
-class _PulseDotState extends State<PulseDot> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1800));
+class _PulseDotState extends State<PulseDot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1800),
+  );
 
   @override
   void didChangeDependencies() {
@@ -334,12 +516,21 @@ class _PulseDotState extends State<PulseDot> with SingleTickerProviderStateMixin
     return AnimatedBuilder(
       animation: _c,
       builder: (context, _) {
-        final t = Curves.easeInOut.transform(_c.value < 0.5 ? _c.value * 2 : (1 - _c.value) * 2);
+        final t = Curves.easeInOut.transform(
+          _c.value < 0.5 ? _c.value * 2 : (1 - _c.value) * 2,
+        );
         return Transform.scale(
           scale: 1 + 0.55 * t,
           child: Opacity(
             opacity: 1 - 0.75 * t,
-            child: Container(width: widget.size, height: widget.size, decoration: BoxDecoration(color: widget.color, shape: BoxShape.circle)),
+            child: Container(
+              width: widget.size,
+              height: widget.size,
+              decoration: BoxDecoration(
+                color: widget.color,
+                shape: BoxShape.circle,
+              ),
+            ),
           ),
         );
       },
@@ -367,22 +558,39 @@ class AffHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final base = (gradient is LinearGradient) ? (gradient as LinearGradient).colors[1] : AffColors.purpleEnd;
+    final base = (gradient is LinearGradient)
+        ? (gradient as LinearGradient).colors[1]
+        : AffColors.purpleEnd;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: gradient,
         borderRadius: BorderRadius.circular(radius),
-        boxShadow: [BoxShadow(color: base.withValues(alpha: 0.32), blurRadius: 28, offset: const Offset(0, 12))],
+        boxShadow: [
+          BoxShadow(
+            color: base.withValues(alpha: 0.32),
+            blurRadius: 28,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(radius),
         child: Stack(
           children: [
-            if (shimmer) const Positioned.fill(child: ShineSweep(duration: Duration(milliseconds: 3600), strength: 0.28)),
+            if (shimmer)
+              const Positioned.fill(
+                child: ShineSweep(
+                  duration: Duration(milliseconds: 3600),
+                  strength: 0.28,
+                ),
+              ),
             Padding(
               padding: padding,
-              child: DefaultTextStyle.merge(style: const TextStyle(color: Colors.white), child: child),
+              child: DefaultTextStyle.merge(
+                style: const TextStyle(color: Colors.white),
+                child: child,
+              ),
             ),
           ],
         ),
@@ -395,7 +603,14 @@ class AffHeroCard extends StatelessWidget {
 /// surface for stat tiles, lists and forms. Tappable cards sink slightly
 /// under the finger.
 class AffCard extends StatelessWidget {
-  const AffCard({super.key, required this.child, this.padding = const EdgeInsets.all(16), this.onTap, this.radius = 20, this.wash});
+  const AffCard({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(16),
+    this.onTap,
+    this.radius = 20,
+    this.wash,
+  });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -414,7 +629,12 @@ class AffCard extends StatelessWidget {
         color: wash == null ? AffColors.surface : null,
         gradient: wash == null
             ? null
-            : RadialGradient(center: Alignment.topRight, radius: 0.95, colors: [wash!.withValues(alpha: 0.13), AffColors.surface], stops: const [0, 1]),
+            : RadialGradient(
+                center: Alignment.topRight,
+                radius: 0.95,
+                colors: [wash!.withValues(alpha: 0.13), AffColors.surface],
+                stops: const [0, 1],
+              ),
         borderRadius: BorderRadius.circular(radius),
         border: Border.all(color: AffColors.purpleEnd.withValues(alpha: 0.07)),
         boxShadow: AffColors.cardShadow,
@@ -425,18 +645,29 @@ class AffCard extends StatelessWidget {
           color: Colors.transparent,
           child: onTap == null
               ? Padding(padding: padding, child: child)
-              : InkWell(onTap: onTap, child: Padding(padding: padding, child: child)),
+              : InkWell(
+                  onTap: onTap,
+                  child: Padding(padding: padding, child: child),
+                ),
         ),
       ),
     );
-    return onTap == null ? card : PressableScale(onTap: onTap, scale: 0.975, child: card);
+    return onTap == null
+        ? card
+        : PressableScale(onTap: onTap, scale: 0.975, child: card);
   }
 }
 
 /// Rounded-square icon chip. [solid] = gradient fill with a white icon (the
 /// design's stat-tile chips); otherwise a soft tint of [color].
 class AffIconChip extends StatelessWidget {
-  const AffIconChip({super.key, required this.icon, this.color = AffColors.violet, this.size = 34, this.solid = false});
+  const AffIconChip({
+    super.key,
+    required this.icon,
+    this.color = AffColors.violet,
+    this.size = 34,
+    this.solid = false,
+  });
 
   final IconData icon;
   final Color color;
@@ -449,11 +680,27 @@ class AffIconChip extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        gradient: solid ? LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color.lerp(color, Colors.white, 0.22)!, color]) : null,
+        gradient: solid
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color.lerp(color, Colors.white, 0.22)!, color],
+              )
+            : null,
         color: solid ? null : color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(size * 0.34),
-        border: solid ? Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1) : null,
-        boxShadow: solid ? [BoxShadow(color: color.withValues(alpha: 0.38), blurRadius: 10, offset: const Offset(0, 4))] : null,
+        border: solid
+            ? Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1)
+            : null,
+        boxShadow: solid
+            ? [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.38),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
       ),
       child: Icon(icon, color: solid ? Colors.white : color, size: size * 0.48),
     );
@@ -481,29 +728,61 @@ class AffNavItem {
 /// Floating glass tab bar from the design: 68px tall, radius 26, frosted
 /// white, with a gradient pill that springs between the five destinations.
 class AffNavBar extends StatelessWidget {
-  const AffNavBar({super.key, required this.items, required this.selectedIndex, required this.onSelected});
+  const AffNavBar({
+    super.key,
+    required this.items,
+    required this.selectedIndex,
+    required this.onSelected,
+  });
 
   final List<AffNavItem> items;
   final int selectedIndex;
   final ValueChanged<int> onSelected;
 
-  /// Bar height (68) + top/bottom padding (12 each) + the device's bottom
-  /// safe-area inset. Screens under the floating [AffiliateShell] nav bar
-  /// should reserve at least this much space at the bottom of their
+  /// Scales the bar with the device's shortest side so the chrome keeps the
+  /// same visual proportion to the screen instead of a fixed pixel height
+  /// looking cramped on small phones and leaving an oversized gap on large
+  /// ones. 390dp (a common phone width) is the 1.0 reference; clamped so
+  /// tablets don't get an oversized bar and tiny phones don't get a sliver.
+  static double _scale(BuildContext context) =>
+      (MediaQuery.sizeOf(context).shortestSide / 390).clamp(0.92, 1.18);
+
+  static double barHeight(BuildContext context) => 68 * _scale(context);
+
+  /// Bar height + its own bottom padding (scaled) + the device's bottom
+  /// safe-area inset — the bar's real total footprint (it has no top
+  /// padding, see [build]). Screens under the floating [AffiliateShell] nav
+  /// bar should reserve at least this much space at the bottom of their
   /// scrollable content so it never overlaps the nav bar.
-  static double clearance(BuildContext context) => 68 + 24 + MediaQuery.of(context).padding.bottom;
+  static double clearance(BuildContext context) =>
+      barHeight(context) +
+      12 * _scale(context) +
+      MediaQuery.of(context).padding.bottom;
 
   @override
   Widget build(BuildContext context) {
-    const pillW = 60.0;
+    final scale = _scale(context);
+    final pillW = 60.0 * scale;
+    final barH = 68.0 * scale;
     return Padding(
-      padding: EdgeInsets.fromLTRB(12, 0, 12, 12 + MediaQuery.of(context).padding.bottom),
+      padding: EdgeInsets.fromLTRB(
+        12 * scale,
+        0,
+        12 * scale,
+        12 * scale + MediaQuery.of(context).padding.bottom,
+      ),
       child: SizedBox(
-        height: 68,
+        height: barH,
         child: DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(26),
-            boxShadow: [BoxShadow(color: const Color(0xFF3C1478).withValues(alpha: 0.18), blurRadius: 30, offset: const Offset(0, 10))],
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF3C1478).withValues(alpha: 0.18),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
+              ),
+            ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(26),
@@ -519,30 +798,54 @@ class AffNavBar extends StatelessWidget {
                         AnimatedPositioned(
                           duration: const Duration(milliseconds: 380),
                           curve: const Cubic(0.34, 1.5, 0.5, 1),
-                          top: 8,
+                          top: 8 * scale,
                           left: selectedIndex * itemW + (itemW - pillW) / 2,
                           width: pillW,
-                          height: 52,
+                          height: 52 * scale,
                           child: TweenAnimationBuilder<Color?>(
                             tween: ColorTween(end: items[selectedIndex].from),
                             duration: const Duration(milliseconds: 380),
-                            builder: (context, from, _) => TweenAnimationBuilder<Color?>(
-                              tween: ColorTween(end: items[selectedIndex].to),
-                              duration: const Duration(milliseconds: 380),
-                              builder: (context, to, _) => Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [from ?? AffColors.purpleEnd, to ?? AffColors.magenta]),
-                                  borderRadius: BorderRadius.circular(19),
-                                  boxShadow: [BoxShadow(color: (from ?? AffColors.purpleEnd).withValues(alpha: 0.42), blurRadius: 18, offset: const Offset(0, 8))],
+                            builder: (context, from, _) =>
+                                TweenAnimationBuilder<Color?>(
+                                  tween: ColorTween(
+                                    end: items[selectedIndex].to,
+                                  ),
+                                  duration: const Duration(milliseconds: 380),
+                                  builder: (context, to, _) => Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          from ?? AffColors.purpleEnd,
+                                          to ?? AffColors.magenta,
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(19),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: (from ?? AffColors.purpleEnd)
+                                              .withValues(alpha: 0.42),
+                                          blurRadius: 18,
+                                          offset: const Offset(0, 8),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
                           ),
                         ),
                         Row(
                           children: [
                             for (var i = 0; i < items.length; i++)
-                              Expanded(child: _AffNavButton(item: items[i], selected: i == selectedIndex, onTap: () => onSelected(i))),
+                              Expanded(
+                                child: _AffNavButton(
+                                  item: items[i],
+                                  selected: i == selectedIndex,
+                                  onTap: () => onSelected(i),
+                                  scale: scale,
+                                ),
+                              ),
                           ],
                         ),
                       ],
@@ -559,11 +862,17 @@ class AffNavBar extends StatelessWidget {
 }
 
 class _AffNavButton extends StatelessWidget {
-  const _AffNavButton({required this.item, required this.selected, required this.onTap});
+  const _AffNavButton({
+    required this.item,
+    required this.selected,
+    required this.onTap,
+    required this.scale,
+  });
 
   final AffNavItem item;
   final bool selected;
   final VoidCallback onTap;
+  final double scale;
 
   @override
   Widget build(BuildContext context) {
@@ -582,13 +891,26 @@ class _AffNavButton extends StatelessWidget {
               scale: selected ? 1.1 : 1,
               duration: const Duration(milliseconds: 260),
               curve: Curves.easeOutBack,
-              child: Icon(selected ? item.selectedIcon : item.icon, size: 20, color: color),
+              child: Icon(
+                selected ? item.selectedIcon : item.icon,
+                size: 20 * scale,
+                color: color,
+              ),
             ),
-            const SizedBox(height: 3),
+            SizedBox(height: 3 * scale),
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 300),
-              style: AffText.jakarta(9.5, FontWeight.w700, color: color),
-              child: Text(item.label, maxLines: 1, softWrap: false, overflow: TextOverflow.fade),
+              style: AffText.jakarta(
+                9.5 * scale,
+                FontWeight.w700,
+                color: color,
+              ),
+              child: Text(
+                item.label,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.fade,
+              ),
             ),
           ],
         ),
@@ -599,7 +921,12 @@ class _AffNavButton extends StatelessWidget {
 
 /// Section header: bold title + optional "View all →" link.
 class AffSectionHeader extends StatelessWidget {
-  const AffSectionHeader({super.key, required this.title, this.action, this.onActionTap});
+  const AffSectionHeader({
+    super.key,
+    required this.title,
+    this.action,
+    this.onActionTap,
+  });
 
   final String title;
   final String? action;
@@ -622,12 +949,23 @@ class AffSectionHeader extends StatelessWidget {
                   width: 4,
                   height: 15,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [AffColors.purpleStart, AffColors.magenta]),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [AffColors.purpleStart, AffColors.magenta],
+                    ),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
                 const SizedBox(width: 8),
-                Flexible(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: AffText.jakarta(15, FontWeight.w800))),
+                Flexible(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AffText.jakarta(15, FontWeight.w800),
+                  ),
+                ),
               ],
             ),
           ),
@@ -637,7 +975,14 @@ class AffSectionHeader extends StatelessWidget {
               behavior: HitTestBehavior.opaque,
               child: Padding(
                 padding: const EdgeInsets.only(left: 12),
-                child: Text('$action →', style: AffText.jakarta(11, FontWeight.w600, color: AffColors.purpleEnd)),
+                child: Text(
+                  '$action →',
+                  style: AffText.jakarta(
+                    11,
+                    FontWeight.w600,
+                    color: AffColors.purpleEnd,
+                  ),
+                ),
               ),
             ),
         ],

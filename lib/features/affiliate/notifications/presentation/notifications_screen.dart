@@ -24,7 +24,10 @@ class NotificationsScreen extends ConsumerWidget {
           TextButton(
             style: TextButton.styleFrom(
               foregroundColor: Colors.white,
-              textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+              textStyle: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+              ),
             ),
             onPressed: () async {
               await ref.read(notificationsRepositoryProvider).markRead();
@@ -36,44 +39,58 @@ class NotificationsScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async => ref.refresh(notificationsProvider.future),
-        child: notesAsync.when(
-          loading: () => const LoadingState(),
-          error: (e, _) => ErrorState(message: 'Failed to load notifications.\n$e', onRetry: () => ref.invalidate(notificationsProvider)),
-          data: (notes) {
-            if (notes.isEmpty) {
-              return ListView(
-                children: const [
-                  SizedBox(height: 120),
-                  EmptyState(message: 'No notifications yet', icon: Icons.notifications_none_rounded),
-                ],
-              );
-            }
-            return ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-              itemCount: notes.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
-              itemBuilder: (context, idx) {
-                final i = idx;
-                final n = notes[i];
-                return FadeSlideIn(
-                  index: i,
-                  child: _NotificationCard(
-                    note: n,
-                    onTap: () async {
-                      if (!n.isRead) {
-                        await ref.read(notificationsRepositoryProvider).markRead(id: n.id);
-                        ref.invalidate(notificationsProvider);
-                      }
-                      final offId = n.offId;
-                      if (offId != null && context.mounted) {
-                        Navigator.of(context).push(MaterialPageRoute(builder: (_) => OfferDetailScreen(offId: offId)));
-                      }
-                    },
-                  ),
+        child: ResponsiveBody(
+          child: notesAsync.when(
+            loading: () => const LoadingState(),
+            error: (e, _) => ErrorState(
+              message: 'Failed to load notifications.\n$e',
+              onRetry: () => ref.invalidate(notificationsProvider),
+            ),
+            data: (notes) {
+              if (notes.isEmpty) {
+                return ListView(
+                  children: const [
+                    SizedBox(height: 120),
+                    EmptyState(
+                      message: 'No notifications yet',
+                      icon: Icons.notifications_none_rounded,
+                    ),
+                  ],
                 );
-              },
-            );
-          },
+              }
+              return ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+                itemCount: notes.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, idx) {
+                  final i = idx;
+                  final n = notes[i];
+                  return FadeSlideIn(
+                    index: i,
+                    child: _NotificationCard(
+                      note: n,
+                      onTap: () async {
+                        if (!n.isRead) {
+                          await ref
+                              .read(notificationsRepositoryProvider)
+                              .markRead(id: n.id);
+                          ref.invalidate(notificationsProvider);
+                        }
+                        final offId = n.offId;
+                        if (offId != null && context.mounted) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => OfferDetailScreen(offId: offId),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -110,7 +127,11 @@ class _NotificationCard extends StatelessWidget {
                   errorBuilder: (_, __, ___) => Container(
                     color: AffColors.chipLilac,
                     alignment: Alignment.center,
-                    child: Icon(Icons.local_offer_rounded, color: AffColors.purpleEnd, size: 32),
+                    child: Icon(
+                      Icons.local_offer_rounded,
+                      color: AffColors.purpleEnd,
+                      size: 32,
+                    ),
                   ),
                 ),
               ),
@@ -121,8 +142,14 @@ class _NotificationCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AffIconChip(
-                icon: isOffer ? Icons.local_offer_rounded : (n.isRead ? Icons.notifications_none_rounded : Icons.notifications_active_rounded),
-                color: n.isRead ? AffColors.inkFaint : (isOffer ? AffColors.pink : AffColors.purpleEnd),
+                icon: isOffer
+                    ? Icons.local_offer_rounded
+                    : (n.isRead
+                          ? Icons.notifications_none_rounded
+                          : Icons.notifications_active_rounded),
+                color: n.isRead
+                    ? AffColors.inkFaint
+                    : (isOffer ? AffColors.pink : AffColors.purpleEnd),
                 size: 42,
                 solid: !n.isRead,
               ),
@@ -133,22 +160,48 @@ class _NotificationCard extends StatelessWidget {
                   children: [
                     Text(
                       n.title,
-                      style: TextStyle(fontWeight: n.isRead ? FontWeight.w600 : FontWeight.w800, fontSize: 14, color: AffColors.ink),
+                      style: TextStyle(
+                        fontWeight: n.isRead
+                            ? FontWeight.w600
+                            : FontWeight.w800,
+                        fontSize: 14,
+                        color: AffColors.ink,
+                      ),
                     ),
-                    if (n.message.isNotEmpty) ...[const SizedBox(height: 3), Text(n.message, style: TextStyle(fontSize: 12.5, color: AffColors.inkMuted, height: 1.35))],
+                    if (n.message.isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        n.message,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: AffColors.inkMuted,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 6),
                     Row(
                       children: [
                         if (n.createdAt != null && n.createdAt!.isNotEmpty)
                           Expanded(
-                            child: Text(n.createdAt!, style: TextStyle(fontSize: 11, color: AffColors.inkFaint)),
+                            child: Text(
+                              n.createdAt!,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AffColors.inkFaint,
+                              ),
+                            ),
                           )
                         else
                           const Spacer(),
                         if (n.offId != null)
                           Text(
                             'View offer →',
-                            style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: AffColors.purpleEnd),
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w800,
+                              color: AffColors.purpleEnd,
+                            ),
                           ),
                       ],
                     ),
@@ -160,7 +213,10 @@ class _NotificationCard extends StatelessWidget {
                   margin: const EdgeInsets.only(top: 4, left: 8),
                   width: 9,
                   height: 9,
-                  decoration: const BoxDecoration(color: AffColors.gold, shape: BoxShape.circle),
+                  decoration: const BoxDecoration(
+                    color: AffColors.gold,
+                    shape: BoxShape.circle,
+                  ),
                 ),
             ],
           ),
