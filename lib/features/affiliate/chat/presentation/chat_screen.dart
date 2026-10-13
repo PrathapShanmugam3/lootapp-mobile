@@ -215,7 +215,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
           final bottomGap = keyboardOpen
               ? 12.0 + MediaQuery.of(context).padding.bottom
-              : AffNavBar.clearance(context);
+              : AffNavBar.clearance(context) + 6;
           return ResponsiveBody(
             // Wider cap than the shared default (560) — a chat thread reads
             // better with more horizontal room than a form/card screen, so

@@ -754,17 +754,28 @@ class AffNavBar extends StatelessWidget {
   /// padding, see [build]). Screens under the floating [AffiliateShell] nav
   /// bar should reserve at least this much space at the bottom of their
   /// scrollable content so it never overlaps the nav bar.
-  static double clearance(BuildContext context) =>
-      barHeight(context) +
-      12 * _scale(context) +
-      MediaQuery.of(context).padding.bottom;
+  static double clearance(BuildContext context) {
+    // Inside AffiliateShell (extendBody) the Scaffold already folds the nav
+    // bar's whole height into the body's MediaQuery.padding.bottom, so adding
+    // the bar footprint on top would count it twice (a big empty band above
+    // the bar). Use whichever is larger: the real inset in the shell, or the
+    // bar's own footprint when a screen is shown without the shell.
+    final inset = MediaQuery.paddingOf(context).bottom;
+    final footprint = barHeight(context) + 12 * _scale(context);
+    return inset >= footprint - 1 ? inset : footprint + inset;
+  }
 
   @override
   Widget build(BuildContext context) {
     final scale = _scale(context);
     final pillW = 60.0 * scale;
     final barH = 68.0 * scale;
-    return Padding(
+    return Align(
+      alignment: Alignment.bottomCenter,
+      heightFactor: 1,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 640),
+        child: Padding(
       padding: EdgeInsets.fromLTRB(
         12 * scale,
         0,
@@ -857,6 +868,8 @@ class AffNavBar extends StatelessWidget {
           ),
         ),
       ),
+    ),
+    ),
     );
   }
 }
