@@ -8,7 +8,11 @@ import '../../presentation/widgets/affiliate_design.dart';
 import 'detailed_report_screen.dart';
 import 'reports_providers.dart';
 
-final _currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+final _currency = NumberFormat.currency(
+  locale: 'en_IN',
+  symbol: '₹',
+  decimalDigits: 0,
+);
 
 const _dateOptions = [
   ('today', 'Today'),
@@ -32,10 +36,14 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   DateTime? _endDate;
 
   ReportsFilter get _filter => ReportsFilter(
-        dateOption: _dateOption,
-        startDate: _startDate != null ? DateFormat('yyyy-MM-dd').format(_startDate!) : null,
-        endDate: _endDate != null ? DateFormat('yyyy-MM-dd').format(_endDate!) : null,
-      );
+    dateOption: _dateOption,
+    startDate: _startDate != null
+        ? DateFormat('yyyy-MM-dd').format(_startDate!)
+        : null,
+    endDate: _endDate != null
+        ? DateFormat('yyyy-MM-dd').format(_endDate!)
+        : null,
+  );
 
   Future<void> _pickCustomRange() async {
     final now = DateTime.now();
@@ -66,35 +74,48 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         title: 'Reports',
         subtitle: 'Clicks, conversions and earnings',
         actions: [
-          AffHeaderIcon(icon: Icons.refresh_rounded, onTap: () => ref.invalidate(reportsProvider)),
+          AffHeaderIcon(
+            icon: Icons.refresh_rounded,
+            onTap: () => ref.invalidate(reportsProvider),
+          ),
           const AffUserAvatar(),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(reportsProvider),
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(16, 20, 16, AffNavBar.clearance(context)),
-          children: [
-            _FilterBar(
-              dateOption: _dateOption,
-              startDate: _startDate,
-              endDate: _endDate,
-              onOptionChanged: (opt) {
-                setState(() => _dateOption = opt);
-                if (opt == 'custom') _pickCustomRange();
-              },
-              onEditRange: _pickCustomRange,
+        child: ResponsiveBody(
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(
+              16,
+              20,
+              16,
+              AffNavBar.clearance(context),
             ),
-            const SizedBox(height: 20),
-            reportsAsync.when(
-              loading: () => const SizedBox(height: 200, child: LoadingState(compact: true)),
-              error: (e, _) => ErrorState(
-                message: 'Failed to load reports.\n$e',
-                onRetry: () => ref.invalidate(reportsProvider),
+            children: [
+              _FilterBar(
+                dateOption: _dateOption,
+                startDate: _startDate,
+                endDate: _endDate,
+                onOptionChanged: (opt) {
+                  setState(() => _dateOption = opt);
+                  if (opt == 'custom') _pickCustomRange();
+                },
+                onEditRange: _pickCustomRange,
               ),
-              data: (data) => _ReportsBody(data: data, filter: _filter),
-            ),
-          ],
+              const SizedBox(height: 20),
+              reportsAsync.when(
+                loading: () => const SizedBox(
+                  height: 200,
+                  child: LoadingState(compact: true),
+                ),
+                error: (e, _) => ErrorState(
+                  message: 'Failed to load reports.\n$e',
+                  onRetry: () => ref.invalidate(reportsProvider),
+                ),
+                data: (data) => _ReportsBody(data: data, filter: _filter),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -125,7 +146,8 @@ class _FilterBar extends StatelessWidget {
           initialValue: dateOption,
           decoration: const InputDecoration(labelText: 'Period'),
           items: [
-            for (final o in _dateOptions) DropdownMenuItem(value: o.$1, child: Text(o.$2)),
+            for (final o in _dateOptions)
+              DropdownMenuItem(value: o.$1, child: Text(o.$2)),
           ],
           onChanged: (v) {
             if (v != null) onOptionChanged(v);
@@ -201,7 +223,10 @@ class _ReportsBody extends StatelessWidget {
         const SizedBox(height: 24),
         const AffSectionHeader(title: 'Campaign breakdown'),
         if (campaigns.isEmpty)
-          const EmptyState(message: 'No campaign activity for this period', icon: Icons.bar_chart_outlined)
+          const EmptyState(
+            message: 'No campaign activity for this period',
+            icon: Icons.bar_chart_outlined,
+          )
         else
           ...campaigns.map((c) {
             final m = (c as Map?)?.cast<String, dynamic>() ?? {};
@@ -234,36 +259,83 @@ class _ReportsBody extends StatelessWidget {
                           width: 40,
                           height: 40,
                           alignment: Alignment.center,
-                          decoration: BoxDecoration(gradient: AffColors.gradientFor(name), borderRadius: BorderRadius.circular(13)),
-                          child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                          decoration: BoxDecoration(
+                            gradient: AffColors.gradientFor(name),
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          child: Text(
+                            name.isNotEmpty ? name[0].toUpperCase() : '?',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: Text(name, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5, color: AffColors.ink), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          child: Text(
+                            name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14.5,
+                              color: AffColors.ink,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         Icon(
-                          leads > 0 ? Icons.trending_up_rounded : Icons.remove_rounded,
+                          leads > 0
+                              ? Icons.trending_up_rounded
+                              : Icons.remove_rounded,
                           size: 20,
-                          color: leads > 0 ? AffColors.success : AffColors.inkFaint,
+                          color: leads > 0
+                              ? AffColors.success
+                              : AffColors.inkFaint,
                         ),
                       ],
                     ),
                     const SizedBox(height: 14),
                     Row(
                       children: [
-                        Expanded(child: _MiniStat(label: 'Clicks', value: clicks.toString())),
-                        Expanded(child: _MiniStat(label: 'Leads', value: leads.toString())),
-                        Expanded(child: _MiniStat(label: 'CVR', value: '${cvr.toStringAsFixed(1)}%')),
-                        Expanded(child: _MiniStat(label: 'Earned', value: _currency.format(earnings), highlight: true)),
+                        Expanded(
+                          child: _MiniStat(
+                            label: 'Clicks',
+                            value: clicks.toString(),
+                          ),
+                        ),
+                        Expanded(
+                          child: _MiniStat(
+                            label: 'Leads',
+                            value: leads.toString(),
+                          ),
+                        ),
+                        Expanded(
+                          child: _MiniStat(
+                            label: 'CVR',
+                            value: '${cvr.toStringAsFixed(1)}%',
+                          ),
+                        ),
+                        Expanded(
+                          child: _MiniStat(
+                            label: 'Earned',
+                            value: _currency.format(earnings),
+                            highlight: true,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: LinearProgressIndicator(
-                        value: clicks > 0 ? (leads / clicks).clamp(0, 1).toDouble() : 0,
+                        value: clicks > 0
+                            ? (leads / clicks).clamp(0, 1).toDouble()
+                            : 0,
                         minHeight: 6,
-                        backgroundColor: AffColors.purpleEnd.withValues(alpha: 0.10),
+                        backgroundColor: AffColors.purpleEnd.withValues(
+                          alpha: 0.10,
+                        ),
                         valueColor: AlwaysStoppedAnimation(AffColors.purpleEnd),
                       ),
                     ),
@@ -278,7 +350,11 @@ class _ReportsBody extends StatelessWidget {
 }
 
 class _MiniStat extends StatelessWidget {
-  const _MiniStat({required this.label, required this.value, this.highlight = false});
+  const _MiniStat({
+    required this.label,
+    required this.value,
+    this.highlight = false,
+  });
 
   final String label;
   final String value;
@@ -291,10 +367,24 @@ class _MiniStat extends StatelessWidget {
       children: [
         FittedBox(
           fit: BoxFit.scaleDown,
-          child: Text(value, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: highlight ? AffColors.success : AffColors.ink)),
+          child: Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 14,
+              color: highlight ? AffColors.success : AffColors.ink,
+            ),
+          ),
         ),
         const SizedBox(height: 1),
-        Text(label, style: TextStyle(color: AffColors.inkFaint, fontSize: 10.5, fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: TextStyle(
+            color: AffColors.inkFaint,
+            fontSize: 10.5,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }
@@ -334,6 +424,13 @@ class _TrendStat extends StatelessWidget {
         trendText = '${pct.abs().toStringAsFixed(1)}%';
       }
     }
-    return StatTile(label: label, value: value, icon: icon, color: color, trendText: trendText, trendUp: trendUp);
+    return StatTile(
+      label: label,
+      value: value,
+      icon: icon,
+      color: color,
+      trendText: trendText,
+      trendUp: trendUp,
+    );
   }
 }
