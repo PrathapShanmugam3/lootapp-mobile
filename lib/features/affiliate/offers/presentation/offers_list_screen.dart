@@ -77,9 +77,13 @@ class _OffersListScreenState extends ConsumerState<OffersListScreen> {
               }).toList();
               final poolTotal = offers.fold<num>(
                 0,
-                (sum, o) =>
-                    sum +
-                    _numOf(o['payout'] ?? o['maxPayout'] ?? o['payoutAmount']),
+                (sum, o) => sum +
+                    _numOf(
+                      o['payout'] ??
+                          o['maxPayout'] ??
+                          o['payoutAmount'] ??
+                          o['totalPayout'],
+                    ),
               );
 
               return ListView(
@@ -340,8 +344,10 @@ class _OfferCard extends StatelessWidget {
         .toString();
     final category = (offer['category'] ?? '').toString();
     final logo = offer['logo']?.toString();
-    final payout =
-        offer['payout'] ?? offer['maxPayout'] ?? offer['payoutAmount'];
+    final payout = offer['payout'] ??
+        offer['maxPayout'] ??
+        offer['payoutAmount'] ??
+        offer['totalPayout'];
     final trimmed = name.trim();
     final abbr = trimmed.isEmpty
         ? '?'

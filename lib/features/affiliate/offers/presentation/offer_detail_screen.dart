@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +11,7 @@ import '../../presentation/widgets/affiliate_design.dart';
 import '../../presentation/widgets/community_join.dart';
 import 'offers_providers.dart';
 import '../../../../core/widgets/app_toast.dart';
+import 'landing_preview_sheet.dart';
 
 class OfferDetailScreen extends ConsumerWidget {
   const OfferDetailScreen({super.key, required this.offId});
@@ -231,6 +234,14 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
   // ---------------------------------------------------------------- hero
 
   Widget _hero(BuildContext context) {
+    // Scales hero chrome (logo, icons, key font sizes) with the device's
+    // shortest side — same clamp AffNavBar uses — so it grows slightly on
+    // tablets and shrinks slightly on very small phones instead of staying
+    // a fixed pixel size everywhere.
+    final scale = (MediaQuery.sizeOf(context).shortestSide / 390).clamp(
+      0.92,
+      1.18,
+    );
     final logo = offer['logo']?.toString();
     final logoUrl = (logo != null && logo.isNotEmpty)
         ? (logo.startsWith('http') ? logo : '${ApiConfig.baseUrl}$logo')
@@ -271,6 +282,21 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
           child: Stack(
             children: [
               const Positioned.fill(child: DecorativeOrbs()),
+              // Soft top-down sheen so the gradient reads as glass/glossy
+              // rather than a flat colour fill.
+              const Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.white24, Colors.transparent],
+                      stops: [0, 0.5],
+                    ),
+                  ),
+                ),
+              ),
+              const Positioned.fill(child: ShineSweep()),
               SafeArea(
                 bottom: false,
                 child: Padding(
@@ -279,6 +305,7 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Material(
                             color: Colors.white.withValues(alpha: 0.14),
@@ -290,33 +317,33 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
                             child: InkWell(
                               customBorder: const CircleBorder(),
                               onTap: () => Navigator.of(context).maybePop(),
-                              child: const SizedBox(
-                                width: 34,
-                                height: 34,
+                              child: SizedBox(
+                                width: 34 * scale,
+                                height: 34 * scale,
                                 child: Icon(
                                   Icons.arrow_back_ios_new_rounded,
                                   color: Colors.white,
-                                  size: 15,
+                                  size: 15 * scale,
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10 * scale),
                           Container(
-                            width: 48,
-                            height: 48,
+                            width: 46 * scale,
+                            height: 46 * scale,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(15),
+                              borderRadius: BorderRadius.circular(14),
                               border: Border.all(
                                 color: Colors.white.withValues(alpha: 0.5),
                                 width: 1,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.25),
-                                  blurRadius: 14,
-                                  offset: const Offset(0, 6),
+                                  color: Colors.black.withValues(alpha: 0.22),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 5),
                                 ),
                               ],
                             ),
@@ -326,24 +353,25 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
                                 ? Image.network(
                                     logoUrl,
                                     fit: BoxFit.cover,
-                                    width: 48,
-                                    height: 48,
+                                    width: 46 * scale,
+                                    height: 46 * scale,
                                     errorBuilder: (_, __, ___) =>
                                         _initials(name),
                                   )
                                 : _initials(name),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12 * scale),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
                                   name,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: AffText.jakarta(
-                                    17,
+                                    17 * scale,
                                     FontWeight.w800,
                                     color: Colors.white,
                                     letterSpacing: -0.3,
@@ -360,7 +388,7 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: AffText.jakarta(
-                                    10.5,
+                                    10.5 * scale,
                                     FontWeight.w700,
                                     color: Colors.white.withValues(alpha: 0.72),
                                     letterSpacing: 0.3,
@@ -371,70 +399,90 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
                           ),
                         ],
                       ),
+                      if (offerTitle.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          offerTitle,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: AffText.jakarta(
+                            12,
+                            FontWeight.w500,
+                            color: Colors.white.withValues(alpha: 0.82),
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 14),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (offerTitle.isNotEmpty)
-                            Expanded(
-                              child: Text(
-                                offerTitle,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: AffText.jakarta(
-                                  12,
-                                  FontWeight.w500,
-                                  color: Colors.white.withValues(alpha: 0.82),
-                                  height: 1.4,
-                                ),
-                              ),
-                            )
-                          else
-                            const Spacer(),
-                          const SizedBox(width: 12),
-                          Container(
-                            padding: const EdgeInsets.fromLTRB(14, 8, 14, 9),
+                      // Full-width frosted-glass payout strip — real
+                      // backdrop blur + layered border/shadow for depth,
+                      // instead of a flat translucent box.
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(18),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.fromLTRB(16, 13, 16, 14),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(16),
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white.withValues(alpha: 0.22),
+                                  Colors.white.withValues(alpha: 0.08),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(18),
                               border: Border.all(
-                                color: AffColors.gold.withValues(alpha: 0.35),
+                                color: Colors.white.withValues(alpha: 0.3),
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AffColors.gold.withValues(alpha: 0.18),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 4),
+                                  color: AffColors.midnightSoft.withValues(
+                                    alpha: 0.18,
+                                  ),
+                                  blurRadius: 18,
+                                  offset: const Offset(0, 8),
                                 ),
                               ],
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              mainAxisSize: MainAxisSize.min,
+                            child: Row(
                               children: [
                                 Text(
-                                  'PAYOUT',
+                                  'TOTAL PAYOUT',
                                   style: AffText.jakarta(
-                                    9,
+                                    10.5 * scale,
                                     FontWeight.w800,
-                                    color: Colors.white.withValues(alpha: 0.72),
+                                    color: Colors.white.withValues(alpha: 0.8),
                                     letterSpacing: 1,
                                   ),
                                 ),
-                                const SizedBox(height: 1),
+                                const Spacer(),
                                 Text(
                                   '₹${offer['totalPayout'] ?? 0}',
-                                  style: AffText.number(
-                                    21,
-                                    FontWeight.w800,
-                                    color: AffColors.gold,
-                                    letterSpacing: -0.5,
-                                  ),
+                                  style:
+                                      AffText.number(
+                                        25 * scale,
+                                        FontWeight.w800,
+                                        color: Colors.white,
+                                        letterSpacing: -0.5,
+                                      ).copyWith(
+                                        shadows: [
+                                          Shadow(
+                                            color: Colors.black.withValues(
+                                              alpha: 0.2,
+                                            ),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
@@ -588,12 +636,16 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
             label: 'Offer URL',
             link: '$origin/leads?o=$code',
             shareTitle: offer['offerName']?.toString() ?? '',
+            icon: Icons.link_rounded,
+            tint: AffColors.purpleEnd,
           ),
           const SizedBox(height: 10),
           _LinkTile(
             label: 'Sub refer URL',
             link: '$origin/referral?o=$code',
             shareTitle: offer['offerName']?.toString() ?? '',
+            icon: Icons.group_add_rounded,
+            tint: AffColors.pink,
           ),
           const SizedBox(height: 10),
           _LinkTile(
@@ -601,6 +653,8 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
             badge: 'No landing page',
             link: '$origin/api/public/direct/$code',
             shareTitle: offer['offerName']?.toString() ?? '',
+            icon: Icons.bolt_rounded,
+            tint: AffColors.amber,
             hint:
                 'Sends visitors straight to the offer — no lead form. Clicks are still tracked and payouts credit to your wallet.',
           ),
@@ -612,6 +666,21 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
   // ----------------------------------------------------------- templates
 
   Widget _templatesSection(BuildContext context) {
+    final logo = offer['logo']?.toString();
+    final logoUrl = (logo != null && logo.isNotEmpty)
+        ? (logo.startsWith('http') ? logo : '${ApiConfig.baseUrl}$logo')
+        : null;
+    final banner = offer['bannerImage']?.toString();
+    final bannerUrl = (banner != null && banner.isNotEmpty)
+        ? (banner.startsWith('http') ? banner : '${ApiConfig.baseUrl}$banner')
+        : null;
+    final category = offer['category']?.toString() ?? '';
+    final userTotal = userPo.values.fold<double>(0, (sum, v) => sum + v);
+    final offerTitle = (offer['offerTitle']?.toString() ?? '').replaceAll(
+      '{amount}',
+      _fmtAmount(userTotal),
+    );
+    final offerName = offer['offerName']?.toString() ?? '';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -640,6 +709,11 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
                 description: t['description']?.toString() ?? '',
                 selected: key == selectedTheme,
                 saving: savingTheme == key,
+                offerName: offerName,
+                offerTitle: offerTitle,
+                logoUrl: logoUrl,
+                bannerUrl: bannerUrl,
+                category: category,
                 onSelect: savingTheme != null || key == selectedTheme
                     ? null
                     : () => _selectTheme(key),
@@ -690,6 +764,7 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
       children: [
         const AffSectionHeader(title: 'Payout timing'),
         AffCard(
+          wash: AffColors.purpleEnd,
           padding: const EdgeInsets.fromLTRB(14, 6, 14, 6),
           child: Column(
             children: [
@@ -756,6 +831,7 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
       children: [
         const AffSectionHeader(title: 'Customize payout'),
         AffCard(
+          wash: AffColors.emerald,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -842,6 +918,13 @@ class _OfferDetailBodyState extends ConsumerState<_OfferDetailBody> {
         color: AffColors.fieldBg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AffColors.hairline),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF3C1478).withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1181,6 +1264,8 @@ class _LinkTile extends StatelessWidget {
     required this.label,
     required this.link,
     required this.shareTitle,
+    required this.icon,
+    required this.tint,
     this.badge,
     this.hint,
   });
@@ -1188,6 +1273,8 @@ class _LinkTile extends StatelessWidget {
   final String label;
   final String link;
   final String shareTitle;
+  final IconData icon;
+  final Color tint;
   final String? badge;
   final String? hint;
 
@@ -1205,119 +1292,148 @@ class _LinkTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = shareTitle.isEmpty ? link : '$shareTitle — $link';
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 11, 8, 10),
+      padding: const EdgeInsets.fromLTRB(0, 11, 8, 10),
       decoration: BoxDecoration(
         color: AffColors.fieldBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AffColors.fieldBorder),
+        border: Border.all(color: tint.withValues(alpha: 0.22)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3C1478).withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: tint.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                label.toUpperCase(),
-                style: AffText.jakarta(
-                  10,
-                  FontWeight.w800,
-                  color: AffColors.inkFaint,
-                  letterSpacing: 0.8,
-                ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Colour-coded left accent so each link type reads apart at a
+            // glance instead of three identical grey rows.
+            Container(
+              width: 4,
+              margin: const EdgeInsets.symmetric(vertical: 2),
+              decoration: BoxDecoration(
+                color: tint,
+                borderRadius: BorderRadius.circular(99),
               ),
-              if (badge != null) ...[
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(icon, size: 13, color: tint),
+                      const SizedBox(width: 5),
+                      Text(
+                        label.toUpperCase(),
+                        style: AffText.jakarta(
+                          10,
+                          FontWeight.w800,
+                          color: AffColors.inkFaint,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                      if (badge != null) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: tint.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(99),
+                          ),
+                          child: Text(
+                            badge!,
+                            style: AffText.jakarta(
+                              9,
+                              FontWeight.w700,
+                              color: tint,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  decoration: BoxDecoration(
-                    color: AffColors.chipLilac,
-                    borderRadius: BorderRadius.circular(99),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          link,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AffText.number(12.5, FontWeight.w500),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      _ActionDot(
+                        tooltip: 'Copy',
+                        color: AffColors.purpleEnd,
+                        child: Icon(
+                          Icons.copy_rounded,
+                          size: 20,
+                          color: AffColors.purpleEnd,
+                        ),
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          Clipboard.setData(ClipboardData(text: link));
+                          showSuccessToast(
+                            context,
+                            link,
+                            title: '$label copied',
+                          );
+                        },
+                      ),
+                      _ActionDot(
+                        tooltip: 'Share on WhatsApp',
+                        color: const Color(0xFF128C7E),
+                        child: const WhatsAppGlyph(
+                          color: Color(0xFF128C7E),
+                          size: 21,
+                        ),
+                        onTap: () => _open(
+                          context,
+                          'https://wa.me/?text=${Uri.encodeComponent(text)}',
+                        ),
+                      ),
+                      _ActionDot(
+                        tooltip: 'Share on Telegram',
+                        color: const Color(0xFF0088CC),
+                        child: const Icon(
+                          Icons.telegram,
+                          size: 23,
+                          color: Color(0xFF0088CC),
+                        ),
+                        onTap: () => _open(
+                          context,
+                          'https://t.me/share/url?url=${Uri.encodeComponent(link)}&text=${Uri.encodeComponent(shareTitle)}',
+                        ),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    badge!,
-                    style: AffText.jakarta(
-                      9,
-                      FontWeight.w700,
-                      color: AffColors.purpleEnd,
+                  if (hint != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      hint!,
+                      style: AffText.jakarta(
+                        10.5,
+                        FontWeight.w500,
+                        color: AffColors.inkFaint,
+                        height: 1.4,
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  link,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AffText.number(12.5, FontWeight.w500),
-                ),
-              ),
-              const SizedBox(width: 6),
-              _ActionDot(
-                tooltip: 'Copy',
-                color: AffColors.purpleEnd,
-                child: Icon(
-                  Icons.copy_rounded,
-                  size: 20,
-                  color: AffColors.purpleEnd,
-                ),
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  Clipboard.setData(ClipboardData(text: link));
-                  showSuccessToast(context, link, title: '$label copied');
-                },
-              ),
-              _ActionDot(
-                tooltip: 'Share on WhatsApp',
-                color: const Color(0xFF128C7E),
-                child: const WhatsAppGlyph(color: Color(0xFF128C7E), size: 21),
-                onTap: () => _open(
-                  context,
-                  'https://wa.me/?text=${Uri.encodeComponent(text)}',
-                ),
-              ),
-              _ActionDot(
-                tooltip: 'Share on Telegram',
-                color: const Color(0xFF0088CC),
-                child: const Icon(
-                  Icons.telegram,
-                  size: 23,
-                  color: Color(0xFF0088CC),
-                ),
-                onTap: () => _open(
-                  context,
-                  'https://t.me/share/url?url=${Uri.encodeComponent(link)}&text=${Uri.encodeComponent(shareTitle)}',
-                ),
-              ),
-            ],
-          ),
-          if (hint != null) ...[
-            const SizedBox(height: 6),
-            Text(
-              hint!,
-              style: AffText.jakarta(
-                10.5,
-                FontWeight.w500,
-                color: AffColors.inkFaint,
-                height: 1.4,
+                  ],
+                ],
               ),
             ),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -1357,7 +1473,10 @@ class _ActionDot extends StatelessWidget {
 }
 
 /// Selectable landing-page template: a drawn mini mockup of the theme, its
-/// name and description, plus a Use action.
+/// name and description, plus a Use action. "Preview" shows a native,
+/// read-only re-creation of the real landing page with the offer's actual
+/// data (logo, name, category, banner) — not an editable form, just a
+/// static look at what visitors see.
 class _TemplateCard extends StatelessWidget {
   const _TemplateCard({
     required this.themeKey,
@@ -1365,6 +1484,11 @@ class _TemplateCard extends StatelessWidget {
     required this.description,
     required this.selected,
     required this.saving,
+    required this.offerName,
+    required this.offerTitle,
+    required this.logoUrl,
+    required this.bannerUrl,
+    required this.category,
     required this.onSelect,
   });
 
@@ -1373,20 +1497,24 @@ class _TemplateCard extends StatelessWidget {
   final String description;
   final bool selected;
   final bool saving;
+  final String offerName;
+  final String offerTitle;
+  final String? logoUrl;
+  final String? bannerUrl;
+  final String category;
   final VoidCallback? onSelect;
 
   void _openPreview(BuildContext context) {
     HapticFeedback.selectionClick();
-    showDialog<void>(
-      context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.6),
-      builder: (_) => _TemplatePreviewDialog(
-        themeKey: themeKey,
-        label: label,
-        description: description,
-        selected: selected,
-        onUse: onSelect,
-      ),
+    showLandingPreviewSheet(
+      context,
+      themeKey: themeKey,
+      label: label,
+      name: offerName,
+      title: offerTitle,
+      logoUrl: logoUrl,
+      bannerUrl: bannerUrl,
+      category: category,
     );
   }
 
@@ -1433,9 +1561,19 @@ class _TemplateCard extends StatelessWidget {
               // Thumbnail: the full-size mockup scaled down. Tap to preview.
               GestureDetector(
                 onTap: () => _openPreview(context),
-                child: SizedBox(
-                  width: 84,
-                  height: 62,
+                child: Container(
+                  width: 88,
+                  height: 66,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF3C1478).withValues(alpha: 0.12),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
                   child: Stack(
                     children: [
                       Positioned.fill(
@@ -1583,125 +1721,6 @@ class _TemplateCard extends StatelessWidget {
               Text(
                 label,
                 style: AffText.jakarta(10.5, FontWeight.w800, color: fg),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Full-screen look at a landing-page theme before committing to it.
-class _TemplatePreviewDialog extends StatelessWidget {
-  const _TemplatePreviewDialog({
-    required this.themeKey,
-    required this.label,
-    required this.description,
-    required this.selected,
-    required this.onUse,
-  });
-
-  final String themeKey;
-  final String label;
-  final String description;
-  final bool selected;
-  final VoidCallback? onUse;
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          color: AffColors.surface,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            label,
-                            style: AffText.jakarta(
-                              15,
-                              FontWeight.w800,
-                              color: AffColors.ink,
-                            ),
-                          ),
-                          if (description.isNotEmpty)
-                            Text(
-                              description,
-                              style: AffText.jakarta(
-                                11,
-                                FontWeight.w500,
-                                color: AffColors.inkFaint,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: Icon(
-                        Icons.close_rounded,
-                        color: AffColors.inkFaint,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: _TemplateMockup(themeKey: themeKey, height: 320),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: selected
-                        ? null
-                        : () {
-                            Navigator.of(context).pop();
-                            onUse?.call();
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AffColors.purpleEnd,
-                      disabledBackgroundColor: AffColors.chipLilac,
-                      padding: const EdgeInsets.symmetric(vertical: 13),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(13),
-                      ),
-                    ),
-                    icon: Icon(
-                      selected
-                          ? Icons.check_circle_rounded
-                          : Icons.touch_app_rounded,
-                      size: 16,
-                      color: selected ? AffColors.purpleEnd : Colors.white,
-                    ),
-                    label: Text(
-                      selected ? 'Already in use' : 'Use this template',
-                      style: AffText.jakarta(
-                        13,
-                        FontWeight.w800,
-                        color: selected ? AffColors.purpleEnd : Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
               ),
             ],
           ),
